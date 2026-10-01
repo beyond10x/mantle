@@ -1,0 +1,29 @@
+version: "3"
+
+env:
+  CARGO_TARGET_DIR: "{{.HOME}}/.cache/b10x-target/mantle"
+
+tasks:
+  build:
+    desc: Build the laptop CLI
+    cmds:
+      - cargo build --locked -p mantle
+
+  build-worker:
+    desc: Build the static binaries copied onto a worker
+    cmds:
+      - cargo build --locked --release --target x86_64-unknown-linux-musl -p mantle-egress -p mantle-launch
+
+  spec:
+    desc: Validate the ESS specification
+    cmds:
+      - ess specify validate --path spec
+
+  check:
+    desc: The gate
+    cmds:
+      - cargo fmt --all --check
+      - cargo clippy --workspace --all-targets --locked -- -D warnings
+      - cargo test --workspace --locked
+      - task: spec
+      - aep plan artifact validate

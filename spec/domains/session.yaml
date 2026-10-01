@@ -1,0 +1,73 @@
+domain: mantle.session
+
+entities:
+  - name: mantle.session.Session
+    identity:
+      name: session_id
+      type: String
+    fields:
+      - name: name
+        type: String
+      - name: manifest_digest
+        type: String
+      - name: worker_id
+        type: String
+      - name: substrate_workspace
+        type: String
+      - name: agent_exec
+        type: String
+    relations:
+      - name: worker
+        kind: references
+        target: mantle.session.Worker
+        cardinality: one
+        via: worker_id
+      - name: sources
+        kind: owns
+        target: mantle.session.SourceResolution
+        cardinality: many
+        via: session_id
+    # The design's lifecycle (docs/design/00-mantle-on-substrate.md § 9) has eleven states and six
+    # failure states. They enter here together with the commands whose outcomes move between them.
+    lifecycle:
+      initial: Requested
+      states: [Requested]
+      terminal: [Requested]
+
+  - name: mantle.session.Worker
+    identity:
+      name: worker_id
+      type: String
+    fields:
+      - name: provider
+        type: String
+      - name: instance
+        type: String
+      - name: region
+        type: String
+      - name: capability_snapshot
+        type: String
+    lifecycle:
+      initial: Provisioning
+      states: [Provisioning]
+      terminal: [Provisioning]
+
+  - name: mantle.session.SourceResolution
+    identity:
+      name: source_id
+      type: String
+    fields:
+      - name: session_id
+        type: String
+      - name: repository
+        type: String
+      - name: declared_ref
+        type: String
+      - name: commit
+        type: String
+      - name: mount
+        type: String
+    lifecycle:
+      initial: Resolved
+      states: [Resolved]
+      terminal: [Resolved]
