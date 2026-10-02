@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T15:55:05Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-session-wiring",
+  "kind": "story",
+  "revision": 54,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "VERIFIED identical public CLI inputs: baseline rejects codex; treatment reaches fixed capture preflight; both exit1 and SQLite sessions0; no Claude configuration",
+    "reference": ".engineering/reports/codex-session-wave5-2026-10-02/coordinator-claim.md"
+  }
+}

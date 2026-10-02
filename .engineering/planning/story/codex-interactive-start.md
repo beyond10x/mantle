@@ -71,7 +71,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/codex-start.yaml
-revision: 29
+revision: 30
 ---
 ## Context
 
@@ -176,3 +176,15 @@ Existing Substrate 05695970 process.rs:1908–1937 supplies a fresh private /tmp
 Supported TUI configuration includes forced_login_method=chatgpt, cli_auth_credentials_store=file, history.persistence=none, analytics.enabled=false, feedback.enabled=false and check_for_update_on_startup=false. TUI onboarding permits device code without an unconditional login preflight that clears existing auth. No supported TUI external-sandbox selector was found; retain the reviewed outer-confinement candidate with on-request approvals for qualification, never the bypass flag. These findings define the next local configuration/private-home implementation and its synthetic canary tests; they do not claim authenticated operation or waive effective configuration validation.
 
 Source scoper performed read-only inspection only. No Substrate changes, credentials, login or model requests. The other session remains owner of substrate#112.
+
+## Remaining gateway source wiring
+
+Read-only story-scoper at79e1ee6 confirmed the existing worker route: worker::up/install_binaries installs and starts mantle-egress; its service binds127.0.0.1:3128 using compiled defaults; Substrate declares the named egress aperture; Mantle's agent request supplies that aperture and the launcher's fixed proxy. This is configured source behavior, not a fresh observation of live gateway health.
+
+The default eight-host allowlist in crates/mantle-egress/src/allow.rs lacks auth.openai.com:443 and chatgpt.com:443. Pinned Codex0.153.4 source selects the former for device code/polling/token exchange/refresh and the latter for the built-in ChatGPT backend and subscription model endpoint. These two exact destinations are source-established local integration requirements, not an observed complete traffic inventory. No evidence warrants wildcard/CDN/API-key endpoint additions. Browser-side authorization dependencies do not establish worker egress requirements.
+
+The smallest local source unit is two default entries plus the existing ESS CheckDefaultDestination guard and authored native cases through the existing Exchange fixture: both exact443 authorities accepted, opaque binary bytes retained, fully qualified resolution and pinned public dialing, wrong ports and lookalike/suffix authorities rejected before DNS/dial. Existing private/mixed-DNS, exact matching, limits and shutdown assertions stay intact. Scope: crates/mantle-egress/src/allow.rs; spec/domains/egress.yaml; inferred spec/scenarios/egress/codex-{default-destinations,connect-destinations,destination-refusals}.yaml; spec/ess-inputs.yaml; spec/conformance-baseline.json; spec/README.md; existing generated/worker-model provenance as actually required. Existing conformance.rs:42–142 already exposes the real handler with controlled DNS/dial; no new harness abstraction or deployment files are indicated.
+
+Active gateway upgrades are deliberately deferred by worker.rs:329–342 to preserve shared sessions. Updating source therefore does not activate the two entries on an already-running gateway; controlled deployment and real TLS/login/model/refresh/network acceptance remain this parent's work. No worker or network policy was mutated during scoping. This is preparation for the next selected local unit, not an implemented or live-qualified claim.
+
+Pinned source citations: https://github.com/openai/codex/blob/rust-v0.153.4/codex-rs/login/src/server.rs#L59 ; https://github.com/openai/codex/blob/rust-v0.153.4/codex-rs/login/src/device_code_auth.rs#L166 ; https://github.com/openai/codex/blob/rust-v0.153.4/codex-rs/model-provider-info/src/lib.rs#L290 .

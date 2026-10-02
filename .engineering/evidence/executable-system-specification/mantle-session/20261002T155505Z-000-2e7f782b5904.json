@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T15:55:05Z",
+  "actor": "human:timo",
+  "artifact": "executable-system-specification:mantle-session",
+  "kind": "executable-system-specification",
+  "revision": 24,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "ESS0.50 validates seven files and227 authored scenarios; full integration gate at8d05b7a8 exit0",
+    "reference": ".engineering/reports/codex-session-wave5-2026-10-02/gate/spec.log"
+  }
+}

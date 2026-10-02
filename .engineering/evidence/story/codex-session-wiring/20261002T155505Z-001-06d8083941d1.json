@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T15:55:05Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-session-wiring",
+  "kind": "story",
+  "revision": 54,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Full integration gate at8d05b7a8 exit0:179 Rust tests,331 native cases, no required skip; independent five added cases green; synthetic pinned-runtime placement observed",
+    "reference": ".engineering/reports/codex-session-wave5-2026-10-02/closure.md"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "auth_refresh": "not-run",
+  "authenticated_model_turn": "not-run",
+  "codex_sqlite_files": [
+    "goals_1.sqlite",
+    "goals_1.sqlite-shm",
+    "goals_1.sqlite-wal",
+    "logs_2.sqlite",
+    "logs_2.sqlite-shm",
+    "logs_2.sqlite-wal",
+    "memories_1.sqlite",
+    "memories_1.sqlite-shm",
+    "memories_1.sqlite-wal",
+    "queue_1.sqlite",
+    "queue_1.sqlite-shm",
+    "queue_1.sqlite-wal",
+    "state_5.sqlite",
+    "state_5.sqlite-shm",
+    "state_5.sqlite-wal"
+  ],
+  "conflicting_local_sink_paths_absent": true,
+  "credentials": "isolated synthetic home; no login",
+  "end_to_end_non_recording": "not-established; Substrate capture binding unavailable",
+  "format": "mantle.codex-runtime-sinks/1",
+  "managed_policy": "not-run",
+  "sha256": "56ef98ab4032d317ab26e9b5e5a175650717351edb16ed9cde0cb6d1734d62da",
+  "synthetic_fixture": {
+    "persistent_canary_after_removal": false,
+    "persistent_positive_control_detected": true,
+    "provenance": "explicit synthetic SQLite fixture, not Codex refresh",
+    "sqlite_and_live_wal_detected": true
+  },
+  "text_log_bytes": 0,
+  "text_log_created_in_tmpfs": true,
+  "tui": {
+    "cleanup": "launcher reaped",
+    "phases": [
+      {
+        "launcher_alive": true,
+        "phase": "initial",
+        "screen": {
+          "bytes": 3496,
+          "cursor_query": true,
+          "login_marker": true,
+          "permission_or_socket_error_marker": false,
+          "welcome_marker": true
+        }
+      },
+      {
+        "launcher_alive": true,
+        "phase": "same_size_reattach",
+        "screen": {
+          "bytes": 5946,
+          "cursor_query": true,
+          "login_marker": true,
+          "permission_or_socket_error_marker": false,
+          "welcome_marker": true
+        }
+      },
+      {
+        "launcher_alive": true,
+        "phase": "resize",
+        "screen": {
+          "bytes": 1495,
+          "cursor_query": true,
+          "login_marker": true,
+          "permission_or_socket_error_marker": false,
+          "welcome_marker": false
+        }
+      },
+      {
+        "launcher_alive": true,
+        "phase": "slow_reader",
+        "screen": {
+          "bytes": 900,
+          "cursor_query": false,
+          "login_marker": false,
+          "permission_or_socket_error_marker": false,
+          "welcome_marker": false
+        }
+      }
+    ],
+    "real_model_turn": "not-run: no authentication",
+    "slow_reader": "500ms reader pause; no forced overflow claim",
+    "usable_screen": "requires human verification"
+  },
+  "version": "codex-cli 0.153.4"
+}

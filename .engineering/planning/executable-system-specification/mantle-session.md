@@ -2,13 +2,13 @@
 format: aep.planning-md/3
 id: executable-system-specification:mantle-session
 kind: executable-system-specification
-status: validated
+status: conforming
 title: Mantle implemented contracts
 summary: Five ESS domains; complete native conformance with zero unresolved mappings
 relations:
 - specifies: epic:vertical-slice
-model_digest: 3a08777de0d97b8f4b6127d959d931d021cd3fbac3a529f3522372ec4169c4ea
-revision: 21
+model_digest: 45700f1d2dc4e3c23ba9a26824b43bef5e98d2623981472ab852f3b57951dcac
+revision: 25
 transitions:
 - {from: "draft", to: "validated", at: "2026-10-02T08:42:41Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"test_result":1}}}
 - {from: "validated", to: "conforming", at: "2026-10-02T10:39:51Z", actor: "human:timo", revision: 9, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}, executor: "agent:codex-mantle"}
@@ -19,6 +19,7 @@ transitions:
 - {from: "conforming", to: "validated", at: "2026-10-02T13:14:34Z", actor: "human:timo", revision: 18, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}}
 - {from: "validated", to: "conforming", at: "2026-10-02T14:37:29Z", actor: "human:timo", revision: 20, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}}
 - {from: "conforming", to: "validated", at: "2026-10-02T14:44:18Z", actor: "human:timo", revision: 21, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}}
+- {from: "validated", to: "conforming", at: "2026-10-02T15:55:05Z", actor: "human:timo", revision: 25, decided_on: {"recorded":{"test_result":2,"ess_conformance_coverage_v1":1}}, executor: "agent:codex-mantle"}
 ---
 # Mantle executable contract
 
@@ -30,9 +31,11 @@ The original57-scenario reports and upstream304-scenario native sweep reports re
 
 ## Verification
 
-On integration merge247ed1715ac24bba0c4188354d5aac3c02d6c26a, the final gate passed167 top-level Rust tests and313 complete native ESS scenarios (CLI213, egress66, launcher34), with zero failed/error/skipped/unsupported/outside/refused. ESS0.50.0 validates seven model files and218 authored scenarios. The suite contains95 generated and218 authored scenarios. Formatting, full-workspace clippy, specification validation, planning validation and documentation build also exited0. Each command's own output is retained under .engineering/reports/codex-worker-final-gate-2026-10-02/.
+Integration merge8d05b7a8b6ffa41fef3c4eb1f43292e054079624 passes the complete repository gate:179 top-level Rust tests and331 native ESS scenarios, comprising227 authored and104 generated, with zero failed/error/skipped/unsupported/outside/refused. Components execute CLI218, egress66 and launcher47. ESS0.50 validates seven source files and227 authored scenarios. Formatting, full-workspace clippy, specification/planning validation and documentation build each exit0. Per-step runner output is retained under .engineering/reports/codex-session-wave5-2026-10-02/gate/ with personal home prefixes normalized; no step was skipped.
 
-The exact suite, admitted aggregate report and no-op audit are retained under .engineering/reports/codex-worker-final-native-2026-10-02/. Current model digest is8a272638ba1e78a3a382335a397e223d44436d4b3423664c5c1c22ffe8f0f895. The AEP evidence was read from that report/2 with its exact suite; historical model digests remain in Git and prior evidence.
+Exact suite, report, results and no-op audit are under .engineering/reports/codex-session-wave5-2026-10-02/native/. Current model digest is45700f1d2dc4e3c23ba9a26824b43bef5e98d2623981472ab852f3b57951dcac. AEP evidence is admitted from that report/2 beside its exact suite. Prior qualification, worker and launcher reports remain historical; their outcomes are not silently attributed to this changed model.
+
+Wave5 adds actual Codex manifest/SQLite identity and migration, production request/preflight/attachment selection, launcher filesystem checks and pinned-program synthetic diagnostic-path evidence. It explicitly refuses unsupported Substrate capture. No authenticated session, token refresh, complete network use or live two-agent parity is claimed by this local contract.
 
 ## Boundary closure
 
@@ -42,9 +45,9 @@ Worker commands call real pin/architecture/install-observation decisions. Separa
 
 ## Sensitivity evidence
 
-All218 current authored scenarios reject the inert no-op target; six generated optional-return witnesses pass it and do not independently prove behavior. The required baseline retains every304 upstream scenario and adds9 worker/common-readiness scenarios. No counts or required names were lowered.
+All227 current authored scenarios reject the deliberately inert adapter. The same six schema-only generated optional-return witnesses pass it and do not independently prove behavior. The required baseline retains prior named scenarios and assertions; neither the inventory floor nor expected values were weakened to admit the added identity fields. Current no-op audit is retained with the exact suite/report in .engineering/reports/codex-session-wave5-2026-10-02/native/.
 
-Historical upstream evidence in native/mutations.json records eight restored mutations and the real CheckDrain defect correction. Those mutation runs predate the worker unit; new worker adversarial red cases and the live tunnel-path red/green evidence are retained separately in this wave's reports and immutable AEP review records.
+Historical upstream native/mutations.json records eight restored mutations and the real CheckDrain correction; those runs predate these Codex changes. Separate test-first public CLI/private-path failures, actual legacy-database tests, five independent adversary additions and synthetic pinned-Codex sink observations are recorded in this wave's reports and immutable review-result:codex-session-adversary-1. The runtime scanner's deliberately planted persistent positive control was detected; it does not claim a real token-refresh test.
 
 ## Delivery
 

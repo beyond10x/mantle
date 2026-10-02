@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:codex-session-wiring
 kind: story
-status: active
+status: implemented
 title: Wire Codex sessions with private home and volatile runtime diagnostics
 relations:
 - decomposes: story:codex-interactive-start
@@ -44,11 +44,11 @@ scope:
   path: crates/mantle/src/domain/manifest.rs
 - confidence: cited
   path: crates/mantle/src/domain/session.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/tests/codex_preflight.rs
 - confidence: cited
   path: docs/evidence/codex-compatibility.md
-- confidence: inferred
+- confidence: cited
   path: examples/codex.yaml
 - confidence: cited
   path: generated/worker-model/Cargo.toml
@@ -74,9 +74,9 @@ scope:
   path: spec/domains/session.yaml
 - confidence: cited
   path: spec/ess-inputs.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/cli/codex-private-runtime.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/cli/codex-start.yaml
 - confidence: cited
   path: spec/scenarios/cli/live-name-failedagentstart.yaml
@@ -116,14 +116,15 @@ scope:
   path: spec/scenarios/launch/argument-byte-preservation.yaml
 - confidence: cited
   path: spec/scenarios/launch/argument-defaults.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/launch/private-path-initialization.yaml
 - confidence: cited
   path: spec/scenarios/launch/replay-policy-arguments.yaml
-revision: 47
+revision: 55
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T14:42:30Z", actor: "human:timo", revision: 46}
 - {from: "proposed", to: "active", at: "2026-10-02T14:42:30Z", actor: "human:timo", revision: 47}
+- {from: "active", to: "implemented", at: "2026-10-02T15:55:05Z", actor: "human:timo", revision: 55, decided_on: {"recorded":{"test_result":1,"review_outcome":1,"verification":1,"ess_conformance_coverage_v1":1}}, executor: "agent:codex-mantle"}
 ---
 ## Context and parent boundary
 
@@ -185,3 +186,25 @@ Coordinator source inspection found that the existing generated/worker-model sel
 ## Qualification fixture independence
 
 Wave4 integration exposed an existing ambient-environment requirement in crates/mantle/examples/tests/codex_qualification_adversary.rs:12,60: two tests panic if TMPDIR is unset. There is no corresponding Taskfile/CI setup. Private TMPDIR unblocks the unchanged current gate, with initial red retained. As part of CW09 qualification fixtures, make those tests allocate their own private temporary parent when no task-specific parent is supplied, preserving all binary/FIFO/symlink assertions and owned cleanup. Never change process-global HOME or mutate shared environment during parallel tests. This adds cited scope for that exact existing test file; it does not change runtime behavior.
+
+## Pinned provider and override controls
+
+Pinned rust-v0.153.4 source confirms CW08 must fix model_provider="openai" and chatgpt_base_url="https://chatgpt.com/backend-api/" as well as authentication and diagnostic settings. Fix openai_base_url to the ChatGPT subscription endpoint https://chatgpt.com/backend-api/codex, or explicitly supply an empty TOML string to restore that pin's authentication-dependent default. Do not use the API v1 endpoint. core/src/config/mod.rs:3713 filters empty; model-provider-info/src/lib.rs:290 selects the ChatGPT default. Custom providers can carry URLs/credentials/auth commands, so forced_login_method alone is insufficient; config/src/config_toml.rs:889 rejects overriding the reserved openai provider itself.
+
+Release TUI login defaults to https://auth.openai.com (login/src/server.rs:59; app-server/src/request_processors/account_processor.rs:562). No inspected TOML issuer key exists; the TUI issuer environment override is debug-only. Production must not use the synthetic CLI login issuer flag. Cleared environment must omit CODEX_REFRESH_TOKEN_URL_OVERRIDE, CODEX_APP_SERVER_LOGIN_CLIENT_ID, OPENAI_API_KEY, CODEX_API_KEY and caller endpoint/recording variables, including CODEX_TUI_SESSION_LOG_PATH (login/src/auth/manager.rs:197,1710).
+
+Configuration precedence is precise: CLI SessionFlags30 exceeds user20, profile21, project25 and EnterpriseManaged fragments15; legacy managed40/50 and separate requirements may still constrain configuration (config/src/config_layer_source.rs:33). Post-login rebuilding retains CLI overrides (tui/src/lib.rs:1203), but actual account/managed requirements remain the parent's authenticated acceptance. These source findings sharpen existing CW08, not a new configuration framework or runtime claim. The source scoper sent them to the implementor; no builds, login or code edits were involved.
+
+## Implementation scope confirmation
+
+The handed-off unit contains54 changed source/spec/doc paths, each checked against the typed scope; none lies outside it. Original inferred entries are now confirmed by actual implementation, with the original inference retained here as history:
+
+| Originally inferred path | Confirmed use |
+|---|---|
+| crates/mantle/tests/codex_preflight.rs | Real public CLI start/attach selection and early refusal against synthetic persisted state |
+| examples/codex.yaml | Valid fixed Codex manifest with documented current admission boundary |
+| spec/scenarios/cli/codex-start.yaml | Native parser, identity migration and preflight cases |
+| spec/scenarios/cli/codex-private-runtime.yaml | Exact production request configuration and capture requirement |
+| spec/scenarios/launch/private-path-initialization.yaml | Actual launcher private-path initialization observation |
+
+Existing generated/worker-model/Cargo.toml and launcher tests/launch.rs were scoped but did not need changes; they were not rewritten merely to match a reservation. Generated type/source/report artifacts were regenerated through ESS0.50 and drift-tested. Shared worker installer behavior remains unchanged; its scoped reexports/drift roots changed. Independent attack may add cases only in the already scoped test seams. This confirmation does not change acceptance or close the story.

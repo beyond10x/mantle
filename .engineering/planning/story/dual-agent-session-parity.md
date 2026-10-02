@@ -7,6 +7,7 @@ title: Verify and complete terminal-session parity for Codex and Claude
 relations:
 - decomposes: epic:codex-parity
 - depends_on: story:codex-interactive-start
+- depends_on: story:attach-backpressure-cancellation
 scope:
 - confidence: inferred
   path: .engineering/planning/story/session-lifecycle.md

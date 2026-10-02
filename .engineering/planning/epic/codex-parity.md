@@ -7,7 +7,7 @@ title: Codex sessions with Claude-equivalent terminal behavior
 relations:
 - informed_by: epic:vertical-slice
 - informed_by: executable-system-specification:mantle-session
-revision: 15
+revision: 16
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":1}}}
@@ -103,6 +103,6 @@ clarification is the coordinator's inference and does not weaken final acceptanc
 
 ## Current delivery goal and upstream ownership
 
-Deliver Mantle Codex parity through reviewed AEP waves, preserving confinement and Claude-equivalent start, attach, resize, detach, reconnect, status, exec and stop. Track Substrate's policy-controlled non-recording terminal capability in upstream GitHub issue beyond10x/substrate#112; do not implement a Mantle encryption workaround or take over Substrate implementation. Continue independent Mantle work, integrate an exact supported SDK revision when available, and prove launcher/Codex diagnostic privacy, real authentication, model/tool turns, refresh and two-agent lifecycle acceptance. Do not claim completion while mandatory upstream or live acceptance remains missing. No token budget is imposed.
+Deliver Mantle Codex parity through reviewed AEP waves, preserving confinement and Claude-equivalent start, attach, resize, detach, reconnect, status, exec and stop. The other session owns Substrate issue112; do not implement a Mantle encryption workaround or take over Substrate implementation. Complete independent Mantle code and record actual authentication, model/tool and lifecycle evidence before claiming the full experience works. No token budget is imposed.
 
-This restates the operator's delivery goal rather than replacing it with issue filing. The goal service reports the existing goal as paused and refused create_goal with: "cannot create a new goal because this thread has an unfinished goal; complete the existing goal first". Available goal tools cannot edit or resume it. The existing goal is unfinished and has not been marked complete to bypass that restriction. This AEP section is the current operative objective, and work continues under the user's instruction.
+The existing goal service is now active and unbudgeted, verified2026-10-02. Its objective remains implementation of epic:codex-parity with qualification, worker preparation, authenticated sessions and lifecycle parity. The earlier paused-state/create_goal refusal is historical; the existing unfinished goal was not falsely completed or replaced. The accepted capture/privacy boundary remains in the owning stories while the operator clarification about the latest separation instruction is pending. Continue all independent implementation and review meanwhile.

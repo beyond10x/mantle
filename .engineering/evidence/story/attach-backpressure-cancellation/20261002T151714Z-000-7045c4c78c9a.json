@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T15:17:14Z",
+  "actor": "human:timo",
+  "artifact": "story:attach-backpressure-cancellation",
+  "kind": "story",
+  "revision": 15,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "RED baseline real-launcher probe at79e1ee6: unread stdout misses1500ms SIGTERM deadline; drained control exits; probe exit1; all owned processes reaped",
+    "reference": "~/.cache/mantle-wave5/scratch-integration/debug-scaffolding/attach-cancellation/baseline.log"
+  }
+}
