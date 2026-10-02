@@ -2,15 +2,16 @@
 format: aep.planning-md/3
 id: task:release-0-1-2
 kind: task
-status: active
+status: implemented
 title: Release 0.1.2 with verified worker build documentation
 relations:
 - delivers: story:worker-rust-linker
 - informed_by: epic:codex-parity
-revision: 3
+revision: 4
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T20:10:57Z", actor: "human:timo", revision: 2}
 - {from: "proposed", to: "active", at: "2026-10-02T20:10:57Z", actor: "human:timo", revision: 3}
+- {from: "active", to: "implemented", at: "2026-10-02T20:21:51Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"test_result":2}}}
 ---
 ## Outcome
 Publish source release 0.1.2 from current main with the confined Rust/native compiler correction and updated README, public site and qualification evidence. User explicitly authorized this release with updated docs.

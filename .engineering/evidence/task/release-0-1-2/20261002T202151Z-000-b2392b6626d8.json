@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T20:21:51Z",
+  "actor": "human:timo",
+  "artifact": "task:release-0-1-2",
+  "kind": "task",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Exact release checks, bot tag/release and downloaded source archive verified",
+    "reference": ".engineering/reports/release-0.1.2/completion.md"
+  }
+}
