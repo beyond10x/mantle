@@ -2,11 +2,17 @@
 format: aep.planning-md/3
 id: story:egress-gateway
 kind: story
-status: draft
+status: active
 title: Egress gateway with a fixed allowlist
 relations:
 - decomposes: epic:vertical-slice
-revision: 1
+scope:
+- confidence: cited
+  path: crates/mantle-egress
+revision: 4
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-01T22:38:39Z", actor: "human:timo", revision: 2}
+- {from: "proposed", to: "active", at: "2026-10-01T22:38:40Z", actor: "human:timo", revision: 3}
 ---
 # Story: Egress gateway with a fixed allowlist
 
