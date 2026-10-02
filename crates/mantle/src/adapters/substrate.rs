@@ -128,6 +128,14 @@ pub fn base_environment(cpu: u32) -> Vec<(&'static str, String)> {
         ),
         ("GIT_CONFIG_NOSYSTEM", "1".to_owned()),
         ("CARGO_BUILD_JOBS", cpu.to_string()),
+        // Ubuntu's `cc` points through /etc/alternatives, outside the confined root.
+        // gcc resolves entirely inside /usr, which Substrate already supplies read-only.
+        (
+            "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER",
+            "gcc".to_owned(),
+        ),
+        ("CC", "gcc".to_owned()),
+        ("CXX", "g++".to_owned()),
         ("LANG", "C.UTF-8".to_owned()),
         ("TERM", "xterm-256color".to_owned()),
         ("SHELL", "/bin/bash".to_owned()),

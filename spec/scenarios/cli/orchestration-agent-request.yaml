@@ -57,8 +57,20 @@
             "value": "/workspace/.mantle/cargo"
           },
           {
+            "name": "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER",
+            "value": "gcc"
+          },
+          {
+            "name": "CC",
+            "value": "gcc"
+          },
+          {
             "name": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
             "value": "1"
+          },
+          {
+            "name": "CXX",
+            "value": "g++"
           },
           {
             "name": "DISABLE_AUTOUPDATER",
