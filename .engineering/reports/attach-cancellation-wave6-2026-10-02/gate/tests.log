@@ -1,0 +1,470 @@
+   Compiling mantle-launch v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-launch)
+   Compiling mantle-worker-model v0.0.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/generated/worker-model)
+   Compiling mantle-worker v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-worker)
+   Compiling mantle v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle)
+    Finished `test` profile [unoptimized] target(s) in 7.35s
+     Running unittests src/main.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle-277e3ad59dda8f7b)
+
+running 29 tests
+test app::terminal::tests::the_sequence_is_recognised_across_reads ... ok
+test app::terminal::tests::escape_followed_by_anything_else_passes_both_bytes ... ok
+test app::terminal::tests::ctrl_bracket_d_detaches_and_forwards_what_came_before ... ok
+test adapters::substrate::worker_tests::common_readiness_and_selected_claude_are_distinct_observations ... ok
+test config::tests::explicit_path_selection_is_absolute_and_preserves_defaults ... ok
+test config::tests::common_worker_configuration_needs_no_claude_credentials ... ok
+test config::tests::legacy_claude_table_remains_parseable ... ok
+test domain::session::tests::names_round_trip ... ok
+test domain::session::tests::stopped_is_final_and_failures_only_stop ... ok
+test domain::manifest::tests::cwd_must_be_inside_a_mount ... ok
+test app::worker::tests::legacy_claude_bootstrap_retains_required_slot ... ok
+test domain::manifest::tests::defaults_apply ... ok
+test domain::session::tests::the_happy_path_is_legal ... ok
+test domain::manifest::tests::unserved_fields_are_refused_by_name ... ok
+test domain::manifest::tests::the_example_manifest_resolves ... ok
+test app::worker::tests::the_template_renders_every_placeholder ... ok
+test domain::session::tests::running_is_never_reached_without_starting ... ok
+test domain::manifest::tests::retain_for_is_bounded_by_the_exec_limit ... ok
+test domain::manifest::tests::sizes_and_durations_parse ... ok
+test domain::manifest::tests::cwd_with_dot_dot_or_empty_components_is_refused ... ok
+test domain::manifest::tests::mounts_and_refs_cannot_escape ... ok
+test adapters::state::tests::an_illegal_move_is_refused_and_not_written ... ok
+test adapters::state::tests::a_live_name_is_unique_until_stopped ... ok
+test adapters::state::tests::sources_round_trip ... ok
+test app::worker::tests::both_profiles_keep_aperture_and_ca_in_the_daemon_command ... ok
+test adapters::ssh::tests::tunnel_socket_binds_with_live_length_state_prefix ... ok
+test adapters::ssh::tests::socket_allocations_are_private_unique_and_state_path_independent ... ok
+test adapters::ssh::tests::tunnel_socket_directory_lives_until_child_cleanup_and_is_removed_on_errors ... ok
+test adapters::state::conformance::ess_generated_local_conformance ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.21s
+
+     Running tests/codex_preflight.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/codex_preflight-f14a9f5dcb0fcf21)
+
+running 4 tests
+test adversary_codex_never_invokes_configured_claude_credential_command ... ok
+test codex_refuses_capture_before_claude_credentials_or_session_insertion ... ok
+test adversary_partial_identity_schema_refusal_rolls_back_initialization ... ok
+test adversary_legacy_migration_preserves_indexes_and_stopped_sources_then_refuses_corruption ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running unittests examples/codex_qualification.rs (/dev/shm/mantle-wave4-target-integration/debug/examples/codex_qualification-2c3ae41e1f0be255)
+
+running 10 tests
+test tests::digest_format_is_strict ... ok
+test tests::digest_bounds_actual_input_even_when_it_exceeds_the_size_snapshot ... ok
+test tests::fixed_observation_never_exports_terminal_payload ... ok
+test tests::digest_refuses_other_non_regular_descriptors ... ok
+test tests::unsafe_scratch_parents_are_refused_without_creating_children ... ok
+test tests::scratch_budget_refuses_large_files_and_does_not_follow_links ... ok
+
+running 1 test
+
+running 1 test
+test adversary::binary_symlink_is_validated_against_its_current_opened_object ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+test adversary::non_regular_binary_input_is_refused_without_waiting_for_a_fifo_writer ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+test tests::terminal_observation_is_bounded_and_handles_split_queries ... ok
+test adversary::non_regular_binary_input_is_refused_without_waiting_for_a_fifo_writer ... ok
+test adversary::binary_symlink_is_validated_against_its_current_opened_object ... ok
+test tests::cq01_rejects_wrong_digest_before_executing_a_binary ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+     Running unittests src/lib.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle_conformance-3351e25d6a902300)
+
+running 1 test
+test tests::observations_preserve_full_integer_width ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle_conformance-349561a0ba511922)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle_docs-08817e77d99364c8)
+
+running 2 tests
+test tests::authored_links_resolve ... ok
+test tests::broken_anchors_and_wrong_asset_bases_are_refused ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle_egress-dee410d83fd8a7bc)
+
+running 25 tests
+test addr::tests::public_addresses_are_permitted ... ok
+test addr::tests::refused_ipv4_ranges ... ok
+test allow::tests::malformed_targets ... ok
+test allow::tests::default_list_has_eight_hosts_on_443 ... ok
+test allow::tests::ip_literals_are_refused ... ok
+test head::tests::wrong_method ... ok
+test log::tests::formats_known_instants ... ok
+test head::tests::valid_connect ... ok
+test head::tests::read_head_closed_early ... ok
+test allow::tests::match_is_exact_not_suffix ... ok
+test addr::tests::refused_ipv6_ranges ... ok
+test allow::tests::match_is_case_insensitive ... ok
+test allow::tests::port_must_match_exactly ... ok
+test allow::tests::trailing_dot_is_stripped ... ok
+test allow::tests::allow_entry_rejects_ip_literal ... ok
+test allow::tests::resolver_name_is_fully_qualified ... ok
+test head::tests::malformed_heads ... ok
+test head::tests::connect_without_headers ... ok
+test head::tests::read_head_keeps_bytes_past_the_head ... ok
+test head::tests::read_head_terminator_split_across_reads ... ok
+test head::tests::read_head_exactly_at_cap ... ok
+test proxy::tests::response_shape ... ok
+test head::tests::read_head_oversize ... ok
+test head::tests::read_head_slow_times_out ... ok
+2026-10-02T16:37:19.096Z dest=github.com:443 outcome=allowed end=eof up=0 down=0 ms=0
+2026-10-02T16:37:19.105Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.105Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.105Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.105Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.105Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.105Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=8
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.106Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.106Z dest=github.com:443 outcome=allowed end=eof up=0 down=0 ms=1
+2026-10-02T16:37:19.166Z drain timeout reached; closing open tunnels
+2026-10-02T16:37:19.168Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.229Z drain timeout reached; closing open tunnels
+2026-10-02T16:37:19.230Z dest=- outcome=refused:client-closed up=0 down=0 ms=0
+2026-10-02T16:37:19.230Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.233Z dest=github.com:443 outcome=allowed end=eof up=5 down=5 ms=0
+2026-10-02T16:37:19.233Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.233Z dest=- outcome=refused:malformed up=0 down=0 ms=0
+2026-10-02T16:37:19.233Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.234Z dest=- outcome=refused:malformed up=0 down=0 ms=0
+2026-10-02T16:37:19.234Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.234Z dest=- outcome=refused:client-closed up=0 down=0 ms=0
+2026-10-02T16:37:19.234Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.235Z dest=github.com:443 outcome=refused:connect-failed up=0 down=0 ms=0
+2026-10-02T16:37:19.235Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.235Z dest=github.com:443 outcome=allowed end=eof up=5 down=5 ms=0
+2026-10-02T16:37:19.235Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.297Z dest=github.com:443 outcome=refused:connect-timeout up=0 down=0 ms=61
+2026-10-02T16:37:19.297Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.298Z dest=github.com:443 outcome=allowed end=eof up=0 down=0 ms=0
+2026-10-02T16:37:19.301Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=2
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.301Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.302Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.302Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.302Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.302Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.302Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.302Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.302Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.302Z dest=- outcome=refused:client-closed up=0 down=0 ms=1
+2026-10-02T16:37:19.302Z dest=github.com:443 outcome=allowed end=eof up=0 down=0 ms=1
+2026-10-02T16:37:19.362Z drain timeout reached; closing open tunnels
+2026-10-02T16:37:19.424Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.525Z drain timeout reached; closing open tunnels
+2026-10-02T16:37:19.587Z dest=github.com:443 outcome=allowed end=idle up=0 down=0 ms=61
+2026-10-02T16:37:19.587Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.588Z dest=169.254.169.254 outcome=refused:ip-literal up=0 down=0 ms=0
+2026-10-02T16:37:19.588Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.588Z dest=- outcome=refused:malformed up=0 down=0 ms=0
+2026-10-02T16:37:19.588Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.589Z dest=github.com:443 outcome=allowed end=eof up=4 down=4 ms=0
+2026-10-02T16:37:19.589Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.589Z dest=- outcome=refused:method up=0 down=0 ms=0
+2026-10-02T16:37:19.589Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.590Z dest=- outcome=refused:head-too-large up=0 down=0 ms=0
+2026-10-02T16:37:19.590Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.590Z dest=github.com:80 outcome=refused:not-allowed up=0 down=0 ms=0
+2026-10-02T16:37:19.590Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.591Z dest=github.com:443 outcome=refused:dns-failed up=0 down=0 ms=0
+2026-10-02T16:37:19.591Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.591Z dest=github.com:443 outcome=refused:dns-failed up=0 down=0 ms=0
+2026-10-02T16:37:19.591Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.591Z dest=github.com:443 outcome=refused:non-public-address up=0 down=0 ms=0
+2026-10-02T16:37:19.591Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.653Z dest=github.com:443 outcome=refused:dns-failed up=0 down=0 ms=61
+2026-10-02T16:37:19.653Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.654Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.715Z drain timeout reached; closing open tunnels
+2026-10-02T16:37:19.716Z dest=github.com.attacker.test:443 outcome=refused:not-allowed up=0 down=0 ms=0
+2026-10-02T16:37:19.716Z shutting down: no longer accepting connections
+2026-10-02T16:37:19.717Z dest=- outcome=refused:malformed up=0 down=0 ms=0
+2026-10-02T16:37:19.717Z shutting down: no longer accepting connections
+test proxy::conformance::ess_egress_conformance ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+
+     Running unittests src/main.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle_egress-8b1a663a1538d966)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/adversary.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/adversary-9d3c4af2de31d47b)
+
+running 6 tests
+test ipv4_ietf_protocol_block_is_refused ... ok
+test ipv6_non_global_unicast_space_is_refused ... ok
+test ipv4_benchmarking_and_documentation_ranges_are_refused ... ok
+test ipv6_siit_translated_form_embedding_metadata_is_refused ... ok
+test ipv6_local_use_nat64_prefix_embedding_metadata_is_refused ... ok
+test silent_sockets_do_not_starve_a_well_formed_request ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/refusal.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/refusal-db63098d9bfa952a)
+
+running 3 tests
+2026-10-02T16:37:19.939Z dest=example.com:443 outcome=refused:not-allowed up=0 down=0 ms=0
+2026-10-02T16:37:19.939Z dest=github.com:80 outcome=refused:not-allowed up=0 down=0 ms=0
+test refuses_unlisted_destination_with_403 ... ok
+2026-10-02T16:37:19.940Z dest=localhost:33397 outcome=refused:non-public-address up=0 down=0 ms=1
+2026-10-02T16:37:19.940Z dest=- outcome=refused:method up=0 down=0 ms=0
+test refuses_non_connect ... ok
+test allowed_name_resolving_to_loopback_is_not_dialled ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running unittests src/lib.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle_launch-b94d68bc2f8cbdb8)
+
+running 45 tests
+test cli::tests::env_names_are_validated ... ok
+test cli::tests::proxy_urls_carry_no_userinfo_or_path ... ok
+test cli::tests::paths_must_be_absolute ... ok
+test cli::tests::full_command_line_parses ... ok
+test ctl::tests::line_round_trips ... ok
+test ctl::tests::lines_split_across_reads_are_joined ... ok
+test cli::tests::attach_parses_and_hides_no_tty ... ok
+test ctl::tests::non_utf8_is_ignored ... ok
+test ctl::tests::over_long_lines_are_dropped_whole ... ok
+test ctl::tests::parses_columns_then_rows ... ok
+test ctl::tests::refuses_malformed_and_out_of_bounds_lines ... ok
+test cli::tests::secret_proxy_and_scrollback_are_optional ... ok
+test ring::tests::a_push_larger_than_capacity_keeps_its_tail ... ok
+test ring::tests::clear_empties ... ok
+test cli::tests::dir_and_cwd_are_required ... ok
+test ring::tests::drops_the_oldest_bytes_on_overflow ... ok
+test cli::tests::removed_tmux_flags_are_refused ... ok
+test ring::tests::keeps_everything_within_capacity ... ok
+test ring::tests::push_reports_how_many_bytes_it_dropped ... ok
+test ring::tests::push_ring_copies_oldest_first_and_respects_the_target_capacity ... ok
+test cli::tests::program_is_required_after_separator ... ok
+test secret::tests::unopened_descriptor_is_reported ... ok
+test cli::tests::secret_fd_and_env_require_each_other ... ok
+test serve::tests::a_nudge_holds_a_real_size_change_before_restoring ... ok
+test secret::tests::trailing_newline_is_trimmed ... ok
+test serve::tests::dropped_output_is_repainted_once_the_terminal_has_caught_up ... ok
+test serve::tests::a_one_row_window_is_nudged_up ... ok
+test serve::tests::nothing_is_repainted_while_no_output_was_dropped ... ok
+test cli::tests::scrollback_is_bounded ... ok
+test serve::tests::poll_does_not_sleep_past_a_pending_restore ... ok
+test secret::tests::empty_value_is_refused ... ok
+test serve::tests::a_new_terminal_does_not_inherit_an_owed_repaint ... ok
+test cli::tests::standard_descriptors_are_refused ... ok
+test secret::tests::errors_do_not_echo_the_value ... ok
+test serve::tests::a_nudge_under_way_is_not_restarted_and_can_be_cancelled ... ok
+test serve::tests::volatile_preflight_refuses_metadata_errors_other_than_absence ... ok
+test session::tests::fifos_are_private ... ok
+test session::tests::a_symlinked_lock_is_refused_and_its_target_left_alone ... ok
+test secret::tests::oversized_value_is_refused ... ok
+test session::tests::a_lock_on_an_unlinked_file_does_not_count ... ok
+test session::tests::stale_fifos_are_removed_and_other_files_left_alone ... ok
+test serve::tests::private_output_refuses_links_and_resets_the_mode ... ok
+test ring::tests::front_and_consume_drain_in_order_across_wraparound ... ok
+test session::tests::a_held_lock_is_refused_and_freed_on_drop ... ok
+test session::tests::open_fifo_refuses_a_symlink_and_a_file_that_is_not_a_pipe ... ok
+
+test result: ok. 45 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle_launch-fac975cfcc56cc2e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/adversary.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/adversary-3fdd24c12f8c926d)
+
+running 9 tests
+test a_symlinked_session_dir_is_not_followed ... ok
+test last_output_does_not_follow_a_planted_symlink ... ok
+test last_output_is_owner_only_even_when_the_file_already_exists ... ok
+test exit_code_is_the_agents ... ok
+test the_secret_descriptor_does_not_reach_the_agent ... ok
+test session_dir_is_owner_only_even_when_it_already_exists ... ok
+test sigterm_to_serve_ends_the_agents_whole_process_group ... ok
+test a_flooded_ctl_pipe_does_not_stall_the_agent ... ok
+test a_client_that_never_reads_does_not_block_the_agent ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.21s
+
+     Running tests/adversary_2.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/adversary_2-fd9198f6cf4c14e4)
+
+running 3 tests
+test a_size_aware_agent_repaints_on_a_real_resize ... ok
+test attaching_at_an_unchanged_size_makes_the_agent_repaint ... ok
+test a_terminal_that_lost_output_gets_a_repaint_once_it_catches_up ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.56s
+
+     Running tests/codex_compatibility.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/codex_compatibility-cd1886455c8675a2)
+
+running 2 tests
+
+running 1 test
+test local_socket_control_rejects_af_unix ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+test local_socket_control_rejects_af_unix ... ok
+mantle-launch: received signal 15; stopping the agent
+mantle-launch: agent exited (signal: 1 (SIGHUP))
+test fifo_launcher_relays_without_unix_sockets_or_secret_slot ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/conformance.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/conformance-0adf67a1aa5f2849)
+
+running 12 tests
+test adversary_nonblocking_setup_failure_restores_earlier_aliased_descriptors ... ok
+test adversary_private_paths_accept_tmpfs_and_preserve_auth_metadata ... ok
+test adversary_volatile_preflight_preserves_fifo_and_socket_without_readiness ... ok
+test adversary_private_file_special_entries_refuse_without_opening_or_dispatch ... ok
+test adversary_sigint_while_detached_never_persists_replay ... ok
+test adversary_closed_stdout_restores_pty_and_flags_and_releases_client_lock ... ok
+test private_path_initialization_preserves_auth_and_refuses_unsafe_entries ... ok
+test adversary_persistent_tail_refuses_volatile_reuse_then_clean_retry_runs ... ok
+test adversary_stalled_aliased_terminal_services_resize_then_sigint ... ok
+test volatile_runtime_does_not_persist_output_on_exit ... ok
+test attach_cancellation_under_finite_output_and_input_backpressure ... ok
+test ess_launch_conformance ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.67s
+
+     Running tests/launch.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/launch-1bdf17dc3932f203)
+
+running 4 tests
+test attach_without_a_server_is_refused ... ok
+test secret_stays_out_of_stderr_when_the_agent_cannot_start ... ok
+test second_server_is_refused_and_sigterm_stops_the_first ... ok
+test attach_relays_replays_scrollback_and_survives_a_detach ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+     Running unittests src/lib.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle_worker-0a69710eec6bc7a7)
+
+running 28 tests
+test tests::byte_limit_detects_growth_beyond_declared_size ... ok
+test tests::delivery_accepts_cargo_hardlinked_artifacts ... ok
+test tests::stale_transport_guard_cannot_retire_a_reused_pid_registration ... ok
+test tests::concurrent_directory_winners_are_revalidated_without_permission_changes ... ok
+test tests::symlinked_root_is_refused ... ok
+test tests::corrupt_archive_never_activates ... ok
+test tests::termination_cleanup_includes_owned_descendants ... ok
+test tests::adversary_second_successful_child_exit_cleans_its_remaining_group ... ok
+test tests::idle_transport_coordinator_does_not_swallow_termination ... ok
+test tests::unsupported_architecture_never_fetches_or_creates_paths ... ok
+test tests::adversary_second_failed_spawn_preserves_following_transport_and_idle_state ... ok
+test tests::adversary_refuses_binary_mismatch_after_valid_archive_before_execution ... ok
+test tests::termination_coordinator_cleans_concurrent_groups_and_preserves_signal_status ... ok
+test tests::version_mismatch_never_activates ... ok
+test tests::bounded_child_pumps_input_and_output_together ... ok
+test tests::adversary_unmanaged_executable_is_preserved_on_activation_refusal ... ok
+test tests::adversary_fifo_and_symlink_inputs_refuse_without_waiting_for_writers ... ok
+test tests::tampered_installed_bytes_are_refused ... ok
+test tests::installation_is_verified_atomic_and_idempotent ... ok
+test tests::failed_update_preserves_previous_binary_and_facts ... ok
+test tests::adversary_operator_interrupt_reaps_bounded_child ... ok
+test tests::adversary_unpublished_verified_generation_recovers_after_interrupted_activation ... ok
+test tests::bounded_child_refuses_output_flood_and_timeout ... ok
+test tests::adversary_concurrent_installation_fetches_once_and_publishes_one_generation ... ok
+test tests::adversary_second_update_observers_only_see_complete_verified_generations ... ok
+test tests::generated_model_has_no_drift ... ok
+test tests::retirement_survives_a_bounded_registry_wait_timeout ... ok
+test tests::adversary_live_lock_refuses_without_fetching_or_changing_current ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.09s
+
+     Running unittests src/main.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle_worker-5f8b887456570a7c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests mantle_conformance
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests mantle_egress
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests mantle_launch
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests mantle_worker
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

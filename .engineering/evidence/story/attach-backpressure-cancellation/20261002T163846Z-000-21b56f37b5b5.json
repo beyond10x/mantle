@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T16:38:46Z",
+  "actor": "human:timo",
+  "artifact": "story:attach-backpressure-cancellation",
+  "kind": "story",
+  "revision": 21,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Full integration gate de01750ff88db09c7caf33812a31e05c64766840: seven step exits0,183 Rust cases,333 native scenarios; no failures/skips/unsupported",
+    "reference": ".engineering/reports/attach-cancellation-wave6-2026-10-02/gate/"
+  }
+}

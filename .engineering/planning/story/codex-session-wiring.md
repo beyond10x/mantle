@@ -120,7 +120,7 @@ scope:
   path: spec/scenarios/launch/private-path-initialization.yaml
 - confidence: cited
   path: spec/scenarios/launch/replay-policy-arguments.yaml
-revision: 55
+revision: 56
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T14:42:30Z", actor: "human:timo", revision: 46}
 - {from: "proposed", to: "active", at: "2026-10-02T14:42:30Z", actor: "human:timo", revision: 47}
@@ -134,7 +134,7 @@ Existing typed homes already declare the nouns: mantle.session.AgentKind and Aut
 
 ## Acceptance
 
-A Codex manifest previously rejected now resolves and retains Codex/ChatgptDevice identity through actual SQLite and real start/attach request builders, while legacy records and Claude credential routing are preserved. Fixed Codex requests select a private credential/conversation home and verified tmpfs runtime diagnostics, with real launcher path checks and synthetic pinned-program evidence. Production refuses requests it cannot bind to supported non-recording Substrate admission before credential, session-insert or workspace side effects. CW01–CW09 below demonstrate this local integration; activation and authenticated end-to-end acceptance remain with the parent.
+CW01–CW09 pass through the real manifest parser, SQLite migration, start/attach builders and launcher path checks, demonstrating persistent Codex/ChatgptDevice identity, unchanged legacy Claude routing, private credential/conversation storage with verified tmpfs diagnostics, and rejection of unsupported non-recording Substrate admission before credential, session-insert or workspace side effects.
 
 ## Named conformance scenarios
 

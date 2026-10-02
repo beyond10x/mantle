@@ -10,6 +10,7 @@ relations:
 - depends_on: story:agent-ready-worker
 - depends_on: story:launcher-volatile-replay
 - depends_on: story:codex-session-wiring
+- depends_on: story:codex-gateway-destinations
 scope:
 - confidence: cited
   path: AGENTS.md
@@ -71,7 +72,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/codex-start.yaml
-revision: 30
+revision: 32
 ---
 ## Context
 
@@ -86,7 +87,7 @@ A valid Codex manifest that the baseline rejects starts a confined, subscription
 - CS-01: claude-code and codex resolve to distinct typed launch/auth descriptors; unknown kinds and incompatible auth modes fail before workspace creation. Existing Claude manifests and legacy state records retain their meaning; old optional spec fields resolve to Claude values. Session status and records name the selected agent.
 - CS-02: first start creates only that session's private Codex home, device login is completed in the attached terminal, and one model turn reads the checked-out repository at its recorded commit. Start --detach gives an actionable attach/login instruction rather than claiming authenticated readiness.
 - CS-03: Codex login-cache and refresh writes are confined to the session home, with safe paths, restrictive ownership/modes, and no cache overwrite on reattach; expired/revoked login returns to a useful authentication flow. Another workspace and the laptop state database cannot obtain the credentials.
-- CS-04: only the CQ-observed required hosts are admitted; HTTPS inference, required WSS traffic or a supported tested fallback, refresh, Git and Cargo all use the gateway. Direct egress, metadata/reserved addresses and unlisted destinations stay denied.
+- CS-04: fixed source-established auth.openai.com:443 and chatgpt.com:443 destinations are admitted through the gateway; CQ live observations establish the required HTTPS, WSS or supported fallback, refresh, Git and Cargo traffic and whether any additional exact destination is needed. No speculative wildcard/CDN expansion. Direct egress, metadata/reserved addresses and unlisted destinations remain denied.
 - CS-05: no secret or device code appears in argv, Mantle DB/manifests, status/errors, evidence or persisted launcher replay/last-output; dummy credential canaries exercise each sink. Protect the interactive login transcript from recording. Explicit private Codex auth-cache files are the only planned persistent Codex credential exception.
 - CS-06: start, login cancellation, denied domain, missing binary and early agent exit leave a truthful status and a cleanable workspace; retry does not create duplicate sessions.
 - CS-07: Claude still uses only its own secret slot and token; a Codex session receives no Claude token, and a Claude session receives no Codex credential.
@@ -96,11 +97,11 @@ A valid Codex manifest that the baseline rejects starts a confined, subscription
 
 Persist selected agent/auth identity, validate manifests, select runtime argv/readiness and add examples/codex.yaml. Device login and the main Codex TUI use the same private session home. Do not label API-key injection as interactive subscription support. The operator has paused encrypted transport. This story remains blocked pending a supported Substrate non-recording mode assessed in design:codex-terminal-confidentiality. Select the admitted mode through the SDK and prove actual Substrate, launcher and Codex diagnostic sink behavior with canaries before real login. Substrate support alone does not discharge the launcher or real-program obligations.
 
-This draft proposes replacing the earlier unsupported phase-suppression mechanism: bounded live replay is permitted for the authorized attached terminal, while every persistent plaintext transcript/diagnostic/state sink remains forbidden. Codex never writes launcher last-output; no cache-existence or previous login success is treated as a reliable TUI authentication-phase signal. This prose is a proposal for the forthcoming critic round, not approval or blocker clearance.
+The implemented launcher and wiring use bounded live replay for the attached terminal and forbid persistent launcher last-output for Codex. No cache-existence or previous login success is treated as a reliable TUI authentication-phase signal. The parent's current capture requirement remains until the pending operator clarification is answered; neither local implementation nor planning review clears its blocker or proves full sink privacy.
 
 Use credentials only inside the trusted session boundary; generated child commands can read the same user's files, as with today's Claude environment. Do not promise a broker or same-uid secret isolation. Keep all secrets out of non-secret state/errors. Amend AGENTS.md's credential rule explicitly for the private Codex auth-cache exception while preserving Claude's slot route. Generated Codex configuration, environment and home paths must prevent real Codex logging/config precedence from creating credential transcripts; restrictive file modes alone are insufficient.
 
-Add exact-host network policy from CQ, with fail-closed matching and existing DoS/address protections. The gateway is worker-shared; document its combined allowlist's scope rather than claiming per-agent destination separation. Transport settings and any exposed model override are validated non-secret config, not arbitrary argv injection.
+Consume story:codex-gateway-destinations for the two fixed source-established endpoints; use CQ observations to justify any additional exact destination, with fail-closed matching and existing DoS/address protections. The gateway is worker-shared; document its combined allowlist's scope rather than claiming per-agent destination separation. Transport settings and any exposed model override are validated non-secret config, not arbitrary argv injection.
 
 Extend Session ESS commands/outcomes/views and authored CS scenarios before implementation; generate model bindings and run the real Rust adapter in task check. A mocked provider can exercise refusal/cleanup/canary paths, but the actual operator-completed device login, model/tool turn, refresh/revocation and required network observations are separate mandatory acceptance evidence. Missing operator participation can block live completion, never justify claiming success from offline tests.
 

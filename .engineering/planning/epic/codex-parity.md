@@ -7,7 +7,7 @@ title: Codex sessions with Claude-equivalent terminal behavior
 relations:
 - informed_by: epic:vertical-slice
 - informed_by: executable-system-specification:mantle-session
-revision: 16
+revision: 17
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":1}}}
@@ -45,13 +45,14 @@ Read at Mantle `11b69db`; this is a proposal, not delivered Codex support.
 
 ## Ownership and sequence
 
-- story:codex-confinement-qualification and story:agent-ready-worker are implemented. Worker integration b3372f054bc5bf84df31d3e59b508bba074593f6 includes the ESS sweep, 167 Rust tests and 313 native scenarios. Wave 3 VM/worktree cleanup completed.
-- Substrate capture support is an upstream dependency tracked in https://github.com/beyond10x/substrate/issues/112. This Mantle effort does not implement Substrate or edit its store. coordination-blocker:codex-terminal-capture remains open.
-- story:launcher-volatile-replay is the independent next Mantle candidate: explicit bounded live replay without last-output. It covers only the launcher sink and does not clear the upstream blocker.
-- story:codex-interactive-start follows launcher replay and supported upstream capability: exact SDK consumption, manifest/DB selection, safe home/config/diagnostics, real login/model/tool, refresh/revocation and observed network behavior. It remains blocked.
-- story:dual-agent-session-parity follows interactive-start: real two-agent lifecycle, confinement and isolation evidence.
+- story:codex-confinement-qualification and story:agent-ready-worker are implemented; their recorded live/offline limits remain explicit.
+- story:launcher-volatile-replay and story:codex-session-wiring are implemented on local main; the latter's wave5 gate passed179Rust/331native scenarios. Codex manifests, persisted identity, start/attach builders, private paths and tmpfs diagnostics are wired; supported capture admission remains an explicit startup refusal.
+- story:attach-backpressure-cancellation is implemented by wave6 unitfd87c21/integrationde01750, with183Rust/333native full-gate passes and a measured old/new cancellation result. It supplies the local DP02/DP03 relay behavior without claiming authenticated conversation parity.
+- story:codex-gateway-destinations is proposed after two recorded critic rounds; it adds two fixed source-established subscription hosts through the existing gateway, serialized after wave6 whole-spec provenance. Live deployment and traffic sufficiency remain parent acceptance.
+- The other session owns Substrate capture support tracked at https://github.com/beyond10x/substrate/issues/112. This effort does not implement Substrate or edit its store. coordination-blocker:codex-terminal-capture remains open while the operator's transport clarification is unanswered; elapsed time is not permission to remove the accepted privacy boundary.
+- story:codex-interactive-start retains usable startup, supported SDK consumption where required, real login/model/tools, refresh/revocation and observed network behavior. story:dual-agent-session-parity retains real two-agent lifecycle, rendering, confinement and isolation evidence. Neither parent nor epic is complete.
 
-The encrypted story:codex-private-terminal is archived and excluded. Its ciphertext budget and manual-reattach proposal are not selected. Shared launcher, session, ESS and generated-provenance files require serialized implementation in the sequence above. Scope is rescoped before each wave. Standing approval covers local commits/merges; source publication and release remain outside it. The separate explicit issue-filing instruction authorized Substrate #112.
+The encrypted story:codex-private-terminal remains archived and excluded. Local units proceed independently where possible; shared source/provenance edits remain serialized. Standing wave approval covers local commits/merges; source publication and release remain outside it. The separate issue-filing instruction authorized Substrate112, already filed as the bot.
 
 ## Acceptance
 

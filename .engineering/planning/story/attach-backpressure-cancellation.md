@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:attach-backpressure-cancellation
 kind: story
-status: active
+status: implemented
 title: Keep attached terminals cancellable under backpressure
 relations:
 - decomposes: story:dual-agent-session-parity
@@ -16,8 +16,6 @@ scope:
   path: crates/mantle-launch/tests/conformance.rs
 - confidence: cited
   path: crates/mantle-launch/tests/support/probe.rs
-- confidence: cited
-  path: generated/worker-model/Cargo.toml
 - confidence: cited
   path: generated/worker-model/source.schema.json
 - confidence: cited
@@ -34,12 +32,13 @@ scope:
   path: spec/domains/launch.yaml
 - confidence: cited
   path: spec/ess-inputs.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/launch/attach-backpressure-cancellation.yaml
-revision: 19
+revision: 22
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T16:02:44Z", actor: "human:timo", revision: 18, decided_on: {"recorded":{"test_result":1}}, executor: "agent:codex-mantle"}
 - {from: "proposed", to: "active", at: "2026-10-02T16:02:44Z", actor: "human:timo", revision: 19, decided_on: {"recorded":{"test_result":1}}, executor: "agent:codex-mantle"}
+- {from: "active", to: "implemented", at: "2026-10-02T16:38:47Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"test_result":2,"review_outcome":1,"verification":1,"ess_conformance_coverage_v1":1}}}
 ---
 ## Context and measured failure
 
@@ -77,7 +76,7 @@ This story owns launcher cancellation, not the laptop async terminal loop, new S
 
 ## Scope
 
-Source-scoper confidence high for existing seams; new scenario path inferred. Source locations at79e1ee6: attach.rs run/connect/relay, sys.rs descriptor flags/poll/RawMode, real native fixtures in tests/conformance.rs and tests/support/probe.rs. Existing Lifecycle uses SIGKILL for client departure; SlowReader and VolatileReplayBounds measure server termination, leaving this client cancellation gap.
+Final implementation confirms13 changed paths within the14 reserved at selection; generated/worker-model/Cargo.toml was checked by the real drift test but remains byte-identical, so it is removed from actual typed edit scope. The formerly inferred spec/scenarios/launch/attach-backpressure-cancellation.yaml now exists and is cited. Runtime edits are only attach.rs and sys.rs; test fixtures remain conformance.rs and support/probe.rs. First adversary added129 lines only to the already-scoped conformance.rs and reports75 launcher Rust tests/49native green. No server, protocol, signal-policy, Substrate or worker runtime change was required. Sources: implementation.md in .engineering/reports/attach-cancellation-wave6-2026-10-02 and the exact staged/unstaged unit diff at first review handoff.
 
 - cited: crates/mantle-launch/src/attach.rs
 - cited: crates/mantle-launch/src/sys.rs
@@ -86,10 +85,9 @@ Source-scoper confidence high for existing seams; new scenario path inferred. So
 - cited: spec/domains/launch.yaml
 - cited: spec/components.yaml
 - cited: spec/ess-inputs.yaml
-- inferred: spec/scenarios/launch/attach-backpressure-cancellation.yaml
+- cited: spec/scenarios/launch/attach-backpressure-cancellation.yaml
 - cited: spec/conformance-baseline.json
 - cited: spec/README.md
-- cited: generated/worker-model/Cargo.toml
 - cited: generated/worker-model/types.rs
 - cited: generated/worker-model/source.schema.json
 - cited: generated/worker-model/types-report.json
