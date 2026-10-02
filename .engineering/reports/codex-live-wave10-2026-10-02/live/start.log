@@ -1,0 +1,8 @@
+Session        codex-linker-check (ses_01m3yzh1npbfvgbkn2sgddnvg9)
+Worker         kubevirt/k3d-mantle/mantle 4b378e47-faf8-4c13-b248-5bba94af2c41
+Manifest       sha256:b1b680f7e1cef1ddb3b939bf82c3af412d73419a801b1c3c753c71ccdfa996a9
+Workspace      ws_01M3YZH1PF9Q5Q7HF0DDKNY9D5
+Source         /workspace/substrate main@6af1b91889edf5fa5455c03e68829b56e6b6cc56
+Agent          ex_01M3YZH3YYJ100K9WZBTT6M91Z (running, ends after 0h at the latest)
+Attach with    mantle attach codex-linker-check
+Authentication complete only after attached Codex login; process readiness does not establish it.

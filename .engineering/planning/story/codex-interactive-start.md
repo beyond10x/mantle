@@ -72,7 +72,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/codex-start.yaml
-revision: 38
+revision: 39
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T18:17:04Z", actor: "human:timo", revision: 36}
 - {from: "proposed", to: "active", at: "2026-10-02T18:17:04Z", actor: "human:timo", revision: 37}
@@ -218,3 +218,9 @@ Mantle0.1.1 is published at95573ba9e73f6effd576ab9ffc8646db3ec6c5f4 (bot release
 At2026-10-02T18:35Z the idle KubeVirt worker received the verified0.1.1 static egress/launcher/worker binaries after checking there were no active execution cgroups. The existing expired Claude workspace was preserved. Worker readiness reports pinned Codex0.153.4 and unchanged Substrate0.7.8. Using a configuration without a Claude credential section, a real detached start created disposable codex-acceptance, session ses_01m3yyc60xy3c51rkpw7jrxvjh, workspace ws_01M3YYC62DG3BYPVGTSASHH9Z8 and agent exec ex_01M3YYCA86H8RPCQX3EQFFAY73. Source is substrate main@6af1b91889edf5fa5455c03e68829b56e6b6cc56. Status observes Running and lease ending2026-10-03T02:35:14.566867124Z; host process inventory confirms a real codex process in that execution cgroup. A supplementary mantle exec -- pwd returned/workspace with remote exit0.
 
 This proves production startup and confined supplementary execution, not authentication or a model turn. The operator was given mantle attach codex-acceptance for device login. No login screen, code or credential contents were captured. Real authentication/refresh/model tools and authenticated lifecycle acceptance remain unverified. The local CLI was installed at~/.local/bin/mantle. Private raw runtime logs and status/exit observations remain under~/.cache/mantle-wave9/runtime; release evidence under~/.cache/mantle-wave9/release. Full acceptance remains active and incomplete; no upstream capture dependency is reintroduced.
+
+## Current build observations
+
+Supplementary execution needs Cargo's gateway explicitly configured: without it direct DNS is denied. After http.proxy is set to the existing fixed gateway, crates download successfully. The baseline GNU linker lookup fails because/usr/bin/cc points into unmounted/etc/alternatives. Setting target.x86_64-unknown-linux-gnu.linker=gcc makes the same real b10x-substrate-wire check pass under unchanged confinement. story:worker-rust-linker owns default selection for agent and supplementary requests. This causal probe is not an authenticated model/tool turn and does not close DP06 for either agent.
+
+Metadata-only inspection of the actual Codex process root observed its private home as0700 owned900:900, both configured diagnostic filesystems astmpfs, and auth.json absent. No secret file contents or login screen was read. Real authentication therefore remains unavailable for acceptance until the operator completes device login. Documentation0.1.1 provenance is now verified live at95573ba9e73f6effd576ab9ffc8646db3ec6c5f4; main's repeated checks and documentation pipeline are also successful.

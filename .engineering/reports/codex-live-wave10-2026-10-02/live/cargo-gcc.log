@@ -1,0 +1,40 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+    Checking cfg-if v1.0.4
+    Checking typenum v1.20.1
+   Compiling libc v0.2.189
+    Checking hybrid-array v0.4.14
+   Compiling syn v3.0.4
+    Checking rand_core v0.10.1
+   Compiling serde v1.0.229
+   Compiling autocfg v1.5.1
+    Checking cpufeatures v0.3.1
+   Compiling getrandom v0.4.3
+   Compiling num-traits v0.2.19
+   Compiling zmij v1.0.23
+    Checking chacha20 v0.10.2
+    Checking block-buffer v0.12.1
+    Checking crypto-common v0.2.2
+   Compiling thiserror v2.0.20
+   Compiling serde_json v1.0.151
+    Checking const-oid v0.10.2
+    Checking rand v0.10.2
+    Checking digest v0.11.3
+    Checking itoa v1.0.18
+    Checking iana-time-zone v0.1.65
+    Checking memchr v2.8.3
+    Checking sha2 v0.11.0
+    Checking base64 v0.23.1
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.20
+    Checking hex v0.4.3
+    Checking ulid v3.0.0
+    Checking chrono v0.4.45
+    Checking b10x-substrate-wire v0.7.8 (/workspace/substrate/crates/substrate-wire)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 33.92s
+real 33.94
+user 28.98
+sys 4.94
+[mantle exec] ex_01M3YZ5F1HTM7CF5KXRFBG9NBF Exited Some(ExecExit { code: Some(0), signal: None }) refusal=None

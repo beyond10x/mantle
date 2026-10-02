@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:worker-rust-linker
 kind: story
-status: active
+status: implemented
 title: Select the available Rust linker inside confinement
 relations:
 - decomposes: story:codex-interactive-start
@@ -15,10 +15,11 @@ scope:
   path: spec/scenarios/cli/orchestration-agent-request.yaml
 - confidence: cited
   path: spec/scenarios/cli/orchestration-exec-request.yaml
-revision: 7
+revision: 9
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T18:51:45Z", actor: "human:timo", revision: 6}
 - {from: "proposed", to: "active", at: "2026-10-02T18:51:45Z", actor: "human:timo", revision: 7}
+- {from: "active", to: "implemented", at: "2026-10-02T19:05:26Z", actor: "human:timo", revision: 9, decided_on: {"recorded":{"test_result":3,"review_outcome":1,"ess_conformance_coverage_v1":1}}}
 ---
 ## Acceptance
 
@@ -35,3 +36,7 @@ Cited: crates/mantle/src/adapters/substrate.rs common environment; spec/scenario
 ## Delivery
 
 Standing wave approval applies. Host subagent thread capacity was exhausted in wave9; root executes implementor then adversary roles in separate passes, without claiming independent-agent review. Exact source red/green native scenarios and final full gate are required before merge. Authentication and full parent parity stay incomplete.
+
+## Native dependency compiler selection
+
+The local adversary pass at9b83856 ran b10x-substrate-host after the wire-only crate passed and observed remote exit101 in libz-sys/cc-rs: compiler cc absent. Both cc and c++ use unmounted/etc/alternatives paths; gcc/g++ resolve entirely inside the existing/usr mount. Acceptance additionally requires CC=gcc and CXX=g++ in the same three named Request scenarios, and a real host-crate cargo check without per-command compiler/linker overrides. The source/fixture scope is unchanged. No mounts, Substrate policy or host alternatives are changed. This corrects the incomplete first unit before merge.

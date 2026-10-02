@@ -1,0 +1,274 @@
+   Compiling mantle v0.1.1 (~/.local/state/worktree/trees/b10x/mantle/mantle-wave10-rust-linker/crates/mantle)
+    Finished `test` profile [unoptimized] target(s) in 9.40s
+     Running unittests src/main.rs (/dev/shm/mantle-wave10-target-linker/debug/deps/mantle-f33f2c6201a9344b)
+
+running 3 tests
+test adapters::substrate::worker_tests::common_readiness_and_selected_claude_are_distinct_observations ... ok
+test app::session::adversary_activation_wire::adversary_codex_dispatches_confined_secretless_command_and_pty ... ok
+outside: mantle.egress.CheckBudgets/outcome/returned (OtherComponent)
+outside: mantle.egress.CheckDefaultDestination/outcome/allowed (OtherComponent)
+outside: mantle.egress.CheckDefaultDestination/outcome/denied (OtherComponent)
+outside: mantle.egress.CheckDrain/outcome/returned (OtherComponent)
+outside: mantle.egress.ClassifyAddress/outcome/returned (OtherComponent)
+outside: mantle.egress.Exchange/outcome/returned (OtherComponent)
+outside: mantle.launch.AttachBackpressure/outcome/returned (OtherComponent)
+outside: mantle.launch.Emit/outcome/returned (OtherComponent)
+outside: mantle.launch.FileSafety/outcome/returned (OtherComponent)
+outside: mantle.launch.Lifecycle/outcome/returned (OtherComponent)
+outside: mantle.launch.ParseArgs/outcome/returned (OtherComponent)
+outside: mantle.launch.ParseWindow/outcome/returned (OtherComponent)
+outside: mantle.launch.PersistentReplayCompatibility/outcome/returned (OtherComponent)
+outside: mantle.launch.PrivatePaths/outcome/returned (OtherComponent)
+outside: mantle.launch.ReadSecret/outcome/returned (OtherComponent)
+outside: mantle.launch.ReplayRing/outcome/returned (OtherComponent)
+outside: mantle.launch.Signals/outcome/returned (OtherComponent)
+outside: mantle.launch.SlowReader/outcome/returned (OtherComponent)
+outside: mantle.launch.ValidateScrollback/outcome/accepted (OtherComponent)
+outside: mantle.launch.ValidateScrollback/outcome/refused (OtherComponent)
+outside: mantle.launch.VolatileReplayBounds/outcome/returned (OtherComponent)
+outside: mantle.launch.VolatileReplayExitPaths/outcome/returned (OtherComponent)
+outside: mantle.launch.VolatileReplayLifecycle/outcome/returned (OtherComponent)
+outside: mantle.launch.VolatileReplayPreflight/outcome/returned (OtherComponent)
+218 selected scenario(s), 137 authored source(s), 0 refusal occurrence(s)
+
+Workspace      workspace-1
+Source         /workspace/substrate main@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Agent          exec-1 (running, ends after 8h at the latest)
+Workspace      workspace-1
+Source         /workspace/r main@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Agent          exec-1 (running, ends after 8h at the latest)
+Workspace      destroyed
+Session        fixture stopped
+worker      instance-1 (running)
+no worker
+worker      instance-1 stopped; data volume volume-1 retained
+worker      instance-1 stopped; data volume volume-1 retained
+worker      instance-1 stopped; data volume volume-1 retained
+instance profile mantle-worker created; waiting for it to propagate
+launched    instance-1 (image-1, group-1)
+launched    instance-1 (image-1, group-1)
+launched    instance-1 (image-1, group-1)
+launched    instance-1 (image-1, group-1)
+worker      instance-1 (pending)
+worker      instance-1 (running)
+worker      instance-1 (stopped)
+starting    instance-1
+worker      instance-1 (stopping)
+starting    instance-1
+Workspace      workspace-1
+Source         /workspace/substrate main@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Agent          exec-1 (running, ends after 8h at the latest)
+worker      vm/mantle-default stopped; root and data volumes retained
+no worker
+launched    vm/mantle-default from https://example.com/fixture.img
+worker      vm/mantle-default (Stopped)
+worker      vm/mantle-default (Stopped)
+starting    vm/mantle-default
+launched    vm/mantle-default from https://example.com/fixture.img
+Workspace      workspace-1
+Source         /workspace/r main@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Agent          exec-1 (running, ends after 8h at the latest)
+Workspace      workspace-1
+Source         /workspace/r main@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Agent          exec-1 (running, ends after 8h at the latest)
+Attach with    mantle attach s1
+Workspace      workspace-1
+Workspace      workspace-1
+Source         /workspace/r aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Agent          exec-1 (running, ends after 8h at the latest)
+Attach with    mantle attach s1
+Workspace      workspace-1
+Source         /workspace/r main@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Workspace      workspace-1
+Source         /workspace/r main@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Agent          exec-1 (running, ends after 8h at the latest)
+Workspace      workspace-1
+Workspace      workspace-1
+Workspace      workspace-1
+Agent          exec-1 already retired
+Workspace      destroyed
+Session        fixture stopped
+Workspace      workspace-1 already destroyed
+Session        fixture stopped
+Workspace      destroyed
+Session        fixture stopped
+Session        fixture stopped
+Workspace      destroyed
+Session        fixture stopped
+Workspace      destroyed
+Session        fixture stopped
+Workspace      destroyed (confirmed by read-back)
+Session        fixture stopped
+Workspace      destroyed (confirmed by read-back)
+Session        fixture stopped
+Error: ESS failures: [
+    ScenarioResult {
+        scenario: Authored {
+            domain: DomainRef(
+                QualifiedName(mantle.orchestration),
+            ),
+            name: AuthoredName(
+                "agent-request",
+            ),
+        },
+        purpose: "Exact production agent request before the pinned SDK",
+        status: Failed,
+        checks: [
+            CheckResult {
+                code: Outcome,
+                about: "outcome mantle.orchestration.Request/returned",
+                status: Passed,
+                diagnostic: None,
+            },
+            CheckResult {
+                code: Payload,
+                about: "direct response mantle.orchestration.Request",
+                status: Failed,
+                diagnostic: Some(
+                    Diagnostic {
+                        code: Payload,
+                        scenario: Authored {
+                            domain: DomainRef(
+                                QualifiedName(mantle.orchestration),
+                            ),
+                            name: AuthoredName(
+                                "agent-request",
+                            ),
+                        },
+                        source: [
+                            Command {
+                                name: CommandRef(
+                                    QualifiedName(mantle.orchestration.Request),
+                                ),
+                            },
+                        ],
+                        input: None,
+                        expected: [
+                            "actual typed return satisfies its complete schema and authored literals",
+                        ],
+                        observed: [
+                            "response field environment differs from its declared literal",
+                        ],
+                    },
+                ),
+            },
+        ],
+        duration_ms: 3,
+    },
+    ScenarioResult {
+        scenario: Authored {
+            domain: DomainRef(
+                QualifiedName(mantle.orchestration),
+            ),
+            name: AuthoredName(
+                "codex-private-runtime",
+            ),
+        },
+        purpose: "Fixed Codex private home, tmpfs diagnostics, ChatGPT identity and existing terminal transport",
+        status: Failed,
+        checks: [
+            CheckResult {
+                code: Outcome,
+                about: "outcome mantle.orchestration.Request/returned",
+                status: Passed,
+                diagnostic: None,
+            },
+            CheckResult {
+                code: Payload,
+                about: "direct response mantle.orchestration.Request",
+                status: Failed,
+                diagnostic: Some(
+                    Diagnostic {
+                        code: Payload,
+                        scenario: Authored {
+                            domain: DomainRef(
+                                QualifiedName(mantle.orchestration),
+                            ),
+                            name: AuthoredName(
+                                "codex-private-runtime",
+                            ),
+                        },
+                        source: [
+                            Command {
+                                name: CommandRef(
+                                    QualifiedName(mantle.orchestration.Request),
+                                ),
+                            },
+                        ],
+                        input: None,
+                        expected: [
+                            "actual typed return satisfies its complete schema and authored literals",
+                        ],
+                        observed: [
+                            "response field environment differs from its declared literal",
+                        ],
+                    },
+                ),
+            },
+        ],
+        duration_ms: 2,
+    },
+    ScenarioResult {
+        scenario: Authored {
+            domain: DomainRef(
+                QualifiedName(mantle.orchestration),
+            ),
+            name: AuthoredName(
+                "exec-request",
+            ),
+        },
+        purpose: "Exact production exec request before the pinned SDK",
+        status: Failed,
+        checks: [
+            CheckResult {
+                code: Outcome,
+                about: "outcome mantle.orchestration.Request/returned",
+                status: Passed,
+                diagnostic: None,
+            },
+            CheckResult {
+                code: Payload,
+                about: "direct response mantle.orchestration.Request",
+                status: Failed,
+                diagnostic: Some(
+                    Diagnostic {
+                        code: Payload,
+                        scenario: Authored {
+                            domain: DomainRef(
+                                QualifiedName(mantle.orchestration),
+                            ),
+                            name: AuthoredName(
+                                "exec-request",
+                            ),
+                        },
+                        source: [
+                            Command {
+                                name: CommandRef(
+                                    QualifiedName(mantle.orchestration.Request),
+                                ),
+                            },
+                        ],
+                        input: None,
+                        expected: [
+                            "actual typed return satisfies its complete schema and authored literals",
+                        ],
+                        observed: [
+                            "response field environment differs from its declared literal",
+                        ],
+                    },
+                ),
+            },
+        ],
+        duration_ms: 5,
+    },
+]
+test adapters::state::conformance::ess_generated_local_conformance ... FAILED
+
+failures:
+
+failures:
+    adapters::state::conformance::ess_generated_local_conformance
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 3.59s
+
+error: test failed, to rerun pass `-p mantle --bin mantle`

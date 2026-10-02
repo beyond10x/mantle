@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized] target(s) in 0.07s
+     Running `/dev/shm/mantle-wave4-target-integration/debug/mantle-docs build --out website/build --commit a39a5f837a59ac0853d6916636330fb3d11a2f91`
+Mantle documentation built at website/build

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T19:05:26Z",
+  "actor": "human:timo",
+  "artifact": "story:worker-rust-linker",
+  "kind": "story",
+  "revision": 8,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Seven integration gate steps exit0 at a39a5f8 and real confined host-crate build exit0",
+    "reference": ".engineering/reports/codex-live-wave10-2026-10-02/closure.md"
+  }
+}

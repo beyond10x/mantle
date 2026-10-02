@@ -1,0 +1,3 @@
+Agent          Cancelled Some(ExecExit { code: None, signal: Some(Terminate) })
+Workspace      destroyed (confirmed by read-back)
+Session        codex-linker-check stopped

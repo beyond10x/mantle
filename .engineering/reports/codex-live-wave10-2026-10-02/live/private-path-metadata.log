@@ -1,0 +1,4 @@
+home: directory mode=700 owner=900:900
+sqlite filesystem: tmpfs
+log filesystem: tmpfs
+auth-cache-absent
