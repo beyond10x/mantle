@@ -25,11 +25,24 @@ overall command exited 1 despite passing transport observations. Separate cleanu
 confirmed the temporary workspaces, processes, socket and cgroup absent. That cleanup evidence
 does not relabel the refused API result as successful.
 
+The later [installed-runtime proof](../../.engineering/reports/attach-startup-2026-10-02/installed-runtime-proof.md)
+used an isolated KubeVirt worker with the published, signed Substrate 0.7.10 daemon, Mantle
+0.1.3 code at `fac3b79` and pinned Codex 0.153.4. A real 100×50 PTY attachment ran for 12
+seconds, received 329,157 bytes and answered three cursor-position queries, then detached with
+exit 0. A second 12-second attachment to the same agent received 346,630 bytes, answered two
+cursor-position queries and detached with exit 0. Both runs produced zero bytes on CLI stderr.
+The probe retained counts and outcomes, not authentication or terminal payloads. The original
+worker and sessions were preserved.
+
+This installed Codex transport observation supplements the synthetic byte-exact replay proof.
+It does not establish visually inspected screen correctness, device login, authenticated model
+or tool turns, token refresh, or complete lifecycle parity.
+
 Existing workers require a coordinated runtime and launcher upgrade during maintenance;
 `mantle worker up` does not restart an already active older Substrate daemon and may defer
 shared binary changes. Preserve workspace data before maintenance; `mantle stop` destroys it.
-Device login, authenticated model/tool turns, token refresh, rendered live Codex usability and
-complete live lifecycle parity remain unverified by this synthetic transport proof.
+Device login, authenticated model/tool turns, token refresh, visually inspected Codex usability
+and complete live lifecycle parity remain unverified.
 
 ## Release 0.1.2 update — live worker observations
 
