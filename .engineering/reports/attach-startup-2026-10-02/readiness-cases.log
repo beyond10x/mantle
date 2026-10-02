@@ -1,0 +1,10 @@
+   Compiling mantle-launch v0.1.2 ($HOME/.local/state/worktree/trees/b10x/mantle/mantle-attach-readiness/crates/mantle-launch)
+    Finished `test` profile [unoptimized] target(s) in 1.38s
+     Running tests/conformance.rs (/dev/shm/mantle-wave11-target-unit/debug/deps/conformance-b0ec56bceae5fa4c)
+
+running 2 tests
+test adversary_readiness_resize_before_ack_reaches_same_agent ... ok
+test adversary_readiness_fragmented_ack_and_late_mismatch_preserve_agent ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 14 filtered out; finished in 0.75s
+

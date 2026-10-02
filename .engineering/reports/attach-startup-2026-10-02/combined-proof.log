@@ -1,0 +1,59 @@
+COMBINED SYNTHETIC REAL-PTY PROOF
+
+Method: fresh local user-systemd unit mantle-attach-proof.service, Delegate=yes,
+DelegateSubgroup=daemon; exclusive cgroup root, Unix socket, database and workspaces.
+Candidate SDK path dependency uses substrate-wire/0.17.0. No worker daemon,
+production workspace, credentials or gateway was changed. Capture mode is the default.
+Daemon binary built from 445d74a593db7b73729d7fc7345996ac921c9c14; SHA256:
+1a29c5e0a01b05772efda6eae399e7a8752604a14e2618f54e0931b121f10206
+Launcher SHA256 bd035d46b25efe6017c33d4f4476c5f86b41a9e28f95387120bf30204f97ea2a
+Mantle production terminal.rs imported from source 8d1dd6107d8e66745213ca19013f7bee02f94084.
+Temporary Rust proof executable SHA256:
+8c632c01a5e34bfde4f58951547b1e2a7854226f8c30bffa48340e2cdee98376
+
+Command: proof run
+Fresh confined serve exec runs a temporary Rust synthetic agent that emits 262144
+ASCII bytes with a deterministic A..W pattern, flushes, writes a readiness marker,
+and echoes only an exact ping-newline input as KEYBOARD_OK-newline.
+After output production and a 300ms launcher drain interval, each attachment starts
+its Substrate PTY, delays WebSocket attachment 500ms, then uses unmodified Mantle
+terminal::run with --wait-ready launcher. Parent continuously drains a real100x50PTY,
+compares all262144 replay bytes in order, sends keyboard input, verifies exact12byte
+reply, sends Ctrl-] d, requires exit0 and verifies restored termios flags and control
+characters. Second attachment uses the exact rolling replay suffix from first and
+requires the same server exec remain nonterminal. Original SDK queue/frame/input
+limits retained; no sleeps pace output, no truncation relaxes the comparison.
+
+Boundary: current0.17 isolated synthetic transport proof, not installed0.16 worker
+acceptance, authenticated Codex, or a same-command baseline/treatment comparison.
+The final proof's process exit was1 solely because destroy returned
+operation.outcome-unknown. Transport observations pass. Cleanup postconditions below
+were independently verified; they do not turn that refused API response into success.
+Initial iterations retained separate logs: invalid fixture output limit; fixture
+retire-before-stop refusal; daemon startup socket-not-ready observation. None is
+claimed as a successful final run. All three temporary workspaces are now absent.
+
+FINAL RAW OUTPUT
+contract=substrate-wire/0.17.0 pty=true
+workspace=ws_01M3ZB2FN4TRBG4Y48JDPGTT99
+agent_exec=ex_01M3ZB2FNWN21EB4DGKJMGTEVS
+round=1 replay_bytes=262144 total_bytes=262156 exact=true keyboard=true detached=true terminal_restored=true elapsed_ms=683
+round=2 replay_bytes=262144 total_bytes=262156 exact=true keyboard=true detached=true terminal_restored=true elapsed_ms=671
+same_agent_exec=ex_01M3ZB2FNWN21EB4DGKJMGTEVS survived=true
+agent_stop=Ok(ExecObservation { unrecorded_output: None, id: "ex_01M3ZB2FNWN21EB4DGKJMGTEVS", workspace: "ws_01M3ZB2FN4TRBG4Y48JDPGTT99", state: Cancelled, observed_at: 2026-10-02T22:17:05.791055609Z, requested: ConfinementRequest { capability_snapshot: "sha256:d1b0ae6a3a58e97802e2eeb06074694530e459ff75947753cd8b5ccbaa97ddb6", network: None, aperture: None, profile: Workspace, required: true }, applied: Some(AppliedConfinement { capability_snapshot: "sha256:d1b0ae6a3a58e97802e2eeb06074694530e459ff75947753cd8b5ccbaa97ddb6", cgroup: "substrate-ex_01M3ZB2FNWN21EB4DGKJMGTEVS", filesystem: WorkspaceReadWriteSystemReadOnly, network: None, profile: Workspace, workspace_access: ReadWrite, capsule: None, read_only_roots: [ReadOnlyRoot { host_path: "$HOME/.cache/mantle-attach-diagnosis/combined/bin", mount: "/opt/mantle" }], secret_slots: [] }), usage: None, exit: Some(ExecExit { code: None, signal: Some(Terminate) }), lease: Some(Lease { state: Active, ttl: 120s, renew_by: 2026-10-02T22:19:03.932579647Z, authorizing_operation: "01M3ZB2FNTD6A92BXC5C9PD7ME" }), refusal: None })
+agent_retire=Ok(true)
+workspace_destroy=Err(Refusal(Refusal { class: Failed, code: "operation.outcome-unknown", message: "Operation was accepted but its terminal outcome is unknown.", retriable: true, address: Some("operation"), operation_id: Some("01M3ZB2HGD7ZM78289SHH5N2M5") }))
+Error: substrate refused the request: Refusal { class: Failed, code: "operation.outcome-unknown", message: "Operation was accepted but its terminal outcome is unknown.", retriable: true, address: Some("operation"), operation_id: Some("01M3ZB2HGD7ZM78289SHH5N2M5") }
+
+FOLLOW-UP GET WORKSPACE (from proof cleanup):
+Error: substrate refused the request: Refusal { class: Refused, code: "resource.not-found", message: "Resource was not found.", retriable: false, address: Some("resource"), operation_id: None }
+
+INDEPENDENT FINAL CLEANUP OBSERVATIONS (exit0):
+LoadState=not-found
+ActiveState=inactive
+SubState=dead
+candidate_socket_absent=true
+candidate_cgroup_absent=true
+all_three_synthetic_workspace_paths_absent=true
+synthetic_agents_absent=true
+2026-10-02T22:19:00Z

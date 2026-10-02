@@ -1,0 +1,114 @@
+    Finished `test` profile [unoptimized] target(s) in 0.16s
+     Running tests/conformance.rs (/dev/shm/mantle-wave11-target-unit/debug/deps/conformance-b0ec56bceae5fa4c)
+
+running 1 test
+outside: mantle.egress.CheckBudgets/outcome/returned (OtherComponent)
+outside: mantle.egress.CheckDefaultDestination/outcome/allowed (OtherComponent)
+outside: mantle.egress.CheckDefaultDestination/outcome/denied (OtherComponent)
+outside: mantle.egress.CheckDrain/outcome/returned (OtherComponent)
+outside: mantle.egress.ClassifyAddress/outcome/returned (OtherComponent)
+outside: mantle.egress.Exchange/outcome/returned (OtherComponent)
+outside: mantle.manifest.Parse/outcome/returned (OtherComponent)
+outside: mantle.manifest.ValidateMemory/outcome/accepted (OtherComponent)
+outside: mantle.manifest.ValidateMemory/outcome/refused (OtherComponent)
+outside: mantle.manifest.ValidatePids/outcome/accepted (OtherComponent)
+outside: mantle.manifest.ValidatePids/outcome/refused (OtherComponent)
+outside: mantle.manifest.ValidateRetention/outcome/accepted (OtherComponent)
+outside: mantle.manifest.ValidateRetention/outcome/refused (OtherComponent)
+outside: mantle.orchestration.CodexPreflight/outcome/returned (OtherComponent)
+outside: mantle.orchestration.Observe/outcome/returned (OtherComponent)
+outside: mantle.orchestration.Request/outcome/returned (OtherComponent)
+outside: mantle.orchestration.Start/outcome/returned (OtherComponent)
+outside: mantle.orchestration.Stop/outcome/returned (OtherComponent)
+outside: mantle.orchestration.Worker/outcome/returned (OtherComponent)
+outside: mantle.orchestration.WorkerRecords/outcome/returned (OtherComponent)
+outside: mantle.session.AgentStartFailed/outcome/missing (OtherComponent)
+outside: mantle.session.AgentStartFailed/outcome/moved (OtherComponent)
+outside: mantle.session.AgentStarted/outcome/missing (OtherComponent)
+outside: mantle.session.AgentStarted/outcome/moved (OtherComponent)
+outside: mantle.session.AssessAgentInstallation/outcome/already-current (OtherComponent)
+outside: mantle.session.AssessAgentInstallation/outcome/installed (OtherComponent)
+outside: mantle.session.AssessAgentInstallation/outcome/refused (OtherComponent)
+outside: mantle.session.AssessSharedBinaryUpgrade/outcome/applicable (OtherComponent)
+outside: mantle.session.AssessSharedBinaryUpgrade/outcome/deferred (OtherComponent)
+outside: mantle.session.AssessWorkerReadiness/outcome/missing (OtherComponent)
+outside: mantle.session.AssessWorkerReadiness/outcome/ready (OtherComponent)
+outside: mantle.session.BeginStop/outcome/missing (OtherComponent)
+outside: mantle.session.BeginStop/outcome/moved (OtherComponent)
+outside: mantle.session.FinishStop/outcome/missing (OtherComponent)
+outside: mantle.session.FinishStop/outcome/moved (OtherComponent)
+outside: mantle.session.IdentityMigration/outcome/returned (OtherComponent)
+outside: mantle.session.InsertSession/outcome/conflict (OtherComponent)
+outside: mantle.session.InsertSession/outcome/invalid-identity (OtherComponent)
+outside: mantle.session.InsertSession/outcome/recorded (OtherComponent)
+outside: mantle.session.MaterializationFailed/outcome/missing (OtherComponent)
+outside: mantle.session.MaterializationFailed/outcome/moved (OtherComponent)
+outside: mantle.session.Materialized/outcome/missing (OtherComponent)
+outside: mantle.session.Materialized/outcome/moved (OtherComponent)
+outside: mantle.session.PutSource/outcome/returned (OtherComponent)
+outside: mantle.session.ReadSources/outcome/returned (OtherComponent)
+outside: mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.AgentStartFailed (OtherComponent)
+outside: mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.AgentStarted (OtherComponent)
+outside: mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.FinishStop (OtherComponent)
+outside: mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.MaterializationFailed (OtherComponent)
+outside: mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.Materialized (OtherComponent)
+outside: mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.AgentStartFailed (OtherComponent)
+outside: mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.AgentStarted (OtherComponent)
+outside: mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.FinishStop (OtherComponent)
+outside: mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.MaterializationFailed (OtherComponent)
+outside: mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.Materialized (OtherComponent)
+outside: mantle.session.Session/state/Materializing/refuses/mantle.session.AgentStartFailed (OtherComponent)
+outside: mantle.session.Session/state/Materializing/refuses/mantle.session.AgentStarted (OtherComponent)
+outside: mantle.session.Session/state/Materializing/refuses/mantle.session.FinishStop (OtherComponent)
+outside: mantle.session.Session/state/Running/refuses/mantle.session.AgentStartFailed (OtherComponent)
+outside: mantle.session.Session/state/Running/refuses/mantle.session.AgentStarted (OtherComponent)
+outside: mantle.session.Session/state/Running/refuses/mantle.session.FinishStop (OtherComponent)
+outside: mantle.session.Session/state/Running/refuses/mantle.session.MaterializationFailed (OtherComponent)
+outside: mantle.session.Session/state/Running/refuses/mantle.session.Materialized (OtherComponent)
+outside: mantle.session.Session/state/Starting/refuses/mantle.session.FinishStop (OtherComponent)
+outside: mantle.session.Session/state/Starting/refuses/mantle.session.MaterializationFailed (OtherComponent)
+outside: mantle.session.Session/state/Starting/refuses/mantle.session.Materialized (OtherComponent)
+outside: mantle.session.Session/state/Stopped/refuses/mantle.session.AgentStartFailed (OtherComponent)
+outside: mantle.session.Session/state/Stopped/refuses/mantle.session.AgentStarted (OtherComponent)
+outside: mantle.session.Session/state/Stopped/refuses/mantle.session.BeginStop (OtherComponent)
+outside: mantle.session.Session/state/Stopped/refuses/mantle.session.FinishStop (OtherComponent)
+outside: mantle.session.Session/state/Stopped/refuses/mantle.session.MaterializationFailed (OtherComponent)
+outside: mantle.session.Session/state/Stopped/refuses/mantle.session.Materialized (OtherComponent)
+outside: mantle.session.Session/state/Stopping/refuses/mantle.session.AgentStartFailed (OtherComponent)
+outside: mantle.session.Session/state/Stopping/refuses/mantle.session.AgentStarted (OtherComponent)
+outside: mantle.session.Session/state/Stopping/refuses/mantle.session.BeginStop (OtherComponent)
+outside: mantle.session.Session/state/Stopping/refuses/mantle.session.MaterializationFailed (OtherComponent)
+outside: mantle.session.Session/state/Stopping/refuses/mantle.session.Materialized (OtherComponent)
+outside: mantle.session.Session/transition/materialization_failed/by/mantle.session.MaterializationFailed/moved (OtherComponent)
+outside: mantle.session.Session/transition/materialized/by/mantle.session.Materialized/moved (OtherComponent)
+outside: mantle.session.Session/transition/start_failed/by/mantle.session.AgentStartFailed/moved (OtherComponent)
+outside: mantle.session.Session/transition/started/by/mantle.session.AgentStarted/moved (OtherComponent)
+outside: mantle.session.Session/transition/stopped/by/mantle.session.FinishStop/moved (OtherComponent)
+outside: mantle.session.Session/transition/stopping/by/mantle.session.BeginStop/moved (OtherComponent)
+outside: mantle.session.SetAgentExec/outcome/missing (OtherComponent)
+outside: mantle.session.SetAgentExec/outcome/recorded (OtherComponent)
+outside: mantle.session.SetWorkspace/outcome/missing (OtherComponent)
+outside: mantle.session.SetWorkspace/outcome/recorded (OtherComponent)
+49 selected scenario(s), 31 authored source(s), 0 refusal occurrence(s)
+
+AB output mode=pipe signal=15 drained=false cancelled=true
+AB output mode=pipe signal=1 drained=false cancelled=true
+AB output mode=pipe signal=15 drained=true cancelled=true
+AB paused input signal=15 sent=151552 cancelled=true
+AB paused input signal=1 sent=151552 cancelled=true
+AB output mode=pty-blocking signal=15 drained=false cancelled=true
+AB output mode=pty-nonblocking signal=1 drained=false cancelled=true
+AB output mode=pty-aliased signal=15 drained=false cancelled=true
+AB output mode=pipe signal=15 drained=false cancelled=true
+AB output mode=pipe signal=1 drained=false cancelled=true
+AB output mode=pipe signal=15 drained=true cancelled=true
+AB paused input signal=15 sent=151552 cancelled=true
+AB paused input signal=1 sent=151552 cancelled=true
+AB output mode=pty-blocking signal=15 drained=false cancelled=true
+AB output mode=pty-nonblocking signal=1 drained=false cancelled=true
+AB output mode=pty-aliased signal=15 drained=false cancelled=true
+mantle-launch: 49 passed, 0 failed, 0 unsupported
+test ess_launch_conformance ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 17.43s
+

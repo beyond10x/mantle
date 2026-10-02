@@ -72,7 +72,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/codex-start.yaml
-revision: 40
+revision: 41
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T18:17:04Z", actor: "human:timo", revision: 36}
 - {from: "proposed", to: "active", at: "2026-10-02T18:17:04Z", actor: "human:timo", revision: 37}
@@ -228,3 +228,9 @@ Metadata-only inspection of the actual Codex process root observed its private h
 ## Current acceptance audit
 
 At source66e20bdf8e7252eed7ac21df377e08ddc6f14b98, the current requirement-by-requirement audit is.engineering/reports/codex-acceptance-audit-2026-10-02/audit.md. It accounts for everyCQ/AW/LP/CS/DP requirement and distinguishes offline, unauthenticated live and missing authenticated evidence. The prepared login target is codex-ready; its current process has the compiler correction. Old Codex/Claude workspaces remain preserved. Two-Codex file isolation and cleanup, OpenAI-host CONNECT/TLS, unlisted-host refusal and direct-egress refusal are observed; no real login/model/refresh/rendered lifecycle pass is claimed. Metadata-only auth-cache presence check returns remote1. Operator device login remains the required next external action. No new Substrate blocker or end-to-end no-recording prerequisite applies. The parent/epic remains incomplete.
+
+## Operator attach failure after release 0.1.2
+
+The operator attempted device login using mantle attach codex-ready and observed corrupted terminal rendering followed by session.output-backpressure: The raw-pipe live output queue was not drained within its declared bound. This is a new concrete live failure before authentication, not an operator-login-only blocker. The agent exec ex_01M3Z04Y9BXGP4VKA5FAA26RS8 still observes Running.
+
+Reproduction loop: reset the local terminal, attach the existing codex-ready session with the prepared runtime configuration, and observe whether the terminal remains usable or exits with the named protocol error. Ask the operator for terminal application/repeatability, never login codes. Immediate-drain and a three-second paused-drain probe each lasted fifteen seconds until their external bound without reproducing the error. A bounded Rust PTY probe now exercises cursor-position replies and real dimensions while discarding all screen bytes. No source fix or causal diagnosis is claimed yet; existing workspaces remain preserved. Scratch observations live outside the repository under the task-owned mantle-attach-diagnosis cache.
