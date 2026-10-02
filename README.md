@@ -33,9 +33,10 @@ mantle attach codex-example
 mantle status codex-example
 ```
 
-Worker provisioning installs and verifies the pinned Codex binary. Existing workers need current
-Mantle worker binaries and the gateway allowlist, including `auth.openai.com:443` and
-`chatgpt.com:443`; arrange upgrades when no sessions are active. Codex does not need a Claude
+Worker provisioning installs and verifies the pinned Codex binary. Mantle 0.1.3 requires its
+matching worker binaries and Substrate 0.7.10, plus the gateway allowlist including
+`auth.openai.com:443` and `chatgpt.com:443`. Follow the existing-worker guidance below before
+upgrading a running worker. Codex does not need a Claude
 OAuth token or an API key. A manifest without an agent kind continues to select Claude Code.
 
 Codex uses the same Substrate terminal transport and capture behavior as Claude. This is **not
@@ -48,10 +49,36 @@ Local launcher, confinement and integration checks are recorded in the
 [qualification evidence](docs/evidence/codex-compatibility.md). Real device login, authenticated
 model/tool turns and token refresh have not yet been verified end to end.
 
-## Release 0.1.2
+## Version 0.1.3
 
-This source release fixes Rust and native dependency builds inside confinement by selecting
-`gcc` as the Rust linker and C compiler, and `g++` as the C++ compiler. Both agents and
+Build the laptop CLI and static worker binaries from the same
+[0.1.3 source tag](https://github.com/beyond10x/mantle/releases/tag/0.1.3). This version pairs
+Mantle's attachment-readiness handshake with Substrate 0.7.10's bounded output wait. Replay
+starts after the client is ready; a temporarily full output queue waits for its consumer for
+up to one second per frame. Queue and output limits remain in force, and a stalled consumer
+can still end the attachment with `session.output-backpressure`.
+
+An isolated, confined synthetic test delivered the full 256 KiB replay twice through real PTYs,
+preserved keyboard input and terminal settings, and detached/reconnected to the same agent.
+This is transport evidence, not a verified login or a claim that an existing worker was upgraded.
+See the [qualification update](docs/evidence/codex-compatibility.md).
+
+### Existing workers
+
+Upgrade the laptop CLI, worker launcher and Substrate runtime together. Check `mantle list` and
+`mantle status NAME`, preserve wanted project changes and workspace data, and arrange maintenance
+before replacing a running daemon. Restarting Substrate can interrupt its executions.
+`mantle worker up` starts services but does not restart an already running older daemon; it also
+defers changed shared binaries while services are active. Rerunning it alone does not establish
+that an existing worker has the compatible runtime. Verify the installed and running versions
+after maintenance, or provision a separate compatible worker for new sessions.
+
+Do not use `mantle stop NAME` as an upgrade step for a workspace you need to retain: it destroys
+that workspace. Detach preserves the session only for the lifetime of its running agent and lease.
+
+### Build behavior retained from 0.1.2
+
+Mantle selects `gcc` as the Rust linker and C compiler, and `g++` as the C++ compiler. Both agents and
 supplementary `mantle exec` commands receive these defaults on new execution requests. The
 worker's filesystem and network boundaries are unchanged.
 
@@ -68,8 +95,7 @@ mantle exec SESSION -- cargo --config 'http.proxy="http://127.0.0.1:3128"' check
 ```
 
 Read the printed remote `ExecExit`: the current CLI can return success even when the remote
-command fails. Release archives contain source; build the laptop CLI and static worker binaries
-from the same tag. Upgrade worker binaries only when no sessions are active.
+command fails. Release archives contain source; no prebuilt Mantle binaries are provided.
 
 ## Requirements on the laptop
 
