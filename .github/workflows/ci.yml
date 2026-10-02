@@ -30,6 +30,9 @@ jobs:
         with:
           toolchain: '1.97'
           components: rustfmt,clippy
+          targets: x86_64-unknown-linux-musl
+      - name: Install static worker toolchain
+        run: sudo apt-get update && sudo apt-get install --yes musl-tools
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
         with:
           go-version: '1.25.10'
@@ -54,6 +57,8 @@ jobs:
           cache-directories: ~/.cache/b10x-target/mantle
       - name: Check source, ESS conformance, plan and documentation
         run: task check
+      - name: Build static worker binaries
+        run: task build-worker
       - name: Retain complete conformance evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

@@ -227,7 +227,7 @@ pub fn prepare_private_dir(path: &Path, volatile: bool) -> Result<()> {
             return Err(io::Error::last_os_error()).context("cannot observe volatile filesystem");
         }
         // SAFETY: fstatfs succeeded above.
-        if unsafe { stat.assume_init() }.f_type != libc::TMPFS_MAGIC {
+        if unsafe { stat.assume_init() }.f_type != libc::TMPFS_MAGIC as _ {
             bail!("volatile directory must reside on observed tmpfs");
         }
     }
