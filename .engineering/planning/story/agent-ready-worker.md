@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:agent-ready-worker
 kind: story
-status: draft
+status: active
 title: Provision an agent-ready worker without Claude credentials
 relations:
 - decomposes: epic:codex-parity
@@ -61,7 +61,10 @@ scope:
   path: spec/ess-inputs.yaml
 - confidence: inferred
   path: spec/scenarios/agent-worker.yaml
-revision: 23
+revision: 25
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-02T10:13:54Z", actor: "human:timo", revision: 24}
+- {from: "proposed", to: "active", at: "2026-10-02T10:13:54Z", actor: "human:timo", revision: 25}
 ---
 ## Context
 
