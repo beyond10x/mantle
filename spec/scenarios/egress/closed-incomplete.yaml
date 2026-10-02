@@ -1,0 +1,25 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "closed-incomplete",
+  "summary": "closed-incomplete",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVA==",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 0,
+        "forwarded": "",
+        "dialled": [],
+        "resolved_names": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "pty-fifo-lifecycle",
+  "summary": "pty-fifo-lifecycle",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.Lifecycle",
+      "input": {},
+      "outcome": "returned",
+      "response": {
+        "relayed": true,
+        "replayed": true,
+        "survived_detach": true,
+        "duplicate_attach_refused": true,
+        "duplicate_server_refused": true,
+        "fifo_permissions": [
+          384,
+          384,
+          384
+        ],
+        "resized": true,
+        "server_exit": 0,
+        "cleaned": true,
+        "secret_descriptor_closed": true,
+        "credential_in_diagnostic": false,
+        "credential_fingerprint": [
+          151,
+          23,
+          61,
+          228,
+          209,
+          0,
+          177,
+          174,
+          192,
+          199,
+          76,
+          28,
+          67,
+          103,
+          150,
+          18,
+          56,
+          170,
+          80,
+          131,
+          82,
+          56,
+          60,
+          76,
+          253,
+          94,
+          161,
+          168,
+          58,
+          37,
+          234,
+          231
+        ]
+      }
+    }
+  ]
+}

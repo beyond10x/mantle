@@ -1,0 +1,25 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "head-timeout",
+  "summary": "head-timeout",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVA==",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": false
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 408,
+        "forwarded": "",
+        "dialled": [],
+        "resolved_names": []
+      }
+    }
+  ]
+}

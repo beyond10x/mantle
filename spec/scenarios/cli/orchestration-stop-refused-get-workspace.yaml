@@ -1,0 +1,34 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "stop-refused-get-workspace",
+  "summary": "Production application boundary: stop-refused-get-workspace",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Stop",
+      "input": {
+        "state": "RUNNING",
+        "exec": "running",
+        "workspace": "present",
+        "destroy": "success",
+        "readback": [],
+        "fail": "get-workspace",
+        "has_exec": true,
+        "has_workspace": true
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": false,
+        "state": "STOPPING",
+        "calls": [
+          "get-exec",
+          "signal",
+          "wait",
+          "retire",
+          "get-workspace"
+        ]
+      }
+    }
+  ]
+}

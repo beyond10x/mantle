@@ -1,0 +1,37 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.manifest",
+  "scenario": "retention-upper-bound",
+  "summary": "Manifest boundary: retention-upper-bound",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.manifest.Parse",
+      "input": {
+        "text": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\nlifecycle: {retainFor: 24h}\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "resolved": {
+          "name": "s1",
+          "repositories": [
+            {
+              "name": "r",
+              "repository": "https://example.com/r.git",
+              "reference": "main",
+              "mount": "r"
+            }
+          ],
+          "agent_cwd": "/workspace/r",
+          "cpu": 4,
+          "memory_bytes": 17179869184,
+          "pids": 4096,
+          "storage_bytes": null,
+          "retain_for_secs": 86400,
+          "digest": "sha256:4a6662e256c9ebb6c3fdfaf441aef20375f8c51cdaf6ae91684ff406fe058e26"
+        },
+        "diagnostic": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "missing-command",
+  "summary": "missing-command",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.ParseArgs",
+      "input": {
+        "argv": [
+          "c2VydmU=",
+          "LS1kaXI=",
+          "L3Nlc3Npb24=",
+          "LS1jd2Q=",
+          "L3dvcmtzcGFjZQ=="
+        ]
+      },
+      "outcome": "returned",
+      "response": {
+        "accepted": false,
+        "serve": null,
+        "attach": null
+      }
+    }
+  ]
+}

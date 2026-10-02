@@ -1,0 +1,26 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "filesystem-links-and-locks",
+  "summary": "filesystem-links-and-locks",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.FileSafety",
+      "input": {},
+      "outcome": "returned",
+      "response": {
+        "directory_link_refused": true,
+        "lock_link_refused": true,
+        "fifo_link_refused": true,
+        "regular_fifo_refused": true,
+        "remove_regular_refused": true,
+        "target_mode": 493,
+        "file_bytes": "dW5jaGFuZ2Vk",
+        "directory_mode": 448,
+        "duplicate_refused": true,
+        "reacquired": true
+      }
+    }
+  ]
+}

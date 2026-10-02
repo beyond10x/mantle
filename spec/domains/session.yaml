@@ -2,9 +2,14 @@ domain: mantle.session
 summary: Local records of intent; a recorded Running state never asserts a live process.
 
 types:
+  - name: mantle.session.SourceKey
+    kind: struct
+    fields:
+      - {name: session_id, type: String}
+      - {name: mount, type: String}
   # crates/mantle/src/adapters/state.rs:44,60: composite PRIMARY KEY(session_id,mount).
-  # UNMAPPED[source-identity]: ESS has one identity field; sources have a composite key.
-  # Keep the actual value type; do not invent a persisted source_id or deletion cascade.
+  # PutSource/ReadSources execute composite-key inserts and reads; authored scenarios hold
+  # isolation, duplicate refusal and retention without inventing an identifier or cascade.
   - name: mantle.session.SourceResolution
     kind: struct
     fields:
@@ -59,14 +64,33 @@ errors:
     fields: []
   - name: mantle.session.RecordVanished
     fields: []
+  - name: mantle.session.RecordConflict
+    fields: []
 
 # These are internal store operations invoked by app/session.rs, not new public CLI verbs.
 # Events denote local writes only; Mantle has no event bus and publishes none of them.
 commands:
+  # Function boundaries over composite-key rows. PutSource returns SQLite's affected-row
+  # count; Sources observes persisted rows. There is no synthetic source entity identifier.
+  - name: mantle.session.PutSource
+    input:
+      - {name: key, type: mantle.session.SourceKey}
+      - {name: name, type: String}
+      - {name: repository, type: String}
+      - {name: declared_ref, type: String}
+      - {name: commit, type: String}
+    response:
+      - {name: affected, type: Integer}
+      - {name: diagnostic, type: 'Optional<String>'}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.session.ReadSources
+    input: [{name: session_id, type: String}]
+    response: [{name: rows, type: 'List<mantle.session.SourceResolution>'}]
+    outcomes: [{name: returned, returns: true}]
   - name: mantle.session.InsertSession
     input:
       - {name: session_id, type: String}
-      - {name: name, type: String}
+      - {name: name, type: String, example: conformance-session}
       - {name: worker, type: String}
       - {name: manifest_digest, type: String}
       - {name: requested_json, type: String}
@@ -87,8 +111,11 @@ commands:
         emits: [mantle.session.SessionRecorded]
         payload:
           mantle.session.SessionRecorded: {session_id: input.session_id}
-    # UNMAPPED[live-name-uniqueness]: SQLite partial unique index over other records
-    # (state.rs:72) refuses duplicate live names and allows reuse after Stopped.
+      - name: conflict
+        external: SQLite rejects an existing id or an existing name whose state is not Stopped.
+        error: mantle.session.RecordConflict
+    # Authored live-name scenarios exercise the partial index in all seven states,
+    # including reuse after Stopped and refusal while each other record remains live.
     # Input id is minted by app/session.rs:85; Store receives it, so it is not generated here.
   - name: mantle.session.Materialized
     input:
@@ -223,10 +250,9 @@ commands:
         unknown_instance: true
         refuses: false
 
-# UNMAPPED[orchestration]: worker upsert/provider start-stop, source writes, live Substrate
-# observations, agent start/attach/exec and retryable stop are multi-step external effects
-# (app/worker.rs, app/session.rs). A BeginStop is Store::move_session, not CLI stop: the CLI
-# deliberately skips that move when already Stopping, then retries cleanup.
+# Orchestration is specified separately in mantle.orchestration. Its native scenarios execute
+# app/session.rs and app/worker.rs over provider IO ports and read actual SQLite state.
+# Stop deliberately skips BeginStop when already Stopping, then resumes external cleanup.
 events:
   - name: mantle.session.SessionRecorded
     fields: [{name: session_id, type: String}]

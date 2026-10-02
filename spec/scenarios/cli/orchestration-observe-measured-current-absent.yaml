@@ -1,0 +1,41 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "observe-measured-current-absent",
+  "summary": "Observe production capability or usage mapping: measured-current-absent",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Observe",
+      "input": {
+        "facts_json": "{\"operation.ledger-subject-max-rows\":1000,\"operation.ledger-subject-max-bytes\":1048576,\"operation.ledger-global-max-rows\":10000,\"operation.ledger-global-max-bytes\":10485760,\"exec.argv-only\":true,\"exec.no-egress\":true,\"exec.cgroup-limits\":{\"processes\":true,\"memory\":true,\"cpu\":false},\"exec.cgroup-kill\":true,\"sessions.pty\":true,\"exec.egress-apertures\":[{\"name\":\"egress\",\"destination\":\"127.0.0.1:3128\",\"max_bytes\":null}],\"secrets.slots\":[\"claude\"]}",
+        "usage_json": "{\"status\":\"observed\",\"complete\":true,\"observed_at\":\"2026-10-02T00:00:00Z\",\"wall_time_us\":3200000,\"cpu_time_us\":1500000,\"memory_current_bytes\":null,\"memory_peak_bytes\":2147483648,\"processes_current\":null,\"processes_peak\":5,\"process_limit_hits\":0,\"memory_oom_kills\":1,\"io_read_bytes\":123,\"io_write_bytes\":456,\"scratch\":null}"
+      },
+      "outcome": "returned",
+      "response": {
+        "usage": [
+          {
+            "name": "cpu time",
+            "value": "1.5 s"
+          },
+          {
+            "name": "wall time",
+            "value": "3 s"
+          },
+          {
+            "name": "memory peak",
+            "value": "2.0 GiB"
+          },
+          {
+            "name": "processes peak",
+            "value": "5"
+          },
+          {
+            "name": "oom kills",
+            "value": "1"
+          }
+        ]
+      }
+    }
+  ]
+}

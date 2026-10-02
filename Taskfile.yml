@@ -58,9 +58,10 @@ tasks:
       - ess specify validate --path spec
 
   conformance:
-    desc: Run synthesized local ESS scenarios against SQLite and the default allowlist
+    desc: Run all native ESS scenarios and reconcile the complete inventory
     cmds:
-      - cargo test --locked -p mantle ess_generated_local_conformance -- --nocapture
+      - cargo test --workspace --locked ess_ -- --nocapture
+      - cargo run --locked -p mantle-conformance -- --root .
 
   site-build:
     desc: Build the standalone Mantle documentation site and its exact source provenance
@@ -73,6 +74,7 @@ tasks:
       - cargo fmt --all --check
       - cargo clippy --workspace --all-targets --locked -- -D warnings
       - cargo test --workspace --locked
+      - cargo run --locked -p mantle-conformance -- --root .
       - task: spec
       - aep plan artifact validate
       - task: site-build

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T09:27:31Z",
+  "actor": "human:timo",
+  "artifact": "story:public-repository-and-site",
+  "kind": "story",
+  "revision": 8,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Repository Gate and live site verification",
+    "reference": "https://github.com/beyond10x/mantle/actions/runs/36988877900"
+  }
+}

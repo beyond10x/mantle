@@ -2,65 +2,68 @@
 format: aep.planning-md/3
 id: executable-system-specification:mantle-session
 kind: executable-system-specification
-status: validated
+status: conforming
 title: Mantle implemented contracts
-summary: Four ESS domains, real local conformance and explicit external-boundary gaps
+summary: Five ESS domains; complete native conformance with zero unresolved mappings
 relations:
 - specifies: epic:vertical-slice
-model_digest: b6169ddbca6571a54a7d3534c5eeb06f0ad33984ec82672d4ae265cde251dfc3
-revision: 6
+model_digest: 8336f2747da565d5095d1469d79302729d8f9583382a012cdef92b09840e9ece
+revision: 13
 transitions:
 - {from: "draft", to: "validated", at: "2026-10-02T08:42:41Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"test_result":1}}}
+- {from: "validated", to: "conforming", at: "2026-10-02T10:39:51Z", actor: "human:timo", revision: 9, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}, executor: "agent:codex-mantle"}
+- {from: "conforming", to: "validated", at: "2026-10-02T10:45:11Z", actor: "human:timo", revision: 10, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}, executor: "agent:codex-mantle"}
+- {from: "validated", to: "conforming", at: "2026-10-02T10:45:12Z", actor: "human:timo", revision: 13, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}, executor: "agent:codex-mantle"}
 ---
 # Mantle executable contract
 
 ## Sources and scope
 
-`spec/ess-inputs.yaml` selects the system, components and four domains. The source/coverage ledger
-is `spec/README.md`. The base implementation is commit `11b69db7b86076299a9dd92cbbc2c0196148c007`.
-`domain/session.rs:10` defines seven stored states; `adapters/state.rs:30` defines nullable record
-fields; `domain/manifest.rs:23` defines accepted manifest shapes; `mantle-egress/src/allow.rs:6`
-defines eight default destinations. All abbreviated paths are under `crates/mantle/src/`.
-The design document describes later capabilities and is not treated as shipped behavior.
+Five domains selected by spec/ess-inputs.yaml cover session records, manifest resolution, egress,
+launcher OS behavior and application orchestration. spec/README.md records production sources,
+named native boundaries and external-provider scope. The original 57-scenario report is retained
+as historical evidence; the complete native reports supersede it.
 
 ## Verification
 
-ESS 0.50.0: `ess specify validate --path spec` outputs `mantle v1 — 6 file(s), valid`;
-`ess specify compile --path spec --format json` succeeds.
-The real local adapter executes all 57 generated session-store/allowlist scenarios: 57 passed,
-0 failed, 0 skipped. Its complete per-scenario report is `.engineering/reports/mantle-ess-local.json`.
-`task check` exits 0, including format, clippy, workspace tests, ESS validation and AEP validation.
+ESS 0.50.0 validates seven model files and 216 authored scenarios. The complete declared suite
+contains 304 scenarios (88 generated, 216 authored): CLI 204, egress 66 and launcher 34. All pass;
+there are zero failed, skipped, unsupported, outside or refused scenarios. Three consecutive
+restored-implementation runs hold these counts. The full task check passes formatting, clippy,
+unit/integration/adversary tests, native conformance, ESS/AEP validation and documentation build.
 
-Synthesis retains two `ESS-SYNTH-013` refusals: `mantle.launch.ServeArgs` and
-`mantle.manifest.Resolved` have no observable view for their value invariants. They are not included
-in the 57 scenarios. This is partial local coverage, not whole-system conformance; do not move the
-artifact to conforming. The report is intentionally not imported as an ESS conformance report.
-The exploratory built-in interpreted target returned 7 passed and 46 unsupported on the earlier
-53-scenario draft; it was not used as implementation evidence.
+The official component Rust reports, detailed runs and exact suites are in
+.engineering/reports/native/. mantle-report.json is an external-results aggregation admitted by
+ESS against mantle-suite.json; the gate compares every executed scenario definition and refuses
+missing or duplicate results. spec/conformance-baseline.json holds named scenarios and counts.
+The current compiled model digest is 8336f2747da565d5095d1469d79302729d8f9583382a012cdef92b09840e9ece.
 
-Removing the production transition guard failed 32 scenarios, including
-`mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.AgentStartFailed`.
-Removing `api.anthropic.com:443` from the production default allowlist failed
-`mantle.egress.CheckDefaultDestination/outcome/allowed`. Both mutations were restored before the
-passing full gate. No service behavior was changed by the final patch.
+## Boundary closure
 
-## Explicit gaps
+SourceKey and native insert/read scenarios hold composite identity, duplicate refusal and retention.
+All seven lifecycle states exercise live-name uniqueness. Manifest scenarios execute parsing,
+defaults, exact-byte hashing and validation. Egress scenarios run real TCP transport with controlled
+DNS/dial IO. Launcher scenarios observe real processes, PTYs, FIFOs, locks, argument bytes, secrets,
+resize, signals and slow readers. Orchestration scenarios call production start/materialize/stop
+and provider logic through IO ports, then read SQLite and ordered calls. Request construction and
+capability/usage presentation are directly observed. No cloud resources are provisioned; upstream
+AWS, Kubernetes and Substrate deployment correctness is not asserted by these local fixtures.
 
-- `source-identity`: composite `(session_id,mount)` needs an ESS representation and source scenarios.
-- `live-name-uniqueness`: partial cross-record uniqueness needs generated scenarios.
-- `manifest-resolution`: parser/default/hash/path rules need an observable target.
-- `egress-transport`: raw CONNECT, DNS/address safety, timing, forwarding and shutdown need a transport target.
-- `launcher-os`: PTY/FIFO, locks, secret lifetime and byte-preserving arguments need an OS target.
-- `orchestration`: worker/provider/Substrate operations and retryable cleanup need adapter scenarios.
+## Sensitivity evidence
 
-Each marker is beside the affected YAML declaration, with sources and the closing work detailed
-in `spec/README.md`. Existing unit/integration/adversary tests remain independent evidence.
+Eight restored production mutations caused named failures: composite key, live-name uniqueness,
+memory lower bound, unknown-destroy read-back, stopped-worker restart, absent usage presentation,
+private DNS filtering and secret NUL refusal. See native/mutations.json. The no-op audit rejects
+all 216 authored scenarios; six automatic acceptance/optional-return witnesses pass the inert
+target and do not independently prove behavior.
 
-## Session and handoff
+The new CheckDrain scenario also found and reproduced a real defect: proxy connection tasks
+survived the drain deadline. The proxy now owns them in a JoinSet and aborts/joins remaining
+connections before returning.
 
-Interactive operator session, 2026-10-02; store aep.project/5. Installed ESS remains 0.50.0; the
-advertised 0.51.0 global upgrade is outside this change. No production resources were provisioned.
-No parent epic was decomposed in this task; one implementation story (`story:ess-contract`) records
-the specification work, so no decomposition critic panel was dispatched. There are no bypass records.
-The repository has no configured Git remote. Keep the managed tree and its archive for operator
-review; publication requires a repository remote and the mandated bot delivery route.
+## Delivery
+
+The public repository is https://github.com/beyond10x/mantle and documentation is published at
+https://beyond10x.github.io/mantle/. The operator approved the site preview and publication.
+Common Gates enrollment, bot-only authority, required main checks and secret scanning are active.
+The complete follow-up is recorded by story:close-specification-boundaries.

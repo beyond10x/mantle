@@ -253,13 +253,9 @@ fn resolve(manifest: Manifest, text: &str) -> Result<Resolved> {
         Some(text) => parse_size(&text).with_context(|| format!("resources.memory {text:?}"))?,
         None => 16 << 30,
     };
-    if memory_bytes < (512 << 20) {
-        bail!("resources.memory must be at least 512MiB");
-    }
+    validate_memory(memory_bytes)?;
     let pids = resources.pids.unwrap_or(MAX_PIDS);
-    if pids == 0 || pids > MAX_PIDS {
-        bail!("resources.pids must be 1-{MAX_PIDS}");
-    }
+    validate_pids(pids)?;
     let storage_bytes = resources
         .storage
         .map(|text| parse_size(&text).with_context(|| format!("resources.storage {text:?}")))
@@ -270,9 +266,7 @@ fn resolve(manifest: Manifest, text: &str) -> Result<Resolved> {
         }
         None => DEFAULT_RETAIN,
     };
-    if retain_for.is_zero() || retain_for > MAX_RETAIN {
-        bail!("lifecycle.retainFor must be more than 0 and at most 24h (Substrate's exec bound)");
-    }
+    validate_retention(retain_for)?;
     if manifest.lifecycle.detach_keeps_running == Some(false) {
         bail!("lifecycle.detachKeepsRunning: false is not served");
     }
@@ -288,6 +282,27 @@ fn resolve(manifest: Manifest, text: &str) -> Result<Resolved> {
         retain_for,
         digest,
     })
+}
+
+pub(crate) fn validate_memory(bytes: u64) -> Result<()> {
+    if bytes < (512 << 20) {
+        bail!("resources.memory must be at least 512MiB");
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_pids(pids: u32) -> Result<()> {
+    if pids == 0 || pids > MAX_PIDS {
+        bail!("resources.pids must be 1-{MAX_PIDS}");
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_retention(retain: Duration) -> Result<()> {
+    if retain.is_zero() || retain > MAX_RETAIN {
+        bail!("lifecycle.retainFor must be more than 0 and at most 24h (Substrate's exec bound)");
+    }
+    Ok(())
 }
 
 fn valid_name(name: &str) -> bool {

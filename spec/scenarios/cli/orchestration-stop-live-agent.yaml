@@ -1,0 +1,37 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "stop-live-agent",
+  "summary": "Production application boundary: stop-live-agent",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Stop",
+      "input": {
+        "state": "RUNNING",
+        "exec": "running",
+        "workspace": "present",
+        "destroy": "success",
+        "readback": [],
+        "fail": "none",
+        "has_exec": true,
+        "has_workspace": true
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "state": "STOPPED",
+        "workspace": "workspace-1",
+        "agent_exec": "exec-1",
+        "calls": [
+          "get-exec",
+          "signal",
+          "wait",
+          "retire",
+          "get-workspace",
+          "destroy"
+        ]
+      }
+    }
+  ]
+}

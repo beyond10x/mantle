@@ -1,0 +1,38 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "worker-upsert",
+  "summary": "Production application boundary: worker-upsert",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.WorkerRecords",
+      "input": {
+        "name": "default",
+        "records": [
+          {
+            "name": "default",
+            "instance": "instance-old",
+            "region": "aws/fixture",
+            "data_volume": "volume-old"
+          },
+          {
+            "name": "default",
+            "instance": "vm-new",
+            "region": "kubevirt/fixture/ns",
+            "data_volume": null
+          }
+        ]
+      },
+      "outcome": "returned",
+      "response": {
+        "record": {
+          "name": "default",
+          "instance": "vm-new",
+          "region": "kubevirt/fixture/ns",
+          "data_volume": null
+        }
+      }
+    }
+  ]
+}

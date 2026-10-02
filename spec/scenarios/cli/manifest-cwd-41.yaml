@@ -1,0 +1,19 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.manifest",
+  "scenario": "cwd-41",
+  "summary": "Manifest boundary: cwd-41",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.manifest.Parse",
+      "input": {
+        "text": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r/}\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "resolved": null
+      }
+    }
+  ]
+}

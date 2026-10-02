@@ -112,6 +112,15 @@ async fn up_aws(
 ) -> Result<(String, Option<String>)> {
     let aws_config = config.aws()?;
     let aws = Aws::connect(aws_config).await;
+    up_aws_with(&aws, &config.ubuntu_serial, user_data, idle_stop).await
+}
+
+pub(crate) async fn up_aws_with(
+    aws: &impl AwsPort,
+    serial: &str,
+    user_data: &str,
+    idle_stop: bool,
+) -> Result<(String, Option<String>)> {
     match aws.find_instance(WORKER).await? {
         Some(found) => {
             println!("worker      {} ({})", found.id, found.state.as_str());
@@ -134,19 +143,16 @@ async fn up_aws(
         None => {
             let created_profile = aws.ensure_instance_profile().await?;
             let group = aws.ensure_security_group().await?;
-            let ami = aws.ubuntu_ami(&config.ubuntu_serial).await?;
+            let ami = aws.ubuntu_ami(serial).await?;
             if created_profile {
                 println!(
                     "instance profile {} created; waiting for it to propagate",
                     aws::ROLE_NAME
                 );
-                tokio::time::sleep(Duration::from_secs(10)).await;
+                aws.propagate().await;
             }
             let id = aws.launch(WORKER, &ami, &group, user_data).await?;
-            println!(
-                "launched    {id} ({}, {ami}, {group})",
-                aws_config.instance_type
-            );
+            println!("launched    {id} ({ami}, {group})");
         }
     }
     let running = aws
@@ -160,6 +166,13 @@ async fn up_aws(
 
 async fn up_kubevirt(config: &Config, user_data: &str) -> Result<(String, Option<String>)> {
     let kubevirt = Kubevirt::new(config.kubevirt()?, &config.ubuntu_serial);
+    up_kubevirt_with(&kubevirt, user_data).await
+}
+
+pub(crate) async fn up_kubevirt_with(
+    kubevirt: &impl KubevirtPort,
+    user_data: &str,
+) -> Result<(String, Option<String>)> {
     match kubevirt.find(WORKER)? {
         Some(vm) => {
             println!(
@@ -345,35 +358,11 @@ pub async fn down(config: &Config) -> Result<()> {
     match config.provider {
         Provider::Aws => {
             let aws = Aws::connect(config.aws()?).await;
-            let Some(found) = aws.find_instance(WORKER).await? else {
-                println!("no worker");
-                return Ok(());
-            };
-            if found.state != InstanceStateName::Stopped {
-                aws.stop(&found.id).await?;
-                aws.wait_for_state(WORKER, InstanceStateName::Stopped, Duration::from_secs(600))
-                    .await?;
-            }
-            println!(
-                "worker      {} stopped; data volume {} retained",
-                found.id,
-                found.data_volume.as_deref().unwrap_or("?")
-            );
+            down_aws_with(&aws).await?;
         }
         Provider::Kubevirt => {
             let kubevirt = Kubevirt::new(config.kubevirt()?, &config.ubuntu_serial);
-            if kubevirt.find(WORKER)?.is_none() {
-                println!("no worker");
-                return Ok(());
-            }
-            kubevirt.set_run_strategy(WORKER, "Halted")?;
-            kubevirt
-                .wait_for_status(WORKER, "Stopped", Duration::from_secs(600))
-                .await?;
-            println!(
-                "worker      vm/{} stopped; root and data volumes retained",
-                kubevirt::vm_name(WORKER)
-            );
+            down_kubevirt_with(&kubevirt).await?;
         }
     }
     Ok(())
@@ -484,6 +473,136 @@ pub fn render_user_data(public_key: &str) -> Result<String> {
         );
     }
     Ok(out)
+}
+
+pub(crate) async fn down_aws_with(aws: &impl AwsPort) -> Result<()> {
+    let Some(found) = aws.find_instance(WORKER).await? else {
+        println!("no worker");
+        return Ok(());
+    };
+    if found.state != InstanceStateName::Stopped {
+        aws.stop(&found.id).await?;
+        aws.wait_for_state(WORKER, InstanceStateName::Stopped, Duration::from_secs(600))
+            .await?;
+    }
+    println!(
+        "worker      {} stopped; data volume {} retained",
+        found.id,
+        found.data_volume.as_deref().unwrap_or("?")
+    );
+    Ok(())
+}
+pub(crate) async fn down_kubevirt_with(kubevirt: &impl KubevirtPort) -> Result<()> {
+    if kubevirt.find(WORKER)?.is_none() {
+        println!("no worker");
+        return Ok(());
+    }
+    kubevirt.set_run_strategy(WORKER, "Halted")?;
+    kubevirt
+        .wait_for_status(WORKER, "Stopped", Duration::from_secs(600))
+        .await?;
+    println!(
+        "worker      vm/{} stopped; root and data volumes retained",
+        kubevirt::vm_name(WORKER)
+    );
+    Ok(())
+}
+
+pub(crate) trait AwsPort {
+    async fn find_instance(&self, worker: &str) -> Result<Option<aws::Instance>>;
+    async fn ensure_instance_profile(&self) -> Result<bool>;
+    async fn ensure_security_group(&self) -> Result<String>;
+    async fn ubuntu_ami(&self, serial: &str) -> Result<String>;
+    async fn launch(&self, worker: &str, ami: &str, group: &str, user_data: &str)
+    -> Result<String>;
+    async fn start(&self, id: &str) -> Result<()>;
+    async fn stop(&self, id: &str) -> Result<()>;
+    async fn wait_for_state(
+        &self,
+        worker: &str,
+        state: InstanceStateName,
+        timeout: Duration,
+    ) -> Result<aws::Instance>;
+    async fn ensure_idle_stop_alarm(&self, id: &str) -> Result<()>;
+    async fn propagate(&self);
+}
+impl AwsPort for Aws {
+    async fn find_instance(&self, worker: &str) -> Result<Option<aws::Instance>> {
+        self.find_instance(worker).await
+    }
+    async fn ensure_instance_profile(&self) -> Result<bool> {
+        self.ensure_instance_profile().await
+    }
+    async fn ensure_security_group(&self) -> Result<String> {
+        self.ensure_security_group().await
+    }
+    async fn ubuntu_ami(&self, serial: &str) -> Result<String> {
+        self.ubuntu_ami(serial).await
+    }
+    async fn launch(
+        &self,
+        worker: &str,
+        ami: &str,
+        group: &str,
+        user_data: &str,
+    ) -> Result<String> {
+        self.launch(worker, ami, group, user_data).await
+    }
+    async fn start(&self, id: &str) -> Result<()> {
+        self.start(id).await
+    }
+    async fn stop(&self, id: &str) -> Result<()> {
+        self.stop(id).await
+    }
+    async fn wait_for_state(
+        &self,
+        worker: &str,
+        state: InstanceStateName,
+        timeout: Duration,
+    ) -> Result<aws::Instance> {
+        self.wait_for_state(worker, state, timeout).await
+    }
+    async fn ensure_idle_stop_alarm(&self, id: &str) -> Result<()> {
+        self.ensure_idle_stop_alarm(id).await
+    }
+    async fn propagate(&self) {
+        tokio::time::sleep(Duration::from_secs(10)).await;
+    }
+}
+
+pub(crate) trait KubevirtPort {
+    fn find(&self, worker: &str) -> Result<Option<kubevirt::Vm>>;
+    fn launch(&self, worker: &str, user_data: &str) -> Result<()>;
+    fn set_run_strategy(&self, worker: &str, strategy: &str) -> Result<()>;
+    fn image_url(&self) -> String;
+    async fn wait_for_status(
+        &self,
+        worker: &str,
+        status: &str,
+        timeout: Duration,
+    ) -> Result<kubevirt::Vm>;
+}
+impl KubevirtPort for Kubevirt {
+    fn find(&self, worker: &str) -> Result<Option<kubevirt::Vm>> {
+        self.find(worker)
+    }
+    fn launch(&self, worker: &str, user_data: &str) -> Result<()> {
+        self.launch(worker, user_data)
+    }
+    fn set_run_strategy(&self, worker: &str, strategy: &str) -> Result<()> {
+        self.set_run_strategy(worker, strategy)
+    }
+    fn image_url(&self) -> String {
+        self.image_url()
+    }
+    async fn wait_for_status(
+        &self,
+        worker: &str,
+        status: &str,
+        timeout: Duration,
+    ) -> Result<kubevirt::Vm> {
+        self.wait_for_status(worker, status, timeout).await
+    }
 }
 
 #[cfg(test)]

@@ -54,11 +54,16 @@ jobs:
           cache-directories: ~/.cache/b10x-target/mantle
       - name: Check source, ESS conformance, plan and documentation
         run: task check
-      - name: Retain local conformance evidence
+      - name: Retain complete conformance evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: mantle-local-conformance
-          path: .engineering/drafts/mantle-conformance-report.json
+          name: mantle-native-conformance
+          path: |
+            .engineering/drafts/mantle*-suite.json
+            .engineering/drafts/mantle*-report.json
+            .engineering/drafts/mantle*-run.json
+            .engineering/drafts/mantle-results.json
+            .engineering/drafts/mantle-synthesis.txt
           retention-days: 30
           if-no-files-found: warn

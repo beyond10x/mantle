@@ -1,0 +1,32 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "stop-absent-agent",
+  "summary": "Production application boundary: stop-absent-agent",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Stop",
+      "input": {
+        "state": "RUNNING",
+        "exec": "missing",
+        "workspace": "present",
+        "destroy": "success",
+        "readback": [],
+        "fail": "none",
+        "has_exec": true,
+        "has_workspace": true
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "state": "STOPPED",
+        "calls": [
+          "get-exec",
+          "get-workspace",
+          "destroy"
+        ]
+      }
+    }
+  ]
+}

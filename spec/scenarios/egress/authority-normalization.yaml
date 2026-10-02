@@ -1,0 +1,30 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "authority-normalization",
+  "summary": "authority-normalization",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBHSVRIVUIuQ09NLjo0NDMgSFRUUC8xLjENCg0KaGVsbG8=",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 200,
+        "body": "aGVsbG8=",
+        "forwarded": "aGVsbG8=",
+        "resolved_names": [
+          "github.com."
+        ],
+        "dialled": [
+          "93.184.216.34:443"
+        ]
+      }
+    }
+  ]
+}

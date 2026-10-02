@@ -1,0 +1,20 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "allow-platform-claude-com",
+  "summary": "allow-platform-claude-com",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.CheckDefaultDestination",
+      "input": {
+        "host": "platform.claude.com",
+        "port": 443
+      },
+      "outcome": "allowed",
+      "response": {
+        "allowed": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,1392 @@
+{
+  "format": "ess-conformance-run/2",
+  "scenarios": [
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckBudgets/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckBudgets",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 73,
+      "purpose": "`mantle.egress.CheckBudgets` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.egress.CheckBudgets/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "`mantle.egress.CheckDefaultDestination` answers `allowed` for an input that satisfies that branch's guard",
+      "scenario": "mantle.egress.CheckDefaultDestination/outcome/allowed",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/denied",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "error mantle.egress.NotAllowed",
+          "code": "ESS-CF-ERROR",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/denied",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "error mantle.egress.NotAllowed",
+          "code": "ESS-CF-ERROR",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/denied",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "error mantle.egress.NotAllowed",
+          "code": "ESS-CF-ERROR",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "`mantle.egress.CheckDefaultDestination` answers `denied` for an input no other branch's guard claims",
+      "scenario": "mantle.egress.CheckDefaultDestination/outcome/denied",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDrain/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDrain",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 62,
+      "purpose": "`mantle.egress.CheckDrain` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.egress.CheckDrain/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "`mantle.egress.ClassifyAddress` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.egress.ClassifyAddress/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "`mantle.egress.Exchange` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.egress.Exchange/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-0",
+      "scenario": "mantle.egress/authored/address-0",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-1",
+      "scenario": "mantle.egress/authored/address-1",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-10",
+      "scenario": "mantle.egress/authored/address-10",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-11",
+      "scenario": "mantle.egress/authored/address-11",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-12",
+      "scenario": "mantle.egress/authored/address-12",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-13",
+      "scenario": "mantle.egress/authored/address-13",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "address-14",
+      "scenario": "mantle.egress/authored/address-14",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-15",
+      "scenario": "mantle.egress/authored/address-15",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-16",
+      "scenario": "mantle.egress/authored/address-16",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-17",
+      "scenario": "mantle.egress/authored/address-17",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-18",
+      "scenario": "mantle.egress/authored/address-18",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-19",
+      "scenario": "mantle.egress/authored/address-19",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-2",
+      "scenario": "mantle.egress/authored/address-2",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-20",
+      "scenario": "mantle.egress/authored/address-20",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-21",
+      "scenario": "mantle.egress/authored/address-21",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-22",
+      "scenario": "mantle.egress/authored/address-22",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-23",
+      "scenario": "mantle.egress/authored/address-23",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-24",
+      "scenario": "mantle.egress/authored/address-24",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-25",
+      "scenario": "mantle.egress/authored/address-25",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-26",
+      "scenario": "mantle.egress/authored/address-26",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-27",
+      "scenario": "mantle.egress/authored/address-27",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-28",
+      "scenario": "mantle.egress/authored/address-28",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-3",
+      "scenario": "mantle.egress/authored/address-3",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-4",
+      "scenario": "mantle.egress/authored/address-4",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "address-5",
+      "scenario": "mantle.egress/authored/address-5",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-6",
+      "scenario": "mantle.egress/authored/address-6",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-7",
+      "scenario": "mantle.egress/authored/address-7",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-8",
+      "scenario": "mantle.egress/authored/address-8",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.ClassifyAddress/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.ClassifyAddress",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "address-9",
+      "scenario": "mantle.egress/authored/address-9",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "allow-api-anthropic-com",
+      "scenario": "mantle.egress/authored/allow-api-anthropic-com",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "allow-codeload-github-com",
+      "scenario": "mantle.egress/authored/allow-codeload-github-com",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "allow-crates-io",
+      "scenario": "mantle.egress/authored/allow-crates-io",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "allow-github-com",
+      "scenario": "mantle.egress/authored/allow-github-com",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "allow-index-crates-io",
+      "scenario": "mantle.egress/authored/allow-index-crates-io",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "allow-objects-githubusercontent-com",
+      "scenario": "mantle.egress/authored/allow-objects-githubusercontent-com",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "allow-platform-claude-com",
+      "scenario": "mantle.egress/authored/allow-platform-claude-com",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "allow-static-crates-io",
+      "scenario": "mantle.egress/authored/allow-static-crates-io",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "authority-normalization",
+      "scenario": "mantle.egress/authored/authority-normalization",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "bad-header",
+      "scenario": "mantle.egress/authored/bad-header",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "bad-version",
+      "scenario": "mantle.egress/authored/bad-version",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "closed-incomplete",
+      "scenario": "mantle.egress/authored/closed-incomplete",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "connect-failure",
+      "scenario": "mantle.egress/authored/connect-failure",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "connect-opaque-bytes",
+      "scenario": "mantle.egress/authored/connect-opaque-bytes",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 63,
+      "purpose": "connect-timeout",
+      "scenario": "mantle.egress/authored/connect-timeout",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckBudgets/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckBudgets",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 64,
+      "purpose": "connection-budgets",
+      "scenario": "mantle.egress/authored/connection-budgets",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 163,
+      "purpose": "head-timeout",
+      "scenario": "mantle.egress/authored/head-timeout",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 62,
+      "purpose": "idle-timeout",
+      "scenario": "mantle.egress/authored/idle-timeout",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "ip-literal",
+      "scenario": "mantle.egress/authored/ip-literal",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "missing-port",
+      "scenario": "mantle.egress/authored/missing-port",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "mixed-dns-only-dials-public",
+      "scenario": "mantle.egress/authored/mixed-dns-only-dials-public",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "non-connect",
+      "scenario": "mantle.egress/authored/non-connect",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "oversize-header",
+      "scenario": "mantle.egress/authored/oversize-header",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "port-must-match",
+      "scenario": "mantle.egress/authored/port-must-match",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "resolver-empty",
+      "scenario": "mantle.egress/authored/resolver-empty",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "resolver-failure",
+      "scenario": "mantle.egress/authored/resolver-failure",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "resolver-private",
+      "scenario": "mantle.egress/authored/resolver-private",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 62,
+      "purpose": "resolver-timeout",
+      "scenario": "mantle.egress/authored/resolver-timeout",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDrain/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDrain",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 62,
+      "purpose": "shutdown-drain",
+      "scenario": "mantle.egress/authored/shutdown-drain",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "suffix-is-not-allowed",
+      "scenario": "mantle.egress/authored/suffix-is-not-allowed",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "zero-port",
+      "scenario": "mantle.egress/authored/zero-port",
+      "status": "passed"
+    }
+  ],
+  "started_at": 1790937869227,
+  "summary": {
+    "completed_at": 1790937869849,
+    "conformance_status": "passed",
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 66,
+      "skipped": 0,
+      "total": 66,
+      "unsupported": 0
+    },
+    "coverage": {
+      "counts": {
+        "authored": 60,
+        "generated": 6,
+        "outside": 82,
+        "refused": 0
+      },
+      "knowledge": "complete_inventory",
+      "refused": [],
+      "selection": {
+        "filter": {
+          "kind": "all"
+        },
+        "origins": "generated_and_authored",
+        "scope": {
+          "component": "mantle-egress",
+          "kind": "component"
+        }
+      }
+    },
+    "execution_status": "passed",
+    "format": "ess-conformance-report/2",
+    "implementation": "mantle-native 0.1.0",
+    "outcomes": {
+      "error": [],
+      "failed": [],
+      "passed": [
+        "mantle.egress.CheckBudgets/outcome/returned",
+        "mantle.egress.CheckDefaultDestination/outcome/allowed",
+        "mantle.egress.CheckDefaultDestination/outcome/denied",
+        "mantle.egress.CheckDrain/outcome/returned",
+        "mantle.egress.ClassifyAddress/outcome/returned",
+        "mantle.egress.Exchange/outcome/returned",
+        "mantle.egress/authored/address-0",
+        "mantle.egress/authored/address-1",
+        "mantle.egress/authored/address-10",
+        "mantle.egress/authored/address-11",
+        "mantle.egress/authored/address-12",
+        "mantle.egress/authored/address-13",
+        "mantle.egress/authored/address-14",
+        "mantle.egress/authored/address-15",
+        "mantle.egress/authored/address-16",
+        "mantle.egress/authored/address-17",
+        "mantle.egress/authored/address-18",
+        "mantle.egress/authored/address-19",
+        "mantle.egress/authored/address-2",
+        "mantle.egress/authored/address-20",
+        "mantle.egress/authored/address-21",
+        "mantle.egress/authored/address-22",
+        "mantle.egress/authored/address-23",
+        "mantle.egress/authored/address-24",
+        "mantle.egress/authored/address-25",
+        "mantle.egress/authored/address-26",
+        "mantle.egress/authored/address-27",
+        "mantle.egress/authored/address-28",
+        "mantle.egress/authored/address-3",
+        "mantle.egress/authored/address-4",
+        "mantle.egress/authored/address-5",
+        "mantle.egress/authored/address-6",
+        "mantle.egress/authored/address-7",
+        "mantle.egress/authored/address-8",
+        "mantle.egress/authored/address-9",
+        "mantle.egress/authored/allow-api-anthropic-com",
+        "mantle.egress/authored/allow-codeload-github-com",
+        "mantle.egress/authored/allow-crates-io",
+        "mantle.egress/authored/allow-github-com",
+        "mantle.egress/authored/allow-index-crates-io",
+        "mantle.egress/authored/allow-objects-githubusercontent-com",
+        "mantle.egress/authored/allow-platform-claude-com",
+        "mantle.egress/authored/allow-static-crates-io",
+        "mantle.egress/authored/authority-normalization",
+        "mantle.egress/authored/bad-header",
+        "mantle.egress/authored/bad-version",
+        "mantle.egress/authored/closed-incomplete",
+        "mantle.egress/authored/connect-failure",
+        "mantle.egress/authored/connect-opaque-bytes",
+        "mantle.egress/authored/connect-timeout",
+        "mantle.egress/authored/connection-budgets",
+        "mantle.egress/authored/head-timeout",
+        "mantle.egress/authored/idle-timeout",
+        "mantle.egress/authored/ip-literal",
+        "mantle.egress/authored/missing-port",
+        "mantle.egress/authored/mixed-dns-only-dials-public",
+        "mantle.egress/authored/non-connect",
+        "mantle.egress/authored/oversize-header",
+        "mantle.egress/authored/port-must-match",
+        "mantle.egress/authored/resolver-empty",
+        "mantle.egress/authored/resolver-failure",
+        "mantle.egress/authored/resolver-private",
+        "mantle.egress/authored/resolver-timeout",
+        "mantle.egress/authored/shutdown-drain",
+        "mantle.egress/authored/suffix-is-not-allowed",
+        "mantle.egress/authored/zero-port"
+      ],
+      "skipped": [],
+      "unsupported": []
+    },
+    "policy": "complete-selection/1",
+    "producer_profile": "rust-scenario-status/1",
+    "spec_digest": "8336f2747da565d5095d1469d79302729d8f9583382a012cdef92b09840e9ece",
+    "specification": "mantle/v1",
+    "suite": {
+      "digest": "sha256:454df943e2a755fc513f7025b4625a0a887d63cde52578f2c21f401d571a4266",
+      "digest_profile": "sha256-json-bytes/1",
+      "version": "ess-conformance/29"
+    }
+  }
+}

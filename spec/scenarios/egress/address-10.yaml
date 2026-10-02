@@ -1,0 +1,19 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "address-10",
+  "summary": "address-10",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.ClassifyAddress",
+      "input": {
+        "address": "224.0.0.1"
+      },
+      "outcome": "returned",
+      "response": {
+        "refusal": "multicast"
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "mixed-dns-only-dials-public",
+  "summary": "mixed-dns-only-dials-public",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBnaXRodWIuY29tOjQ0MyBIVFRQLzEuMQ0KDQplY2hv",
+        "resolver": "mixed",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 200,
+        "body": "ZWNobw==",
+        "forwarded": "ZWNobw==",
+        "dialled": [
+          "93.184.216.34:443"
+        ],
+        "resolved_names": [
+          "github.com."
+        ]
+      }
+    }
+  ]
+}

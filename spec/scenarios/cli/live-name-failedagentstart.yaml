@@ -1,0 +1,70 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.session",
+  "scenario": "live-name-failedagentstart",
+  "summary": "Live-name partial uniqueness in FailedAgentStart",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.session.InsertSession",
+      "input": {
+        "session_id": "first",
+        "name": "shared",
+        "worker": "w",
+        "manifest_digest": "digest",
+        "requested_json": "{}",
+        "created_at": "2026-10-02T00:00:00Z"
+      },
+      "outcome": "recorded"
+    },
+    {
+      "at": "2026-10-02T00:00:01Z",
+      "command": "mantle.session.Materialized",
+      "input": {
+        "session_id": "first"
+      },
+      "outcome": "moved"
+    },
+    {
+      "at": "2026-10-02T00:00:02Z",
+      "command": "mantle.session.AgentStartFailed",
+      "input": {
+        "session_id": "first",
+        "failure": "recorded failure"
+      },
+      "outcome": "moved"
+    },
+    {
+      "at": "2026-10-02T00:00:03Z",
+      "command": "mantle.session.InsertSession",
+      "input": {
+        "session_id": "second",
+        "name": "shared",
+        "worker": "w",
+        "manifest_digest": "digest",
+        "requested_json": "{}",
+        "created_at": "2026-10-02T00:00:00Z"
+      },
+      "outcome": "conflict",
+      "error": {
+        "name": "mantle.session.RecordConflict"
+      }
+    }
+  ],
+  "assert": [
+    {
+      "view": "mantle.session.SessionRecords",
+      "contains": {
+        "session_id": "first",
+        "name": "shared",
+        "state": "FailedAgentStart"
+      }
+    },
+    {
+      "view": "mantle.session.LiveSessions",
+      "excludes": {
+        "session_id": "second"
+      }
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "agent-request",
+  "summary": "Exact production agent request before the pinned SDK",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Request",
+      "input": {
+        "kind": "agent",
+        "manifest": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\n",
+        "argv": [
+          "/usr/bin/printf",
+          "a b",
+          "$HOME"
+        ],
+        "cpu": 7
+      },
+      "outcome": "returned",
+      "response": {
+        "root": "/opt/mantle",
+        "secret_slot": "claude",
+        "secret_fd": 3,
+        "aperture": "egress",
+        "argv": [
+          "/opt/mantle/bin/mantle-launch",
+          "serve",
+          "--dir",
+          "/workspace/.mantle/agent",
+          "--secret-fd",
+          "3",
+          "--secret-env",
+          "CLAUDE_CODE_OAUTH_TOKEN",
+          "--cwd",
+          "/workspace/r",
+          "--mkdir",
+          "/workspace/.mantle/home",
+          "--mkdir",
+          "/workspace/.mantle/cargo",
+          "--proxy",
+          "http://127.0.0.1:3128",
+          "--",
+          "/opt/mantle/bin/claude"
+        ],
+        "timeout_secs": 28800,
+        "memory_bytes": 17179869184,
+        "processes": 4096,
+        "lease_secs": 28800,
+        "environment": [
+          {
+            "name": "CARGO_BUILD_JOBS",
+            "value": "4"
+          },
+          {
+            "name": "CARGO_HOME",
+            "value": "/workspace/.mantle/cargo"
+          },
+          {
+            "name": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
+            "value": "1"
+          },
+          {
+            "name": "DISABLE_AUTOUPDATER",
+            "value": "1"
+          },
+          {
+            "name": "GIT_CONFIG_NOSYSTEM",
+            "value": "1"
+          },
+          {
+            "name": "HOME",
+            "value": "/workspace/.mantle/home"
+          },
+          {
+            "name": "LANG",
+            "value": "C.UTF-8"
+          },
+          {
+            "name": "NODE_EXTRA_CA_CERTS",
+            "value": "/etc/ssl/certs/ca-certificates.crt"
+          },
+          {
+            "name": "PATH",
+            "value": "/opt/mantle/bin:/opt/mantle/cargo/bin:/usr/local/bin:/usr/bin:/bin"
+          },
+          {
+            "name": "RUSTUP_HOME",
+            "value": "/opt/mantle/rustup"
+          },
+          {
+            "name": "SHELL",
+            "value": "/bin/bash"
+          },
+          {
+            "name": "SSL_CERT_FILE",
+            "value": "/etc/ssl/certs/ca-certificates.crt"
+          },
+          {
+            "name": "TERM",
+            "value": "xterm-256color"
+          },
+          {
+            "name": "TMPDIR",
+            "value": "/tmp"
+          },
+          {
+            "name": "USER",
+            "value": "dev"
+          }
+        ]
+      }
+    }
+  ]
+}

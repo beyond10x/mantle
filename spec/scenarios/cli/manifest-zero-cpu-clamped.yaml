@@ -1,0 +1,37 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.manifest",
+  "scenario": "zero-cpu-clamped",
+  "summary": "Manifest boundary: zero-cpu-clamped",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.manifest.Parse",
+      "input": {
+        "text": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\nresources: {cpu: 0}\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "resolved": {
+          "name": "s1",
+          "repositories": [
+            {
+              "name": "r",
+              "repository": "https://example.com/r.git",
+              "reference": "main",
+              "mount": "r"
+            }
+          ],
+          "agent_cwd": "/workspace/r",
+          "cpu": 1,
+          "memory_bytes": 17179869184,
+          "pids": 4096,
+          "storage_bytes": null,
+          "retain_for_secs": 28800,
+          "digest": "sha256:ee9c868801191bb1a267dabb2d87804ded301f70e3a70114e4aa935563c6314f"
+        },
+        "diagnostic": null
+      }
+    }
+  ]
+}

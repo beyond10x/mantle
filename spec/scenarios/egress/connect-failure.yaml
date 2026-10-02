@@ -1,0 +1,29 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "connect-failure",
+  "summary": "connect-failure",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBnaXRodWIuY29tOjQ0MyBIVFRQLzEuMQ0KDQo=",
+        "resolver": "public",
+        "connector": "failure",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 502,
+        "forwarded": "",
+        "dialled": [
+          "93.184.216.34:443"
+        ],
+        "resolved_names": [
+          "github.com."
+        ]
+      }
+    }
+  ]
+}

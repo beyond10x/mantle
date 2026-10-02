@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T10:40:55Z",
+  "actor": "human:timo",
+  "artifact": "story:close-specification-boundaries",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check and three native conformance runs: 304 passed, no incomplete coverage; eight restored mutations failed named scenarios",
+    "reference": ".engineering/reports/native/mantle-report.json"
+  }
+}

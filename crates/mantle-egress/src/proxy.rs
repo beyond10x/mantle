@@ -1,6 +1,7 @@
 use std::future::Future;
 use std::io;
 use std::net::SocketAddr;
+use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -39,12 +40,45 @@ pub async fn serve<F>(listener: TcpListener, config: Arc<Config>, shutdown: F) -
 where
     F: Future<Output = ()>,
 {
+    serve_using(listener, config, shutdown, Arc::new(SystemNetwork)).await
+}
+
+type IoFuture<'a, T> = Pin<Box<dyn Future<Output = io::Result<T>> + Send + 'a>>;
+
+/// The upstream IO seam leaves parsing, allowlisting, address filtering and all deadlines
+/// in the production proxy. Tests supply DNS answers and observe the addresses actually dialled.
+trait Network: Send + Sync {
+    fn resolve(&self, name: String, port: u16) -> IoFuture<'_, Vec<SocketAddr>>;
+    fn connect(&self, address: SocketAddr) -> IoFuture<'_, TcpStream>;
+}
+
+struct SystemNetwork;
+impl Network for SystemNetwork {
+    fn resolve(&self, name: String, port: u16) -> IoFuture<'_, Vec<SocketAddr>> {
+        Box::pin(async move { Ok(tokio::net::lookup_host((name, port)).await?.collect()) })
+    }
+    fn connect(&self, address: SocketAddr) -> IoFuture<'_, TcpStream> {
+        Box::pin(TcpStream::connect(address))
+    }
+}
+
+async fn serve_using<F>(
+    listener: TcpListener,
+    config: Arc<Config>,
+    shutdown: F,
+    network: Arc<dyn Network>,
+) -> io::Result<()>
+where
+    F: Future<Output = ()>,
+{
     let heads = Arc::new(Semaphore::new(MAX_PENDING_HEADS as usize));
     let tunnels = Arc::new(Semaphore::new(config.max_connections as usize));
+    let mut connections = tokio::task::JoinSet::new();
     tokio::pin!(shutdown);
     loop {
         let accepted = tokio::select! {
             () = &mut shutdown => break,
+            _ = connections.join_next(), if !connections.is_empty() => continue,
             accepted = listener.accept() => accepted,
         };
         let stream = match accepted {
@@ -60,8 +94,9 @@ where
             Ok(head_permit) => {
                 let config = Arc::clone(&config);
                 let tunnels = Arc::clone(&tunnels);
-                tokio::spawn(async move {
-                    handle(stream, &config, head_permit, &tunnels).await;
+                let network = Arc::clone(&network);
+                connections.spawn(async move {
+                    handle(stream, &config, head_permit, &tunnels, network.as_ref()).await;
                 });
             }
             Err(_) => refuse_pending_over_capacity(&stream),
@@ -78,6 +113,9 @@ where
     if timeout(config.drain_timeout, drain).await.is_err() {
         log::notice("drain timeout reached; closing open tunnels");
     }
+    // A drain deadline bounds connection lifetime even when this library's runtime remains alive.
+    // Dropping detached JoinHandles did not cancel their tasks or close their sockets.
+    connections.shutdown().await;
     Ok(())
 }
 
@@ -159,6 +197,7 @@ async fn handle(
     config: &Config,
     head_permit: OwnedSemaphorePermit,
     tunnels: &Arc<Semaphore>,
+    network: &dyn Network,
 ) {
     let started = Instant::now();
     let mut tally = Tally::default();
@@ -166,7 +205,7 @@ async fn handle(
         head: Some(head_permit),
         tunnel: None,
     };
-    let outcome = match tunnel(&mut client, config, &mut tally, &mut slot, tunnels).await {
+    let outcome = match tunnel(&mut client, config, &mut tally, &mut slot, tunnels, network).await {
         Ok(end) => format!("allowed end={end}"),
         Err(refusal) => {
             if let Some(status) = refusal.status {
@@ -191,6 +230,7 @@ async fn tunnel(
     tally: &mut Tally,
     slot: &mut Slot,
     tunnels: &Arc<Semaphore>,
+    network: &dyn Network,
 ) -> Result<&'static str, Refusal> {
     let raw = head::read_head(client, config.head_timeout)
         .await
@@ -250,7 +290,7 @@ async fn tunnel(
     }
     slot.promote(tunnels)?;
 
-    let mut upstream = dial(&dest, config).await?;
+    let mut upstream = dial(&dest, config, network).await?;
     let _ = client.set_nodelay(true);
     let _ = upstream.set_nodelay(true);
 
@@ -268,7 +308,11 @@ async fn tunnel(
 
 /// Resolves the name here rather than trusting the client, and dials only public
 /// addresses: an allowed name rebound to 169.254.169.254 or loopback is refused.
-async fn dial(dest: &Destination, config: &Config) -> Result<TcpStream, Refusal> {
+async fn dial(
+    dest: &Destination,
+    config: &Config,
+    network: &dyn Network,
+) -> Result<TcpStream, Refusal> {
     let resolve_failed = || {
         Refusal::new(
             "dns-failed",
@@ -278,11 +322,11 @@ async fn dial(dest: &Destination, config: &Config) -> Result<TcpStream, Refusal>
     };
     let resolved: Vec<SocketAddr> = match timeout(
         config.connect_timeout,
-        tokio::net::lookup_host((dest.resolver_name(), dest.port)),
+        network.resolve(dest.resolver_name(), dest.port),
     )
     .await
     {
-        Ok(Ok(addrs)) => addrs.collect(),
+        Ok(Ok(addrs)) => addrs,
         Ok(Err(_)) | Err(_) => return Err(resolve_failed()),
     };
     if resolved.is_empty() {
@@ -305,7 +349,7 @@ async fn dial(dest: &Destination, config: &Config) -> Result<TcpStream, Refusal>
 
     let attempt = async {
         for a in &permitted {
-            if let Ok(s) = TcpStream::connect(a).await {
+            if let Ok(s) = network.connect(*a).await {
                 return Some(s);
             }
         }
@@ -325,6 +369,10 @@ async fn dial(dest: &Destination, config: &Config) -> Result<TcpStream, Refusal>
         )),
     }
 }
+
+#[cfg(test)]
+#[path = "conformance.rs"]
+mod conformance;
 
 /// Copies both ways until both sides have closed, either errors, or nothing has moved
 /// in either direction for `idle`.

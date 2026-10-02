@@ -1,0 +1,19 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "process-group-signals",
+  "summary": "process-group-signals",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.Signals",
+      "input": {},
+      "outcome": "returned",
+      "response": {
+        "exit": 0,
+        "signal_forwarded": true,
+        "descendant_exited": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "observe-all-facts-absent",
+  "summary": "Observe production capability or usage mapping: all-facts-absent",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Observe",
+      "input": {
+        "facts_json": "{\"operation.ledger-subject-max-rows\":1000,\"operation.ledger-subject-max-bytes\":1048576,\"operation.ledger-global-max-rows\":10000,\"operation.ledger-global-max-bytes\":10485760}",
+        "usage_json": null
+      },
+      "outcome": "returned",
+      "response": {
+        "missing": [
+          "exec.argv_only",
+          "exec.no_egress",
+          "exec.cgroup_limits (processes + memory)",
+          "exec.cgroup_kill",
+          "sessions.pty",
+          "exec.egress_apertures[egress]",
+          "secrets.slots[claude]"
+        ]
+      }
+    }
+  ]
+}

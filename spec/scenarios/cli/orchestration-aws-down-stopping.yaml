@@ -1,0 +1,31 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "aws-down-stopping",
+  "summary": "Production application boundary: aws-down-stopping",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Worker",
+      "input": {
+        "provider": "aws",
+        "action": "down",
+        "initial": "stopping",
+        "fail": "none",
+        "new_profile": false,
+        "idle_stop": false
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "calls": [
+          "find",
+          "stop",
+          "wait-stopped-600"
+        ],
+        "instance": null,
+        "volume": null
+      }
+    }
+  ]
+}

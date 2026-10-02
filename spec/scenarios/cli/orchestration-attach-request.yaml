@@ -1,0 +1,53 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "attach-request",
+  "summary": "Exact production attach request before the pinned SDK",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Request",
+      "input": {
+        "kind": "attach",
+        "manifest": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\n",
+        "argv": [
+          "/usr/bin/printf",
+          "a b",
+          "$HOME"
+        ],
+        "cpu": 7
+      },
+      "outcome": "returned",
+      "response": {
+        "root": "/opt/mantle",
+        "secret_slot": null,
+        "secret_fd": null,
+        "aperture": null,
+        "argv": [
+          "/opt/mantle/bin/mantle-launch",
+          "attach",
+          "--dir",
+          "/workspace/.mantle/agent"
+        ],
+        "timeout_secs": 86400,
+        "memory_bytes": 268435456,
+        "processes": 32,
+        "lease_secs": 86400,
+        "environment": [
+          {
+            "name": "HOME",
+            "value": "/workspace/.mantle/home"
+          },
+          {
+            "name": "LANG",
+            "value": "C.UTF-8"
+          },
+          {
+            "name": "TERM",
+            "value": "xterm-256color"
+          }
+        ]
+      }
+    }
+  ]
+}

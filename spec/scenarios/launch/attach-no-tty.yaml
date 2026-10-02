@@ -1,0 +1,30 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "attach-no-tty",
+  "summary": "attach-no-tty",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.ParseArgs",
+      "input": {
+        "argv": [
+          "YXR0YWNo",
+          "LS1uby10dHk=",
+          "LS1kaXI=",
+          "L3Nlc3Npb24="
+        ]
+      },
+      "outcome": "returned",
+      "response": {
+        "accepted": true,
+        "serve": null,
+        "attach": {
+          "dir": "L3Nlc3Npb24=",
+          "no_tty": true
+        },
+        "diagnostic": null
+      }
+    }
+  ]
+}

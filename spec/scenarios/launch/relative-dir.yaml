@@ -1,0 +1,29 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "relative-dir",
+  "summary": "relative-dir",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.ParseArgs",
+      "input": {
+        "argv": [
+          "c2VydmU=",
+          "LS1kaXI=",
+          "cmVsYXRpdmU=",
+          "LS1jd2Q=",
+          "L3dvcmtzcGFjZQ==",
+          "LS0=",
+          "L2FnZW50"
+        ]
+      },
+      "outcome": "returned",
+      "response": {
+        "accepted": false,
+        "serve": null,
+        "attach": null
+      }
+    }
+  ]
+}

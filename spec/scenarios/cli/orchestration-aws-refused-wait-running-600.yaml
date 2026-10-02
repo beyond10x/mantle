@@ -1,0 +1,26 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "aws-refused-wait-running-600",
+  "summary": "Production application boundary: aws-refused-wait-running-600",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Worker",
+      "input": {
+        "provider": "aws",
+        "action": "up",
+        "initial": "missing",
+        "fail": "wait-running-600",
+        "new_profile": false,
+        "idle_stop": true
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": false,
+        "instance": null,
+        "volume": null
+      }
+    }
+  ]
+}

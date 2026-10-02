@@ -2,15 +2,7 @@
 //! outlives any terminal; `attach` relays a terminal to it through named pipes in the shared
 //! session directory. No Unix-domain sockets are used: the sandbox refuses them.
 
-mod attach;
-mod cli;
-mod ctl;
-mod ring;
-mod secret;
-mod serve;
-mod session;
-mod signals;
-mod sys;
+use mantle_launch::{attach, cli, serve};
 
 use std::process::ExitCode;
 

@@ -1,0 +1,20 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "connection-budgets",
+  "summary": "connection-budgets",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.CheckBudgets",
+      "outcome": "returned",
+      "response": {
+        "statuses": [
+          200,
+          503,
+          200
+        ]
+      }
+    }
+  ]
+}
