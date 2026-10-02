@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T02:03:24Z",
+  "actor": "human:timo",
+  "artifact": "story:session-lifecycle",
+  "kind": "story",
+  "revision": 4,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "cargo test -p mantle-launch --no-fail-fast (tests/adversary.rs)",
+    "reference": "baseline e440552: adversary 3 passed / 6 failed; treatment wave-1/session-lifecycle: adversary 9 passed / 0 failed, unit 40/0, launch 4/0 — VERIFIED"
+  }
+}
