@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-02T11:43:06Z",
+  "actor": "human:timo",
+  "artifact": "story:agent-ready-worker",
+  "kind": "story",
+  "revision": 41,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "Correction 1: concurrent mkdir winners revalidated without permission changes; 61 tests passed before latest-main rebase",
+    "reference": "f8565cc8cb242a3743bff564867abf9fb65055f5; .engineering/reports/codex-worker-correction-1-2026-10-02.md#1-corrections-and-bounded-classes",
+    "review": "review-result:codex-worker-adversary-1",
+    "outcome": "fixed"
+  }
+}

@@ -25,6 +25,8 @@ scope:
   path: crates/mantle/Cargo.toml
 - confidence: cited
   path: crates/mantle/src/adapters/conformance.rs
+- confidence: inferred
+  path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
   path: crates/mantle/src/adapters/ssh.rs
 - confidence: cited
@@ -55,13 +57,19 @@ scope:
   path: spec/README.md
 - confidence: cited
   path: spec/components.yaml
+- confidence: inferred
+  path: spec/conformance-baseline.json
+- confidence: inferred
+  path: spec/domains/orchestration.yaml
 - confidence: cited
   path: spec/domains/session.yaml
 - confidence: cited
   path: spec/ess-inputs.yaml
-- confidence: cited
-  path: spec/scenarios/agent-worker.yaml
-revision: 41
+- confidence: inferred
+  path: spec/scenarios/cli/agent-worker.yaml
+- confidence: inferred
+  path: spec/scenarios/cli/orchestration-observe-common-without-claude.yaml
+revision: 45
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T10:13:54Z", actor: "human:timo", revision: 24}
 - {from: "proposed", to: "active", at: "2026-10-02T10:13:54Z", actor: "human:timo", revision: 25}
@@ -207,3 +215,15 @@ The sweep changes production worker/session orchestration seams, native componen
 Preserve every incoming scenario and coverage floor. Rebase the wave onto a base containing this main, adapt the actual worker decision adapter to the native runner, extend the complete inventory and rerun the exact current gate. The earlier65-scenario worker run is historical and cannot stand in for that verification. Preserve all retained adversarial cases and both correction classes. Final full attack2 runs only on the reconciled source. No live acceptance or implementation completion is claimed until the rebased source and current gate pass.
 
 Sources: git fetch/log/diff, incoming spec/README.md, spec/conformance-baseline.json, Taskfile.yml and crates/mantle-conformance. Reconciliation is within the approved wave; no push/tag/release is authorized.
+
+## Native ESS reconciliation scope
+
+Coordinator decision from the implementor's source inspection after the main rebase: preserve Observe's existing default meaning as selected-Claude capability observation. Add optional claude_selected input, absent meaning true; false requests common confinement capabilities. The common production helper remains agent-neutral; selected-Claude checks reuse the same mapping plus a separate executable check. This preserves every existing named scenario and expected response while adding a common-ready observation with no Claude slot. Observe must not invent an executable observation.
+
+Additional paths, inferred until the adapted diff is checked: crates/mantle/src/adapters/orchestration.rs (real native adapter); spec/domains/orchestration.yaml (explicit optional command input); spec/scenarios/cli/orchestration-observe-common-without-claude.yaml (new authored case); spec/conformance-baseline.json (retain all existing names/floors and extend the actual complete inventory). Existing owned substrate/session/worker paths retain production behavior; no mantle-conformance runner change is anticipated. ESS command input changes precede adapter edits. This is a compatibility-preserving split of capability observations, not a deletion or relaxation of the missing-Claude-slot cases.
+
+Source: wave3_worker_implementor's reconciliation report, incoming adapters/orchestration.rs:249-265, spec/scenarios/cli/orchestration-observe-missing-secrets-slots.yaml and the selected/common worker contract. Actual case counts, generated optional-witness changes and complete native gate remain to be measured. Correction1's 61 passing package tests and both fixed review outcomes were recorded against pre-rebase f8565cc; they are historical evidence only until this reconciliation is tested.
+
+## Native worker scenario placement
+
+The native runner selects authored CLI cases under spec/scenarios/cli. Move the unchanged agent-worker sequence from the provisional root-level spec/scenarios/agent-worker.yaml to spec/scenarios/cli/agent-worker.yaml and update the input manifest. The root-level placement would reach aggregate synthesis but not the CLI component, so it cannot pass complete-inventory reconciliation. This supersedes the old root-level path in the historical scope confirmation. Source: implementor inspection of the incoming native component runner during rebase reconciliation; selected path remains inferred until the actual diff and run confirm it.

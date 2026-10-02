@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T11:55:06Z",
+  "actor": "human:timo",
+  "artifact": "story:agent-ready-worker",
+  "kind": "story",
+  "revision": 45,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "Rebased integration baseline: native component tests and aggregate both exit0,304 passed; worker treatment and live AW acceptance pending",
+    "reference": ".engineering/reports/codex-worker-native-baseline-2026-10-02/mantle-report.json"
+  }
+}

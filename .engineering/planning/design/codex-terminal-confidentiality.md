@@ -7,7 +7,7 @@ title: Codex terminal confidentiality over retained Substrate streams
 relations:
 - designs: story:codex-interactive-start
 - informed_by: coordination-blocker:codex-terminal-capture
-revision: 2
+revision: 3
 ---
 ## Problem and evidence
 
@@ -58,3 +58,13 @@ The coordinator proposes choice2 for the next concrete review: bounded volatile 
 For the fixed output budget, propose a complete encrypted end-of-attachment control record reserved within the1MiB capture allowance. Attach stops accepting additional FIFO reads before its next complete encrypted record plus reserved ending would exceed that allowance. It finishes all accepted records, emits the authenticated budget-end reason and exits, releasing the single-client lock. The laptop restores terminal mode and clearly says the terminal budget ended while the agent remains running, with the ordinary attach command. Never wait for Substrate's late Truncated frame or call a partial frame successful. Reattachment uses the existing bounded scrollback/redraw behavior; no unbounded transcript, automatic reconnection loop or exactly-once terminal history is promised. This keeps the existing finite attachment boundary explicit. Review must decide whether required parity cases demand transparent continuation; if so, this proposal remains insufficient rather than silently expanding its claim.
 
 The proposed tradeoff reduces usable plaintext per attachment because ciphertext framing consumes the same fixed budget. Measure and report actual overhead and short-prompt latency. Ordinary frame limits, input/resize semantics, wrong-key/order/truncation refusal, current-session replay and slow-reader recovery need concrete ESS/test obligations before implementation.
+
+## Native ESS sweep reconciliation
+
+Read-only inspection against rebased integration 6a5aa99 is retained in .engineering/reports/codex-interactive-native-scope-2026-10-02.md. It supplies exact proposed paths and native scenario seams; this is preparation, not approval or blocker clearance.
+
+The sweep's launcher library can host an inferred shared terminal_protocol module without a new runtime crate. The native Request adapter currently observes serialized RunRequest fields but cannot prove PTY versus pipe selection; production transport selection and its actual output bound must become observable before a conformance case can claim that property. Retain all legacy launcher cases, especially Emit, Signals and SlowReader assertions that rely on persistent last-output; add volatile-only siblings with bounded live collectors and explicit file-absence checks. Existing resize fixtures write directly to ctl, so a secure-attach case must deliver its frame through the actual attach process.
+
+Source inspection also identifies blocking writes in both current attach and laptop output. Encryption alone does not establish responsiveness under a slow reader: bound complete-record queues and partial-write offsets, preserve control/signal handling, and never drop ciphertext bytes to make space. The fixture collectors themselves need finite byte/wait bounds for added flood cases. Treat a stale preexisting last-output path explicitly in the volatile contract rather than making an absence claim about a reused path.
+
+The report's generated terminal-model operational state file is not a proposed committed artifact. As established by worker generation, only portable generated source/schema/report files may be tracked; ignore machine/inode state. Final exact generated placement remains inferred until the ESS probe establishes it. Typed protocol values, final story prose and the four-critic review remain pending after worker integration; no new protocol implementation is authorized by this section.

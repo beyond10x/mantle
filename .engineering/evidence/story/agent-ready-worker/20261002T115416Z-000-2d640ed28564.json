@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T11:54:16Z",
+  "actor": "human:timo",
+  "artifact": "story:agent-ready-worker",
+  "kind": "story",
+  "revision": 45,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "cargo test --workspace --locked: ETXTBSY at retained interrupted-activation case plus generated provenance drift, exit101; failure pending diagnosis",
+    "reference": "~/.cache/mantle-wave3/scratch-worker/rebase-workspace-first.log"
+  }
+}
