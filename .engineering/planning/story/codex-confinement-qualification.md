@@ -9,11 +9,15 @@ relations:
 scope:
 - confidence: inferred
   path: crates/mantle-launch/tests/codex_compatibility.rs
+- confidence: cited
+  path: crates/mantle/Cargo.toml
 - confidence: inferred
   path: crates/mantle/examples/codex_qualification.rs
+- confidence: cited
+  path: crates/mantle/examples/tests/codex_qualification_adversary.rs
 - confidence: inferred
   path: docs/evidence/codex-compatibility.md
-revision: 7
+revision: 11
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 6}
 - {from: "proposed", to: "active", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 7}
@@ -53,3 +57,32 @@ Derived 2026-10-02 by `story-scoper`; classifications distinguish inspected evid
 - **Confidence:** medium — the story names the test/report destinations, but both remain proposed and absent; the CLI example is a proposed placement supported by existing dependencies — inferred.
 - **Would collide with:** changes to the three exact new paths above; dependency or shared-production edits would require rescoping before implementation — inferred.
 - **Safety fact:** the inspected generic launcher already accepts arbitrary agent argv and optional proxy configuration, while the inspected gateway accepts an independent listener and replacement exact-host allowlist; this supports attempting qualification without production edits, but does not prove Codex or disposable-worker compatibility — cited, step 2, unproven.
+
+## Runtime profile qualification
+
+Live probe on 2026-10-02T09:14:38Z: pinned Codex's documented `sandbox` command with explicit
+`sandbox_mode="workspace-write"` refused both a shell syntax check and a dependency-free Cargo
+build inside Substrate. Both exited 1 with the harness's namespace-error marker; no Cargo artifact
+was created. This is a nested namespace incompatibility observation, not a required Unix socket
+failure. The TUI still reached its unauthenticated welcome/login screen.
+
+Under epic decision 6, the coordinator selected an additional, separately labelled profile probe:
+`sandbox_mode="danger-full-access"` and `approval_policy="on-request"`, relying on unchanged outer
+Substrate confinement. Preserve the default-profile failures, and compare benign shell/Cargo and
+host/socket/network negative controls in the same outer workspace. No combined bypass flag and
+no Substrate relaxation. This is a qualification candidate, not yet a production default or proof
+that authenticated approval prompts work.
+
+Sources: `confined-probe-2.json` in the wave's private integration scratch; official
+`openai/codex` tag `rust-v0.153.4`, `codex-rs/cli/src/debug_sandbox.rs:302-319` explicitly handles
+Disabled/External enforcement by spawning directly; `codex-rs/protocol/src/config_types.rs:104-114`
+declares the legacy mode; pinned CLI help independently exposes the `on-request` approval policy.
+
+## Scope correction during implementation
+
+The coordinator added cited `crates/mantle/Cargo.toml` to this unit's typed scope: declaring the
+new example with `test = true` makes the repository's existing `cargo test --workspace --locked`
+gate execute the probe's regression tests. Without it Cargo builds examples but does not run their
+unit tests by default. No dependency or Taskfile change is required. The other ESS session's
+Cargo change is now in committed source `87bed8f`; reconcile its dev-dependency hunk on integration.
+The three original new probe/test/report paths remain the implementor's assignment.

@@ -1,0 +1,7 @@
+4a66681c6a3f539f0f9d053d4dda1af770ddda704820b4246df8fac4d83931c2  /opt/mantle/bin/mantle-launch
+024ee80d1e5046f09641df2bc739c4d6d35cc8e73c94639e2447a1cc9bfe73ec  /usr/local/bin/substrate-daemon
+56ef98ab4032d317ab26e9b5e5a175650717351edb16ed9cde0cb6d1734d62da  /opt/mantle-codex-qualification-wave2/codex
+c52cc6d1805ffc619b67e378945054c4d3700fd22b02aa3e27d60edf2aaed7a3  /opt/mantle-codex-qualification-wave2/codex_qualification
+6.8.0-146-generic
+active
+active

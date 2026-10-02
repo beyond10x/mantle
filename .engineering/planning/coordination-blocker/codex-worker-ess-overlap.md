@@ -6,7 +6,7 @@ status: open
 title: Reconcile active Mantle ESS work before worker changes
 relations:
 - blocks: story:agent-ready-worker
-revision: 2
+revision: 3
 ---
 ## Observation
 
@@ -23,3 +23,13 @@ The owning ESS session completes or explicitly hands over its changes; the coord
 ## Next owner
 
 Mantle wave coordinator after the active ESS work is handed over. No external message has been sent. This is coordination, not a finding that the ESS code is defective.
+
+## Source now available
+
+The owning ESS tree is now clean at bot-authored commit
+`87bed8fccfd8612a713da4aed2cbfe9b2f28689d` (2026-10-02 observation). Its
+`story:ess-contract` is implemented and records a passing 57-scenario local conformance report.
+The same commit bundles separately authorised public repository/site work. This coordinator has
+not published it or changed its owner's checkout. Reconciliation with our proposed Codex fields
+is still required before clearing this blocker and scheduling worker work. Do not make public
+publication a prerequisite for local implementation; integrate the exact source when appropriate.

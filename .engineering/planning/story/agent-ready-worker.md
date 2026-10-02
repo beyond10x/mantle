@@ -37,7 +37,7 @@ scope:
   path: spec/ess-inputs.yaml
 - confidence: inferred
   path: spec/scenarios/agent-worker.yaml
-revision: 15
+revision: 16
 ---
 ## Context
 
@@ -82,3 +82,18 @@ Derived 2026-10-02 by `story-scoper`; this is a future implementation unit after
 - **Scheduling boundary:** reconcile the active ESS work, select exact AW adapter/generated paths and refresh machine-readable scopes before dispatching this story; it can then be a separate future unit from qualification, while acceptance of its runtime candidate remains conditional on CQ results — inferred.
 - **Safety fact:** the current readiness helper is shared by worker readiness and session start; removing its Claude-slot check without retaining selected-agent validation would change both callers (`crates/mantle/src/app/worker.rs:335`, `crates/mantle/src/app/session.rs:78`) — cited; proof level 2, unproven.
 - **Safety fact:** re-running provisioning currently calls `install_binaries`, which unconditionally restarts the shared egress service (`crates/mantle/src/app/worker.rs:274`); AW-03 must address that disruption risk as well as avoiding a Substrate restart — cited; proof level 2, unproven.
+
+## Pinned daemon readiness evidence
+
+Pinned Substrate source `05695970b069f79e6678f2f02cbd78bbe5fa2a56`,
+`crates/substrate-daemon/src/runtime.rs:554,745-776`, checks each declared secret-slot file
+at daemon startup: it must exist, be nonempty, bounded, regular, workload-owned and private.
+Therefore simply removing systemd ConditionFileNotEmpty while retaining an absent `--secret-slot`
+cannot satisfy AW-01. `crates/substrate-host/src/secrets.rs:384-400` advertises configured names
+after sealing/descriptor probes; it does not make a configured missing file optional.
+
+Implementation consequence (inference): a credential-free daemon configuration must omit the
+Claude slot. Installing a real Claude slot later needs an explicit daemon configuration change;
+preserve an already-installed slot and refuse a disruptive restart while another session is live.
+Never create an empty or dummy credential. The existing selected-agent start path must keep
+Claude-specific credential checks when common worker readiness stops requiring that slot.

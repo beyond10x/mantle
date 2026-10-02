@@ -1,0 +1,330 @@
+{
+  "exec": {
+    "applied": {
+      "capability_snapshot": "sha256:590d998fea1f8b2433f7a515738300d837c6f1ea423432f0fc60de5f6c7a28f1",
+      "cgroup": "substrate-ex_01M3XYKYJ6KDKVGZA4M7PWSGTB",
+      "filesystem": "workspace-rw-system-ro",
+      "network": "none",
+      "profile": "workspace",
+      "read_only_roots": [
+        {
+          "host_path": "/opt/mantle-codex-qualification-wave2",
+          "mount": "/opt/mantle-codex-qualification-wave2"
+        },
+        {
+          "host_path": "/opt/mantle",
+          "mount": "/opt/mantle"
+        }
+      ]
+    },
+    "exit": {
+      "code": 0,
+      "signal": null
+    },
+    "id": "ex_01M3XYKYJ6KDKVGZA4M7PWSGTB",
+    "lease": null,
+    "observed_at": "2026-10-02T09:20:38.301365894Z",
+    "refusal": null,
+    "requested": {
+      "capability_snapshot": "sha256:590d998fea1f8b2433f7a515738300d837c6f1ea423432f0fc60de5f6c7a28f1",
+      "network": "none",
+      "profile": "workspace",
+      "require": true
+    },
+    "state": "Exited",
+    "usage": null,
+    "workspace": "ws_01M3XYKYHR8XZAC7KJBR3D0D59"
+  },
+  "helper": {
+    "auth_refresh": "not-run",
+    "controls": {
+      "direct_tcp": {
+        "errno": 101,
+        "kind": "NetworkUnreachable",
+        "outcome": "refused_or_unreachable"
+      },
+      "host_sentinel_open": {
+        "errno": 2,
+        "outcome": "refused"
+      },
+      "unix_socket": {
+        "errno": 13,
+        "outcome": "refused"
+      }
+    },
+    "credentials": "fresh private HOME; no login requested; no inherited environment",
+    "format": "mantle.codex-qualification/1",
+    "placement": "where invoked; no independent confinement claim",
+    "raw_terminal_retained": false,
+    "scratch_cleanup": "removed",
+    "sha256": "56ef98ab4032d317ab26e9b5e5a175650717351edb16ed9cde0cb6d1734d62da",
+    "timestamp": "2026-10-02T09:20:38.300165140+00:00",
+    "tools": {
+      "cargo": {
+        "approval_prompt_observed": false,
+        "argv": [
+          "/opt/mantle/cargo/bin/cargo",
+          "build",
+          "--offline",
+          "--quiet",
+          "-j",
+          "1"
+        ],
+        "child_observation": null,
+        "exit": 1,
+        "missing_file": false,
+        "namespace_error": true,
+        "operation_not_permitted": false,
+        "output_bound_exceeded": false,
+        "permission_denied": false,
+        "requested_approval_policy": "on-request",
+        "requested_codex_sandbox": "workspace-write",
+        "scope": "direct Codex sandbox CLI control; not a model-issued tool call",
+        "stderr_bytes": 105,
+        "stdout_bytes": 0,
+        "timed_out": false
+      },
+      "cargo_artifact_exists": false,
+      "outer_confinement_only_candidate": {
+        "cargo": {
+          "approval_prompt_observed": false,
+          "argv": [
+            "/opt/mantle/cargo/bin/cargo",
+            "build",
+            "--offline",
+            "--quiet",
+            "-j",
+            "1"
+          ],
+          "child_observation": null,
+          "exit": 0,
+          "missing_file": false,
+          "namespace_error": false,
+          "operation_not_permitted": false,
+          "output_bound_exceeded": false,
+          "permission_denied": false,
+          "requested_approval_policy": "on-request",
+          "requested_codex_sandbox": "danger-full-access",
+          "scope": "direct Codex sandbox CLI control; not a model-issued tool call",
+          "stderr_bytes": 0,
+          "stdout_bytes": 0,
+          "timed_out": false
+        },
+        "cargo_artifact_exists": true,
+        "controls": {
+          "approval_prompt_observed": false,
+          "argv": [
+            "/opt/mantle-codex-qualification-wave2/codex_qualification",
+            "controls",
+            "--scratch-parent",
+            "/workspace/codex-probe-01M3XYMCZN27ZMV0B8EXR2FJKE"
+          ],
+          "child_observation": {
+            "direct_tcp": {
+              "errno": 101,
+              "kind": "NetworkUnreachable",
+              "outcome": "refused_or_unreachable"
+            },
+            "host_sentinel_open": {
+              "errno": 2,
+              "outcome": "refused"
+            },
+            "unix_socket": {
+              "errno": 13,
+              "outcome": "refused"
+            }
+          },
+          "exit": 0,
+          "missing_file": false,
+          "namespace_error": false,
+          "operation_not_permitted": false,
+          "output_bound_exceeded": false,
+          "permission_denied": false,
+          "requested_approval_policy": "on-request",
+          "requested_codex_sandbox": "danger-full-access",
+          "scope": "direct Codex sandbox CLI control; not a model-issued tool call",
+          "stderr_bytes": 0,
+          "stdout_bytes": 256,
+          "timed_out": false
+        },
+        "decision": "explicit qualification experiment; interactive approval behavior not verified",
+        "shell": {
+          "approval_prompt_observed": false,
+          "argv": [
+            "/bin/sh",
+            "-n",
+            "/dev/null"
+          ],
+          "child_observation": null,
+          "exit": 0,
+          "missing_file": false,
+          "namespace_error": false,
+          "operation_not_permitted": false,
+          "output_bound_exceeded": false,
+          "permission_denied": false,
+          "requested_approval_policy": "on-request",
+          "requested_codex_sandbox": "danger-full-access",
+          "scope": "direct Codex sandbox CLI control; not a model-issued tool call",
+          "stderr_bytes": 0,
+          "stdout_bytes": 0,
+          "timed_out": false
+        }
+      },
+      "shell": {
+        "approval_prompt_observed": false,
+        "argv": [
+          "/bin/sh",
+          "-n",
+          "/dev/null"
+        ],
+        "child_observation": null,
+        "exit": 1,
+        "missing_file": false,
+        "namespace_error": true,
+        "operation_not_permitted": false,
+        "output_bound_exceeded": false,
+        "permission_denied": false,
+        "requested_approval_policy": "on-request",
+        "requested_codex_sandbox": "workspace-write",
+        "scope": "direct Codex sandbox CLI control; not a model-issued tool call",
+        "stderr_bytes": 105,
+        "stdout_bytes": 0,
+        "timed_out": false
+      }
+    },
+    "tui": {
+      "cleanup": "launcher reaped",
+      "phases": [
+        {
+          "launcher_alive": true,
+          "phase": "initial",
+          "screen": {
+            "bytes": 3988,
+            "cursor_query": true,
+            "login_marker": true,
+            "permission_or_socket_error_marker": false,
+            "welcome_marker": true
+          }
+        },
+        {
+          "launcher_alive": true,
+          "phase": "same_size_reattach",
+          "screen": {
+            "bytes": 7166,
+            "cursor_query": true,
+            "login_marker": true,
+            "permission_or_socket_error_marker": false,
+            "welcome_marker": true
+          }
+        },
+        {
+          "launcher_alive": true,
+          "phase": "resize",
+          "screen": {
+            "bytes": 2165,
+            "cursor_query": true,
+            "login_marker": true,
+            "permission_or_socket_error_marker": false,
+            "welcome_marker": false
+          }
+        },
+        {
+          "launcher_alive": true,
+          "phase": "slow_reader",
+          "screen": {
+            "bytes": 1584,
+            "cursor_query": false,
+            "login_marker": false,
+            "permission_or_socket_error_marker": false,
+            "welcome_marker": false
+          }
+        }
+      ],
+      "real_model_turn": "not-run: no authentication",
+      "slow_reader": "500ms reader pause; no forced overflow claim",
+      "usable_screen": "requires human verification"
+    },
+    "version": "codex-cli 0.153.4"
+  },
+  "machine_facts": {
+    "events.pull": true,
+    "events.retention-events": 10000,
+    "events.stream": true,
+    "exec.argv-only": true,
+    "exec.cgroup-kill": true,
+    "exec.cgroup-limits": {
+      "cpu": true,
+      "memory": true,
+      "processes": true
+    },
+    "exec.egress-apertures": [
+      {
+        "destination": "127.0.0.1:3128",
+        "name": "egress"
+      }
+    ],
+    "exec.inline-capsule": {
+      "max_file_bytes": 262144,
+      "max_files": 32,
+      "max_total_bytes": 524288,
+      "mount": "/runtime"
+    },
+    "exec.max-current": 2048,
+    "exec.namespaces": {
+      "ipc": true,
+      "mount": true,
+      "network": true,
+      "pid": true,
+      "user": true,
+      "uts": true
+    },
+    "exec.no-egress": true,
+    "exec.output-limit-bytes": 1048576,
+    "exec.resource-usage": {
+      "block_io": true,
+      "cpu_time": true,
+      "memory_current": true,
+      "memory_oom_kills": true,
+      "memory_peak": true,
+      "process_limit_hits": true,
+      "processes_current": true,
+      "processes_peak": true,
+      "wall_time": true
+    },
+    "exec.signals": [
+      "INT",
+      "TERM",
+      "KILL"
+    ],
+    "exec.workspace-scoped-write": true,
+    "leases.clock-tolerance-ms": 30000,
+    "leases.explicit": true,
+    "metrics.stream": {
+      "latest_wins": true,
+      "replay": false,
+      "sample_interval_ms": 1000
+    },
+    "operation.ledger-global-max-bytes": 4294967296,
+    "operation.ledger-global-max-rows": 1000000,
+    "operation.ledger-subject-max-bytes": 536870912,
+    "operation.ledger-subject-max-rows": 100000,
+    "secrets.slots": [
+      "claude"
+    ],
+    "sessions.pty": true,
+    "snapshot.provenance-events": 1024,
+    "workspace.atomic-replace": true,
+    "workspace.guarded-io": true,
+    "workspace.list-limit-items": 1000,
+    "workspace.max-current": 1024,
+    "workspace.max-file-bytes": 1048576,
+    "workspace.openat2-beneath": true,
+    "workspace.read-limit-bytes": 1048576
+  },
+  "requested_apertures": [],
+  "requested_secret_slots": [],
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "workspace": "ws_01M3XYKYHR8XZAC7KJBR3D0D59",
+  "workspace_cleanup": "destroyed"
+}
