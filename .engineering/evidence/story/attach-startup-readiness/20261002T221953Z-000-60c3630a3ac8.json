@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T22:19:53Z",
+  "actor": "human:timo",
+  "artifact": "story:attach-startup-readiness",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "VERIFIED isolated currentSDK0.17 and daemon445d74a: two exact262144byte real-PTY replays, keyboard, detach/reconnect sameagent, raw restoration; harness exits1 on workspace.destroy outcome-unknown, independent cleanup absence verified; installed worker0.16 and authenticatedCodex not proven",
+    "reference": ".engineering/reports/attach-startup-2026-10-02/combined-proof.log"
+  }
+}
