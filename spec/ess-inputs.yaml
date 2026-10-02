@@ -225,3 +225,5 @@ scenarios:
   - scenarios/cli/orchestration-observe-unavailable.yaml
   - scenarios/cli/orchestration-observe-measured.yaml
   - scenarios/cli/orchestration-observe-measured-current-absent.yaml
+  - scenarios/cli/agent-worker.yaml
+  - scenarios/cli/orchestration-observe-common-without-claude.yaml

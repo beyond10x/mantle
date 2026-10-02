@@ -26,7 +26,11 @@ use crate::config::{Config, state_dir};
 
 /// Portable cloud development sessions on Substrate.
 #[derive(Debug, Parser)]
-#[command(name = "mantle", version)]
+#[command(
+    name = "mantle",
+    version,
+    after_help = "MANTLE_CONFIG selects an absolute configuration file; MANTLE_STATE_DIR selects an absolute private state directory. Defaults: ~/.config/mantle/config.toml and ~/.local/state/mantle. READY denotes common confinement/toolchain readiness, not agent authentication."
+)]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -68,7 +72,7 @@ enum Command {
 enum WorkerCommand {
     /// Create or start the worker, install Mantle's binaries, and check Substrate's facts.
     Up {
-        /// Directory holding the static `mantle-egress` and `mantle-launch` binaries.
+        /// Directory holding static `mantle-egress`, `mantle-launch`, and `mantle-worker` binaries.
         #[arg(long, default_value_os_t = default_worker_binaries())]
         binaries: PathBuf,
         /// Do not stop the worker after two idle hours.
@@ -96,8 +100,15 @@ fn default_worker_binaries() -> PathBuf {
     target.join("x86_64-unknown-linux-musl/release")
 }
 
-#[tokio::main]
-async fn main() -> Result<()> {
+fn main() -> Result<()> {
+    mantle_worker::initialize_transport_signals()?;
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?
+        .block_on(run())
+}
+
+async fn run() -> Result<()> {
     let cli = Cli::parse();
     let config = Config::load()?;
     let store = Store::open(&state_dir()?.join("state.db"))?;

@@ -1,0 +1,57 @@
+type: ess-scenario/4
+domain: mantle.session
+scenario: aw-01-through-aw-05-worker-decisions
+summary: Credential-independent readiness and installation decisions; remote side effects require separate live evidence.
+timeline:
+  - at: 2026-10-01T23:59:58Z
+    command: mantle.session.AssessSharedBinaryUpgrade
+    input: {shared_service_active: true, installed: true, artifact_changed: true}
+    outcome: deferred
+  - at: 2026-10-01T23:59:59Z
+    command: mantle.session.AssessSharedBinaryUpgrade
+    input: {shared_service_active: false, installed: true, artifact_changed: true}
+    outcome: applicable
+  - at: 2026-10-02T00:00:00Z
+    command: mantle.session.AssessWorkerReadiness
+    input: {common_ready: true, claude_selected: false, executable_present: false, claude_slot_present: false}
+    outcome: ready
+  - at: 2026-10-02T00:00:01Z
+    command: mantle.session.AssessAgentInstallation
+    input: {architecture: x86_64, current_verified: false, archive_verified: true, binary_verified: true, version_verified: true}
+    outcome: installed
+  - at: 2026-10-02T00:00:02Z
+    command: mantle.session.AssessAgentInstallation
+    input: {architecture: x86_64, current_verified: true, archive_verified: false, binary_verified: false, version_verified: false}
+    outcome: already-current
+  - at: 2026-10-02T00:00:03Z
+    command: mantle.session.AssessWorkerReadiness
+    input: {common_ready: true, claude_selected: true, executable_present: true, claude_slot_present: true}
+    outcome: ready
+  - at: 2026-10-02T00:00:04Z
+    command: mantle.session.AssessAgentInstallation
+    input: {architecture: aarch64, current_verified: false, archive_verified: true, binary_verified: true, version_verified: true}
+    outcome: refused
+  - at: 2026-10-02T00:00:05Z
+    command: mantle.session.AssessWorkerReadiness
+    input: {common_ready: true, claude_selected: true, executable_present: false, claude_slot_present: true}
+    outcome: missing
+  - at: 2026-10-02T00:00:06Z
+    command: mantle.session.AssessWorkerReadiness
+    input: {common_ready: true, claude_selected: true, executable_present: true, claude_slot_present: false}
+    outcome: missing
+  - at: 2026-10-02T00:00:07Z
+    command: mantle.session.AssessWorkerReadiness
+    input: {common_ready: false, claude_selected: false, executable_present: true, claude_slot_present: true}
+    outcome: missing
+  - at: 2026-10-02T00:00:08Z
+    command: mantle.session.AssessAgentInstallation
+    input: {architecture: x86_64, current_verified: false, archive_verified: false, binary_verified: true, version_verified: true}
+    outcome: refused
+  - at: 2026-10-02T00:00:09Z
+    command: mantle.session.AssessAgentInstallation
+    input: {architecture: x86_64, current_verified: false, archive_verified: true, binary_verified: false, version_verified: true}
+    outcome: refused
+  - at: 2026-10-02T00:00:10Z
+    command: mantle.session.AssessAgentInstallation
+    input: {architecture: x86_64, current_verified: false, archive_verified: true, binary_verified: true, version_verified: false}
+    outcome: refused

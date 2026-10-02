@@ -1,0 +1,58 @@
+{
+  "format": "ess-types-report/3",
+  "source_digest": "8a272638ba1e78a3a382335a397e223d44436d4b3423664c5c1c22ffe8f0f895",
+  "input": {
+    "kind": "model",
+    "system": "mantle",
+    "specification_version": "v1",
+    "contract_digest": "slice-sha256/2:56aab6ba125583c0c6be3eeee9810eac6eb0aaffb7e676a2b72816bd94fbc3ed",
+    "projection_digest": "7bc561621a92216049b8cd886c18c1e70d2d8701c635987a57e79c189154e879"
+  },
+  "generator_version": "0.50.0",
+  "target": "rust",
+  "configuration": {
+    "language": "rust",
+    "package": "mantle-worker-model"
+  },
+  "roots": [
+    "mantle.session.AgentInstallationFacts",
+    "mantle.session.AgentInstallationOutcome"
+  ],
+  "declarations": {
+    "mantle.session.AgentInstallationFacts": "MantleSessionAgentInstallationFacts",
+    "mantle.session.AgentInstallationOutcome": "MantleSessionAgentInstallationOutcome"
+  },
+  "annotations": [
+    {
+      "pointer": "/$defs/mantle.session.AgentInstallationFacts/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AgentInstallationFacts/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AgentInstallationFacts/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AgentInstallationOutcome/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AgentInstallationOutcome/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AgentInstallationOutcome/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    }
+  ],
+  "obligations": []
+}

@@ -80,6 +80,65 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
             .collect();
         return Ok(Reply::returned(json!({"rows": rows})));
     }
+    if command == "mantle.session.AssessSharedBinaryUpgrade" {
+        let flag = |name| {
+            input[name]
+                .as_bool()
+                .context("upgrade input is not boolean")
+        };
+        reply.outcome = if mantle_worker::shared_upgrade_deferred(
+            flag("shared_service_active")?,
+            flag("installed")?,
+            flag("artifact_changed")?,
+        ) {
+            "deferred"
+        } else {
+            "applicable"
+        }
+        .into();
+        return Ok(reply);
+    }
+    if command == "mantle.session.AssessWorkerReadiness" {
+        let flag = |name| {
+            input[name]
+                .as_bool()
+                .context("readiness input is not boolean")
+        };
+        if mantle_worker::worker_ready(
+            flag("common_ready")?,
+            flag("claude_selected")?,
+            flag("executable_present")?,
+            flag("claude_slot_present")?,
+        ) {
+            reply.outcome = "ready".into();
+        } else {
+            reply.outcome = "missing".into();
+            reply.error = Some("mantle.session.WorkerNotReady".into());
+        }
+        return Ok(reply);
+    }
+    if command == "mantle.session.AssessAgentInstallation" {
+        let flag = |name| {
+            input[name]
+                .as_bool()
+                .context("installation input is not boolean")
+        };
+        match mantle_worker::installation_decision(
+            text(&input["architecture"])?,
+            flag("current_verified")?,
+            flag("archive_verified")?,
+            flag("binary_verified")?,
+            flag("version_verified")?,
+        ) {
+            mantle_worker::InstallationOutcome::V0 => reply.outcome = "already-current".into(),
+            mantle_worker::InstallationOutcome::V1 => reply.outcome = "installed".into(),
+            mantle_worker::InstallationOutcome::V2 => {
+                reply.outcome = "refused".into();
+                reply.error = Some("mantle.session.InstallationRefused".into());
+            }
+        }
+        return Ok(reply);
+    }
     if command == "mantle.egress.CheckDefaultDestination" {
         let port = input["port"].as_f64().context("port is not numeric")?;
         ensure!(port.fract() == 0.0, "port is not an integer");
@@ -254,5 +313,5 @@ impl Boundary for CliBoundary {
 }
 #[test]
 fn ess_generated_local_conformance() -> Result<()> {
-    mantle_conformance::run::<CliBoundary>("mantle-cli", 62)
+    mantle_conformance::run::<CliBoundary>("mantle-cli", 213)
 }

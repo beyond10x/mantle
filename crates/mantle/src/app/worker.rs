@@ -4,6 +4,7 @@
 //! SSH connection — bootstrap, binaries, credential, daemon, readiness — is one code path, so the
 //! workers they produce are the same machine.
 
+use sha2::{Digest, Sha256};
 use std::path::Path;
 use std::time::Duration;
 
@@ -74,7 +75,12 @@ pub fn ssh_for(config: &Config, record: &WorkerRecord) -> Result<Ssh> {
 
 pub async fn up(config: &Config, store: &Store, options: &UpOptions<'_>) -> Result<()> {
     let binaries = worker_binaries(options.worker_binaries)?;
-    let user_data = render_user_data(&ssh::public_key()?)?;
+    let token = config
+        .claude
+        .as_ref()
+        .map(|_| config.claude_token())
+        .transpose()?;
+    let user_data = render_user_data_for(&ssh::public_key()?, token.is_some())?;
     let (instance, data_volume) = match config.provider {
         Provider::Aws => up_aws(config, &user_data, options.idle_stop).await?,
         Provider::Kubevirt => up_kubevirt(config, &user_data).await?,
@@ -89,19 +95,34 @@ pub async fn up(config: &Config, store: &Store, options: &UpOptions<'_>) -> Resu
     let ssh = ssh_for(config, &record)?;
     wait_for_bootstrap(&ssh).await?;
     install_binaries(&ssh, &binaries)?;
-    report_identity(&ssh)?;
-    // The daemon refuses to start without a non-empty, owner-only secret file
-    // (`ConditionFileNotEmpty=` in deploy/substrate.service), so the token goes first. It is read
-    // only now, so a missing token does not hold up the long first bootstrap.
-    let token = config
-        .claude_token()
-        .context("the worker is bootstrapped but Substrate cannot start; rerun `mantle worker up` once the token exists")?;
-    install_token(&ssh, &token)?;
-    ssh.check(
-        "sudo systemctl start substrate.service && systemctl is-active substrate.service",
+    if let Some(token) = token {
+        let unit = ssh.checked_bounded(
+            "systemctl cat substrate.service",
+            None,
+            Duration::from_secs(15),
+        )?;
+        if !unit.contains("--secret-slot claude=/var/lib/mantle/secrets/claude") {
+            bail!(
+                "Claude requires a configured Substrate secret slot; schedule maintenance to add it and restart the daemon after stopping sessions; the active daemon was preserved"
+            );
+        }
+        install_token(&ssh, &token)?;
+    }
+    ssh.checked_bounded(
+        "sudo systemctl enable substrate.service >/dev/null 2>&1 && sudo systemctl start substrate.service && systemctl is-active substrate.service",
         None,
+        Duration::from_secs(330),
     )
     .context("starting substrate.service")?;
+    let result = ssh.checked_bounded(
+        "sudo /opt/mantle/bin/mantle-worker install-codex",
+        None,
+        Duration::from_secs(210),
+    )?;
+    let outcome: mantle_worker::InstallationOutcome =
+        serde_json::from_str(&result).context("reading Codex installation outcome")?;
+    println!("codex install {}", serde_json::to_string(&outcome)?);
+    report_identity(&ssh)?;
     report_machine(&ssh).await
 }
 
@@ -202,7 +223,7 @@ pub(crate) async fn up_kubevirt_with(
 }
 
 /// Polls until cloud-init wrote its last file and the worker runs the kernel it converged on.
-/// A first boot builds Substrate from source and then reboots into that kernel.
+/// A first boot downloads the pinned prebuilt Substrate release and reboots into that kernel.
 async fn wait_for_bootstrap(ssh: &Ssh) -> Result<()> {
     let deadline = tokio::time::Instant::now() + Duration::from_secs(60 * 60);
     let mut said = String::new();
@@ -236,7 +257,7 @@ async fn wait_for_bootstrap(ssh: &Ssh) -> Result<()> {
                         String::from_utf8_lossy(&log.stdout)
                     );
                 }
-                say("for cloud-init (a first boot builds Substrate from source)");
+                say("for cloud-init (a first boot downloads pinned prebuilt binaries)");
             }
         } else {
             say("for SSH");
@@ -251,41 +272,93 @@ async fn wait_for_bootstrap(ssh: &Ssh) -> Result<()> {
 struct WorkerBinaries {
     egress: Vec<u8>,
     launch: Vec<u8>,
+    worker: Vec<u8>,
 }
 
 fn worker_binaries(dir: &Path) -> Result<WorkerBinaries> {
     let read = |name: &str| {
         let path = dir.join(name);
-        std::fs::read(&path)
+        mantle_worker::read_delivery_binary(&path)
             .with_context(|| format!("reading {} (run `task build-worker` first)", path.display()))
     };
     Ok(WorkerBinaries {
         egress: read("mantle-egress")?,
         launch: read("mantle-launch")?,
+        worker: read("mantle-worker")?,
     })
 }
 
 fn install_binaries(ssh: &Ssh, binaries: &WorkerBinaries) -> Result<()> {
+    let active = ssh
+        .bounded(
+            "systemctl is-active --quiet mantle-egress.service",
+            None,
+            Duration::from_secs(15),
+        )?
+        .status
+        .success();
+    let daemon_active = ssh
+        .bounded(
+            "systemctl is-active --quiet substrate.service",
+            None,
+            Duration::from_secs(15),
+        )?
+        .status
+        .success();
+    let mut pending = Vec::new();
     for (name, bytes) in [
         ("mantle-egress", &binaries.egress),
         ("mantle-launch", &binaries.launch),
+        ("mantle-worker", &binaries.worker),
     ] {
-        ssh.check(
+        let digest = format!("{:x}", Sha256::digest(bytes));
+        let observed = ssh.bounded(
+            &format!("sha256sum /opt/mantle/bin/{name}"),
+            None,
+            Duration::from_secs(15),
+        )?;
+        let unchanged = observed.status.success()
+            && String::from_utf8_lossy(&observed.stdout)
+                .split_whitespace()
+                .next()
+                == Some(digest.as_str());
+        if unchanged {
+            continue;
+        }
+        let shared_active =
+            (name == "mantle-egress" && active) || (name == "mantle-launch" && daemon_active);
+        if mantle_worker::shared_upgrade_deferred(
+            shared_active,
+            observed.status.success() || (name == "mantle-egress" && active),
+            !unchanged,
+        ) {
+            println!(
+                "deferred    {name} upgrade: active shared service retained; schedule maintenance to apply changed bytes"
+            );
+            continue;
+        }
+        pending.push((name, bytes, digest));
+    }
+    for (name, bytes, digest) in pending {
+        ssh.checked_bounded(
             &format!(
                 "sudo install -d -m 0755 /opt/mantle/bin && sudo tee /opt/mantle/bin/{name}.new >/dev/null \
+                 && echo '{digest}  /opt/mantle/bin/{name}.new' | sha256sum -c - >/dev/null \
                  && sudo chmod 0755 /opt/mantle/bin/{name}.new && sudo mv -f /opt/mantle/bin/{name}.new /opt/mantle/bin/{name}"
             ),
-            Some(bytes),
+            Some(bytes), Duration::from_secs(90),
         )
         .with_context(|| format!("installing {name}"))?;
     }
-    ssh.check(
-        "sudo systemctl enable mantle-egress.service >/dev/null 2>&1; sudo systemctl restart mantle-egress.service \
+    ssh.checked_bounded(
+        "sudo systemctl enable mantle-egress.service >/dev/null 2>&1 && sudo systemctl start mantle-egress.service \
          && systemctl is-active mantle-egress.service",
-        None,
+        None, Duration::from_secs(30),
     )
     .context("starting mantle-egress")?;
-    println!("installed   mantle-egress, mantle-launch; mantle-egress active");
+    println!(
+        "binaries    reconciled; active shared services retained (deferred upgrades listed above)"
+    );
     Ok(())
 }
 
@@ -319,6 +392,26 @@ fn report_identity(ssh: &Ssh) -> Result<()> {
             println!("{key:<11} {value}");
         }
     }
+    let agent = ssh.bounded(
+        "sudo /opt/mantle/bin/mantle-worker inspect-codex",
+        None,
+        Duration::from_secs(190),
+    )?;
+    if agent.status.success() {
+        let installed: Option<mantle_worker::InstallationFacts> =
+            serde_json::from_slice(&agent.stdout).context("parsing observed Codex facts")?;
+        match installed {
+            Some(facts) => println!(
+                "codex       {} {} binary={} archive={} (verified installation; authentication unknown)",
+                facts.version, facts.architecture, facts.binary_sha256, facts.compressed_sha256
+            ),
+            None => println!("codex       not installed"),
+        }
+    } else {
+        println!(
+            "codex       installation unverified (worker helper absent or inspection refused)"
+        );
+    }
     Ok(())
 }
 
@@ -346,8 +439,10 @@ async fn report_machine(ssh: &Ssh) -> Result<()> {
         }
     );
     let missing = substrate::missing_facts(&machine);
-    if missing.is_empty() {
-        println!("state       READY");
+    if mantle_worker::worker_ready(missing.is_empty(), false, false, false) {
+        println!(
+            "state       READY (common confinement/toolchain; agent authentication not checked)"
+        );
         Ok(())
     } else {
         bail!("worker is not ready; missing facts: {}", missing.join(", "))
@@ -425,9 +520,26 @@ pub fn ssh(config: &Config, store: &Store) -> Result<()> {
 
 /// Substitutes the cloud-init template. A placeholder alone on a line is replaced by a whole file,
 /// indented to the placeholder's column; a placeholder inside a line is replaced by a value.
-pub fn render_user_data(public_key: &str) -> Result<String> {
+fn render_user_data_for(public_key: &str, claude: bool) -> Result<String> {
+    let service = SUBSTRATE_SERVICE
+        .replace(
+            "{{CLAUDE_CONDITION}}",
+            if claude {
+                "ConditionFileNotEmpty=/var/lib/mantle/secrets/claude"
+            } else {
+                ""
+            },
+        )
+        .replace(
+            "{{CLAUDE_SLOT}}\n",
+            if claude {
+                "    --secret-slot claude=/var/lib/mantle/secrets/claude \\\n"
+            } else {
+                ""
+            },
+        );
     let blocks = [
-        ("{{SUBSTRATE_SERVICE}}", SUBSTRATE_SERVICE),
+        ("{{SUBSTRATE_SERVICE}}", service.as_str()),
         ("{{EGRESS_SERVICE}}", EGRESS_SERVICE),
         ("{{BWRAP_APPARMOR}}", BWRAP_APPARMOR),
     ];
@@ -611,7 +723,7 @@ mod tests {
 
     #[test]
     fn the_template_renders_every_placeholder() {
-        let rendered = render_user_data("ssh-ed25519 AAAAtest mantle").expect("renders");
+        let rendered = render_user_data_for("ssh-ed25519 AAAAtest mantle", false).expect("renders");
         assert!(
             rendered.starts_with("#cloud-config"),
             "first line must be #cloud-config"
@@ -623,10 +735,55 @@ mod tests {
             "a worker must not compile Substrate"
         );
         assert!(!rendered.contains("{{"));
+        assert!(!rendered.contains("--secret-slot"));
+        assert!(!rendered.contains("ConditionFileNotEmpty"));
+        assert!(!rendered.contains("systemctl start substrate.service"));
+        assert!(!rendered.contains("systemctl enable substrate.service"));
         assert!(
             rendered.len() <= 16 * 1024,
             "user data is {} bytes",
             rendered.len()
         );
+    }
+
+    #[test]
+    fn legacy_claude_bootstrap_retains_required_slot() {
+        let rendered = render_user_data_for("ssh-ed25519 AAAAtest mantle", true).unwrap();
+        assert!(rendered.contains("--secret-slot claude=/var/lib/mantle/secrets/claude"));
+        assert!(rendered.contains("ConditionFileNotEmpty=/var/lib/mantle/secrets/claude"));
+        assert!(!rendered.contains("{{"));
+    }
+
+    #[test]
+    fn both_profiles_keep_aperture_and_ca_in_the_daemon_command() {
+        for claude in [false, true] {
+            let rendered = render_user_data_for("ssh-ed25519 AAAAtest mantle", claude).unwrap();
+            let yaml: serde_yaml::Value = serde_yaml::from_str(&rendered).unwrap();
+            let service = yaml["write_files"]
+                .as_sequence()
+                .unwrap()
+                .iter()
+                .find(|file| file["path"] == "/etc/systemd/system/substrate.service")
+                .unwrap()["content"]
+                .as_str()
+                .unwrap();
+            let mut lines = service
+                .lines()
+                .skip_while(|line| !line.starts_with("ExecStart="));
+            let mut line = lines.next().unwrap();
+            let mut command = line.to_owned();
+            while line.ends_with('\\') {
+                line = lines.next().unwrap();
+                command.push_str(line);
+            }
+            assert!(
+                command.contains("--egress-aperture egress=127.0.0.1:3128/tcp"),
+                "daemon lost aperture after optional slot line"
+            );
+            assert!(
+                command.contains("--ca-bundle /etc/ssl/certs/ca-certificates.crt"),
+                "daemon lost CA bundle after optional slot line"
+            );
+        }
     }
 }
