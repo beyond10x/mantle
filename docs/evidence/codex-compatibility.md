@@ -1,5 +1,36 @@
 # Codex qualification under Substrate — 2026-10-02
 
+## Version 0.1.3 update — attachment transport, 2026-10-03
+
+The production Codex attachment later failed with `session.output-backpressure`, even with a
+continuously drained local PTY. The earlier small-screen and local-launcher observations below
+did not exercise this replay burst through Substrate's live queue. A readiness handshake alone
+also failed: the attached consumer could still encounter an immediate full-queue cancellation.
+
+Mantle 0.1.3 coordinates its client/launcher readiness handshake with Substrate 0.7.10's bounded
+queue wait. The host reserves existing queue capacity before copying each payload, with a fixed
+one-second stall deadline per frame. The correction does not enlarge queues, discard replay to
+keep a session alive, or weaken confinement. It does not select an unrecorded capture mode.
+
+The [combined transport proof](../../.engineering/reports/attach-startup-2026-10-02/combined-proof.log)
+used a fresh local delegated Substrate daemon, a synthetic confined agent and real 100×50 PTYs.
+Two attachments each delivered the exact 262,144-byte rolling replay and exact keyboard reply;
+both detached successfully, restored terminal state and preserved the same agent execution.
+Each deliberately delayed WebSocket attachment by 500 ms. The proof used the candidate
+Substrate wire 0.17 runtime and the production Mantle terminal implementation, with unchanged
+queue limits. It did not upgrade the existing worker or run an authenticated Codex turn.
+
+The proof's final workspace-destroy API call returned `operation.outcome-unknown`, so its
+overall command exited 1 despite passing transport observations. Separate cleanup checks
+confirmed the temporary workspaces, processes, socket and cgroup absent. That cleanup evidence
+does not relabel the refused API result as successful.
+
+Existing workers require a coordinated runtime and launcher upgrade during maintenance;
+`mantle worker up` does not restart an already active older Substrate daemon and may defer
+shared binary changes. Preserve workspace data before maintenance; `mantle stop` destroys it.
+Device login, authenticated model/tool turns, token refresh, rendered live Codex usability and
+complete live lifecycle parity remain unverified by this synthetic transport proof.
+
 ## Release 0.1.2 update — live worker observations
 
 The later [acceptance audit](../../.engineering/reports/codex-acceptance-audit-2026-10-02/audit.md)
