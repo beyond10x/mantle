@@ -7,7 +7,7 @@ title: Codex sessions with Claude-equivalent terminal behavior
 relations:
 - informed_by: epic:vertical-slice
 - informed_by: executable-system-specification:mantle-session
-revision: 17
+revision: 19
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":1}}}
@@ -48,7 +48,7 @@ Read at Mantle `11b69db`; this is a proposal, not delivered Codex support.
 - story:codex-confinement-qualification and story:agent-ready-worker are implemented; their recorded live/offline limits remain explicit.
 - story:launcher-volatile-replay and story:codex-session-wiring are implemented on local main; the latter's wave5 gate passed179Rust/331native scenarios. Codex manifests, persisted identity, start/attach builders, private paths and tmpfs diagnostics are wired; supported capture admission remains an explicit startup refusal.
 - story:attach-backpressure-cancellation is implemented by wave6 unitfd87c21/integrationde01750, with183Rust/333native full-gate passes and a measured old/new cancellation result. It supplies the local DP02/DP03 relay behavior without claiming authenticated conversation parity.
-- story:codex-gateway-destinations is proposed after two recorded critic rounds; it adds two fixed source-established subscription hosts through the existing gateway, serialized after wave6 whole-spec provenance. Live deployment and traffic sufficiency remain parent acceptance.
+- story:codex-gateway-destinations is implemented at wave7 integration710dc32; its full gate passes185Rust tests and336native scenarios, including the two fixed source-established subscription hosts through the existing gateway. Live deployment and traffic sufficiency remain parent acceptance.
 - The other session owns Substrate capture support tracked at https://github.com/beyond10x/substrate/issues/112. This effort does not implement Substrate or edit its store. coordination-blocker:codex-terminal-capture remains open while the operator's transport clarification is unanswered; elapsed time is not permission to remove the accepted privacy boundary.
 - story:codex-interactive-start retains usable startup, supported SDK consumption where required, real login/model/tools, refresh/revocation and observed network behavior. story:dual-agent-session-parity retains real two-agent lifecycle, rendering, confinement and isolation evidence. Neither parent nor epic is complete.
 
@@ -107,3 +107,11 @@ clarification is the coordinator's inference and does not weaken final acceptanc
 Deliver Mantle Codex parity through reviewed AEP waves, preserving confinement and Claude-equivalent start, attach, resize, detach, reconnect, status, exec and stop. The other session owns Substrate issue112; do not implement a Mantle encryption workaround or take over Substrate implementation. Complete independent Mantle code and record actual authentication, model/tool and lifecycle evidence before claiming the full experience works. No token budget is imposed.
 
 The existing goal service is now active and unbudgeted, verified2026-10-02. Its objective remains implementation of epic:codex-parity with qualification, worker preparation, authenticated sessions and lifecycle parity. The earlier paused-state/create_goal refusal is historical; the existing unfinished goal was not falsely completed or replaced. The accepted capture/privacy boundary remains in the owning stories while the operator clarification about the latest separation instruction is pending. Continue all independent implementation and review meanwhile.
+
+## Local completion and pending activation after wave7
+
+All independent source units are implemented: qualification, credential-independent workers, volatile launcher replay, Codex manifest/persisted identity/private runtime/start-attach wiring, bounded attachment cancellation and exact subscription gateway destinations. Latest full integration710dc32b6b565da6878a6c964265adcd3f17e686 passes185Rust tests and336native scenarios; full evidence lives in .engineering/reports/codex-gateway-wave7-2026-10-02. Those observations establish the local contracts, not usable authenticated Codex.
+
+Production still returns the fixed unsupported-capture refusal before login because the pinned SDK cannot enforce the earlier accepted non-recording requirement. The previously asked operator question—use the existing Claude recording transport now, or retain the no-capture startup gate—remains unanswered. No permission is inferred from elapsed time. The latest read-only upstream check still found main6af1b91889edf5fa5455c03e68829b56e6b6cc56 and issue112 open without comments; this is not a claim about the other session's unpushed progress. No Substrate implementation was taken over.
+
+The next substantive step requires either an explicit transport-policy answer or the supported SDK delivery, followed by real operator device authentication and the named CS/DP observations. Do not invent a live pass, silently remove the guard, reopen completed local units, or create more synthetic work merely to appear active. AWS remains paused. The unbudgeted goal is active and incomplete. Source commits are local; publication/release is not part of standing wave approval.

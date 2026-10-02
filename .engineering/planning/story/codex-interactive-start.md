@@ -72,7 +72,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/codex-start.yaml
-revision: 32
+revision: 33
 ---
 ## Context
 
@@ -189,3 +189,11 @@ The smallest local source unit is two default entries plus the existing ESS Chec
 Active gateway upgrades are deliberately deferred by worker.rs:329–342 to preserve shared sessions. Updating source therefore does not activate the two entries on an already-running gateway; controlled deployment and real TLS/login/model/refresh/network acceptance remain this parent's work. No worker or network policy was mutated during scoping. This is preparation for the next selected local unit, not an implemented or live-qualified claim.
 
 Pinned source citations: https://github.com/openai/codex/blob/rust-v0.153.4/codex-rs/login/src/server.rs#L59 ; https://github.com/openai/codex/blob/rust-v0.153.4/codex-rs/login/src/device_code_auth.rs#L166 ; https://github.com/openai/codex/blob/rust-v0.153.4/codex-rs/model-provider-info/src/lib.rs#L290 .
+
+## Local completion and pending activation after wave7
+
+All independent source units are implemented: qualification, credential-independent workers, volatile launcher replay, Codex manifest/persisted identity/private runtime/start-attach wiring, bounded attachment cancellation and exact subscription gateway destinations. Latest full integration710dc32b6b565da6878a6c964265adcd3f17e686 passes185Rust tests and336native scenarios; full evidence lives in .engineering/reports/codex-gateway-wave7-2026-10-02. Those observations establish the local contracts, not usable authenticated Codex.
+
+Production still returns the fixed unsupported-capture refusal before login because the pinned SDK cannot enforce the earlier accepted non-recording requirement. The previously asked operator question—use the existing Claude recording transport now, or retain the no-capture startup gate—remains unanswered. No permission is inferred from elapsed time. The latest read-only upstream check still found main6af1b91889edf5fa5455c03e68829b56e6b6cc56 and issue112 open without comments; this is not a claim about the other session's unpushed progress. No Substrate implementation was taken over.
+
+The next substantive step requires either an explicit transport-policy answer or the supported SDK delivery, followed by real operator device authentication and the named CS/DP observations. Do not invent a live pass, silently remove the guard, reopen completed local units, or create more synthetic work merely to appear active. AWS remains paused. The unbudgeted goal is active and incomplete. Source commits are local; publication/release is not part of standing wave approval.

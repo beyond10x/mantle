@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T17:09:15Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-gateway-destinations",
+  "kind": "story",
+  "revision": 20,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Full integration710dc32b6b565da6878a6c964265adcd3f17e686: seven step exits0,185 Rust tests,336 native scenarios, no failures/errors/skips/unsupported/outside/refused",
+    "reference": ".engineering/reports/codex-gateway-wave7-2026-10-02/gate/"
+  }
+}

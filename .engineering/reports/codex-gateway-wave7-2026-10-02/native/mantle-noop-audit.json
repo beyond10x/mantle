@@ -1,0 +1,15 @@
+{
+  "authored_passes": [],
+  "format": "mantle-noop-audit/1",
+  "implementation": "deliberately inert accepted commands and empty observations",
+  "passed": [
+    "mantle.egress.ClassifyAddress/outcome/returned",
+    "mantle.manifest.Parse/outcome/returned",
+    "mantle.manifest.ValidateMemory/outcome/accepted",
+    "mantle.manifest.ValidatePids/outcome/accepted",
+    "mantle.manifest.ValidateRetention/outcome/accepted",
+    "mantle.orchestration.WorkerRecords/outcome/returned"
+  ],
+  "scenarios": 336,
+  "spec_digest": "1ca3ff3a7d740833ed3ce317e750e276d26288e5d46f601017adf0e34557f6de"
+}

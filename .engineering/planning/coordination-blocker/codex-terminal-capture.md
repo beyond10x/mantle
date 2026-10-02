@@ -9,7 +9,7 @@ refs:
   reference: beyond10x/substrate#112
 relations:
 - blocks: story:codex-interactive-start
-revision: 4
+revision: 5
 ---
 ## Observation
 
@@ -45,3 +45,11 @@ Upstream owner: Substrate, via https://github.com/beyond10x/substrate/issues/112
 Clear only after a supported exact Substrate/SDK revision supplies policy-controlled non-recording streaming, accurate lifecycle/exit/resource/audit metadata and independent finite stream/buffer/backpressure bounds, with no terminal output in SQLite/WAL or diagnostics across success/failure/recovery paths. Mantle must request and verify the effective mode and refuse unsupported/denied requests before login; no silent fallback to captured output. Filing or closing the issue, probe-only success or later row deletion is insufficient evidence.
 
 Mantle's launcher and Codex diagnostic sinks are separate mandatory obligations. Independent launcher work can proceed while this blocker remains open. Real login remains blocked until supported upstream behavior and downstream synthetic sink proof are available. design:codex-terminal-confidentiality records the inspected seams, ownership and proposed proof.
+
+## Local completion and pending activation after wave7
+
+All independent source units are implemented: qualification, credential-independent workers, volatile launcher replay, Codex manifest/persisted identity/private runtime/start-attach wiring, bounded attachment cancellation and exact subscription gateway destinations. Latest full integration710dc32b6b565da6878a6c964265adcd3f17e686 passes185Rust tests and336native scenarios; full evidence lives in .engineering/reports/codex-gateway-wave7-2026-10-02. Those observations establish the local contracts, not usable authenticated Codex.
+
+Production still returns the fixed unsupported-capture refusal before login because the pinned SDK cannot enforce the earlier accepted non-recording requirement. The previously asked operator question—use the existing Claude recording transport now, or retain the no-capture startup gate—remains unanswered. No permission is inferred from elapsed time. The latest read-only upstream check still found main6af1b91889edf5fa5455c03e68829b56e6b6cc56 and issue112 open without comments; this is not a claim about the other session's unpushed progress. No Substrate implementation was taken over.
+
+The next substantive step requires either an explicit transport-policy answer or the supported SDK delivery, followed by real operator device authentication and the named CS/DP observations. Do not invent a live pass, silently remove the guard, reopen completed local units, or create more synthetic work merely to appear active. AWS remains paused. The unbudgeted goal is active and incomplete. Source commits are local; publication/release is not part of standing wave approval.

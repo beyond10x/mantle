@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:codex-gateway-destinations
 kind: story
-status: active
+status: implemented
 title: Admit fixed Codex subscription destinations through the existing gateway
 relations:
 - decomposes: story:codex-interactive-start
@@ -12,7 +12,7 @@ scope:
 - confidence: cited
   path: crates/mantle-egress/src/allow.rs
 - confidence: cited
-  path: generated/worker-model/Cargo.toml
+  path: crates/mantle-egress/src/conformance.rs
 - confidence: cited
   path: generated/worker-model/source.schema.json
 - confidence: cited
@@ -27,16 +27,17 @@ scope:
   path: spec/domains/egress.yaml
 - confidence: cited
   path: spec/ess-inputs.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/egress/codex-connect-destinations.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/egress/codex-default-destinations.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/egress/codex-destination-refusals.yaml
-revision: 18
+revision: 21
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T16:25:14Z", actor: "human:timo", revision: 16, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T16:44:05Z", actor: "human:timo", revision: 18, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "active", to: "implemented", at: "2026-10-02T17:09:16Z", actor: "human:timo", revision: 21, decided_on: {"recorded":{"test_result":1,"review_outcome":2,"verification":1,"ess_conformance_coverage_v1":1}}}
 ---
 ## Context
 
@@ -63,20 +64,22 @@ This follows story:attach-backpressure-cancellation because shared ESS inputs/in
 
 ## Scope
 
-Confidence high for cited production seams; the three authored scenario files remain inferred until implementation. Existing conformance.rs already supports these real handler scenarios and is not reserved for edits absent demonstrated need. Full-spec generated-model drift obliges regeneration, with only actual generated changes retained.
+The implementor confirmed all three inferred authored scenario paths by executing the existing real policy/CONNECT boundary; each is now cited. Eleven of the twelve originally reserved paths changed. Generated Cargo.toml was regenerated/compared but remains byte-identical, so it is removed from actual edit scope. The first adversary adds tests in crates/mantle-egress/src/conformance.rs, which proxy.rs:373–375 imports only under #[cfg(test)]; this additional cited test surface is recorded explicitly. No production fixture behavior or proxy implementation change is authorized by that test-only addition. Final evidence records the observed package and native counts.
 
 - cited: crates/mantle-egress/src/allow.rs
+- cited: crates/mantle-egress/src/conformance.rs
 - cited: spec/domains/egress.yaml
-- inferred: spec/scenarios/egress/codex-default-destinations.yaml
-- inferred: spec/scenarios/egress/codex-connect-destinations.yaml
-- inferred: spec/scenarios/egress/codex-destination-refusals.yaml
+- cited: spec/scenarios/egress/codex-default-destinations.yaml
+- cited: spec/scenarios/egress/codex-connect-destinations.yaml
+- cited: spec/scenarios/egress/codex-destination-refusals.yaml
 - cited: spec/ess-inputs.yaml
 - cited: spec/conformance-baseline.json
 - cited: spec/README.md
-- cited: generated/worker-model/Cargo.toml
 - cited: generated/worker-model/types.rs
 - cited: generated/worker-model/source.schema.json
 - cited: generated/worker-model/types-report.json
+
+Sources: implementation.md in .engineering/reports/codex-gateway-wave7-2026-10-02; staged unit source diff; first adversary's reported test-only addition. Source boundaries, private/reserved address defenses, limits and authenticated-parent exclusions are unchanged.
 
 ## Sources
 

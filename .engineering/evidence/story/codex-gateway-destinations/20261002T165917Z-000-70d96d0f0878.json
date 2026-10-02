@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T16:59:17Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-gateway-destinations",
+  "kind": "story",
+  "revision": 18,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "VERIFIED: same production gateway startup and exact-ten-host predicate, baseline8/8 exit1 versus treatment10/10 exit0; graceful shutdown both",
+    "reference": ".engineering/reports/codex-gateway-wave7-2026-10-02/coordinator-claim.md"
+  }
+}
