@@ -1,0 +1,78 @@
+   Compiling mantle-launch v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-launch)
+   Compiling mantle-worker-model v0.0.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/generated/worker-model)
+   Compiling mantle-worker v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-worker)
+   Compiling mantle v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle)
+   Compiling mantle-egress v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-egress)
+   Compiling mantle-conformance v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-conformance)
+   Compiling mantle-docs v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-docs)
+    Finished `test` profile [unoptimized] target(s) in 16.97s
+     Running unittests src/main.rs (/dev/shm/mantle-wave4-target-integration/debug/deps/mantle-277e3ad59dda8f7b)
+
+running 29 tests
+test app::terminal::tests::ctrl_bracket_d_detaches_and_forwards_what_came_before ... ok
+test app::worker::tests::legacy_claude_bootstrap_retains_required_slot ... ok
+test app::worker::tests::the_template_renders_every_placeholder ... ok
+test adapters::substrate::worker_tests::common_readiness_and_selected_claude_are_distinct_observations ... ok
+test app::terminal::tests::the_sequence_is_recognised_across_reads ... ok
+test config::tests::common_worker_configuration_needs_no_claude_credentials ... ok
+test config::tests::explicit_path_selection_is_absolute_and_preserves_defaults ... ok
+test domain::manifest::tests::cwd_with_dot_dot_or_empty_components_is_refused ... ok
+test domain::manifest::tests::sizes_and_durations_parse ... ok
+test domain::manifest::tests::mounts_and_refs_cannot_escape ... ok
+test config::tests::legacy_claude_table_remains_parseable ... ok
+test domain::session::tests::running_is_never_reached_without_starting ... ok
+test domain::manifest::tests::defaults_apply ... ok
+test domain::manifest::tests::unserved_fields_are_refused_by_name ... ok
+test domain::session::tests::stopped_is_final_and_failures_only_stop ... ok
+test adapters::state::tests::sources_round_trip ... ok
+test domain::manifest::tests::the_example_manifest_resolves ... ok
+test app::terminal::tests::escape_followed_by_anything_else_passes_both_bytes ... ok
+test domain::manifest::tests::cwd_must_be_inside_a_mount ... ok
+test domain::session::tests::names_round_trip ... ok
+test domain::session::tests::the_happy_path_is_legal ... ok
+test adapters::state::tests::an_illegal_move_is_refused_and_not_written ... ok
+test domain::manifest::tests::retain_for_is_bounded_by_the_exec_limit ... ok
+test adapters::state::tests::a_live_name_is_unique_until_stopped ... ok
+test adapters::ssh::tests::tunnel_socket_binds_with_live_length_state_prefix ... ok
+test app::worker::tests::both_profiles_keep_aperture_and_ca_in_the_daemon_command ... ok
+test adapters::ssh::tests::socket_allocations_are_private_unique_and_state_path_independent ... ok
+test adapters::ssh::tests::tunnel_socket_directory_lives_until_child_cleanup_and_is_removed_on_errors ... ok
+test adapters::state::conformance::ess_generated_local_conformance ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.06s
+
+     Running unittests examples/codex_qualification.rs (/dev/shm/mantle-wave4-target-integration/debug/examples/codex_qualification-2c3ae41e1f0be255)
+
+running 10 tests
+test tests::digest_format_is_strict ... ok
+test tests::digest_refuses_other_non_regular_descriptors ... ok
+test adversary::binary_symlink_is_validated_against_its_current_opened_object ... FAILED
+test adversary::non_regular_binary_input_is_refused_without_waiting_for_a_fifo_writer ... FAILED
+test tests::unsafe_scratch_parents_are_refused_without_creating_children ... ok
+test tests::scratch_budget_refuses_large_files_and_does_not_follow_links ... ok
+test tests::digest_bounds_actual_input_even_when_it_exceeds_the_size_snapshot ... ok
+test tests::fixed_observation_never_exports_terminal_payload ... ok
+test tests::terminal_observation_is_bounded_and_handles_split_queries ... ok
+test tests::cq01_rejects_wrong_digest_before_executing_a_binary ... ok
+
+failures:
+
+---- adversary::binary_symlink_is_validated_against_its_current_opened_object stdout ----
+
+thread 'adversary::binary_symlink_is_validated_against_its_current_opened_object' (191500) panicked at crates/mantle/examples/tests/codex_qualification_adversary.rs:60:59:
+private test TMPDIR
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- adversary::non_regular_binary_input_is_refused_without_waiting_for_a_fifo_writer stdout ----
+
+thread 'adversary::non_regular_binary_input_is_refused_without_waiting_for_a_fifo_writer' (191501) panicked at crates/mantle/examples/tests/codex_qualification_adversary.rs:12:59:
+private test TMPDIR
+
+
+failures:
+    adversary::binary_symlink_is_validated_against_its_current_opened_object
+    adversary::non_regular_binary_input_is_refused_without_waiting_for_a_fifo_writer
+
+test result: FAILED. 8 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+
+error: test failed, to rerun pass `-p mantle --example codex_qualification`

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T14:26:39Z",
+  "actor": "human:timo",
+  "artifact": "story:launcher-volatile-replay",
+  "kind": "story",
+  "revision": 7,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "launcher package tests65, native45, clippy/fmt/ESS/generated drift exit0; pre-integration implementation evidence",
+    "reference": ".engineering/reports/codex-launcher-implementation-2026-10-02.md"
+  }
+}

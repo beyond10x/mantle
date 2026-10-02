@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T14:38:25Z",
+  "actor": "human:timo",
+  "artifact": "story:launcher-volatile-replay",
+  "kind": "story",
+  "revision": 8,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Full integration gate exit0:172 Rust tests,324 native scenarios; private TMPDIR retry after preserved setup failure",
+    "reference": ".engineering/reports/codex-launcher-wave4-2026-10-02.md"
+  }
+}

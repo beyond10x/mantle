@@ -9,6 +9,7 @@ relations:
 - depends_on: story:codex-confinement-qualification
 - depends_on: story:agent-ready-worker
 - depends_on: story:launcher-volatile-replay
+- depends_on: story:codex-session-wiring
 scope:
 - confidence: cited
   path: AGENTS.md
@@ -70,7 +71,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/codex-start.yaml
-revision: 27
+revision: 29
 ---
 ## Context
 
@@ -161,3 +162,17 @@ clarification is the coordinator's inference and does not weaken final acceptanc
 ## Launcher prerequisite ownership
 
 story:launcher-volatile-replay owns the launcher Boolean --volatile-replay policy and native LP01–LP06 proof. This interactive-start story consumes that policy for every Codex launcher invocation and owns safe production request construction, exact supported Substrate SDK pin, effective capture-mode verification/refusal, actual Codex diagnostics and all CS evidence. It must not reimplement the launcher primitive or infer end-to-end privacy from its local tests. Shared files are serialized by depends_on:story:launcher-volatile-replay; dual-agent-session-parity follows this story. Synthetic local preparation may precede upstream delivery, but real login and the story's completion cannot.
+
+## Independent integration implementation
+
+story:codex-session-wiring extracts the offline-checkable manifest, state migration, credential routing and real request-builder implementation. It follows launcher-volatile-replay. This parent depends on that result and owns its supported SDK activation, actual Codex home/config/diagnostic setup, chosen confinement profile, network and authenticated/live CS acceptance. The substory's mandatory unavailable-capability refusal is a temporary honest boundary, not completed Codex support. The user's instruction is to finish Mantle integration while the other session owns Substrate; do all local work while that capability develops.
+
+## Pinned Codex diagnostic configuration findings
+
+Pinned Codex 0.153.4 independently installs its SQLite diagnostic sink at TRACE; RUST_LOG=off suppresses direct-login and optional TUI text layers but is insufficient alone (tui/src/startup_orchestration.rs:528, state/src/log_db.rs:57). Token refresh failure can log a backend response body (login/src/auth/manager.rs:1612). These are source findings, not a live credential observation.
+
+Existing Substrate 05695970 process.rs:1908–1937 supplies a fresh private /tmp tmpfs to each confined exec. Its memory.max and memory.swap.max=0 bound memory-backed files with the session; this is not a separate diagnostic quota. Configure pinned Codex sqlite_home=/tmp/mantle-codex/sqlite and log_dir=/tmp/mantle-codex/log, initialize those private directories inside the long-lived launcher exec, and verify tmpfs before dispatch. Both state and log SQLite move there; auth.json and intended conversation rollouts remain under the private workspace CODEX_HOME. Same-process detach/reattach preserves tmpfs; process-tree termination retires it. Restart/resume across a new exec is not established.
+
+Supported TUI configuration includes forced_login_method=chatgpt, cli_auth_credentials_store=file, history.persistence=none, analytics.enabled=false, feedback.enabled=false and check_for_update_on_startup=false. TUI onboarding permits device code without an unconditional login preflight that clears existing auth. No supported TUI external-sandbox selector was found; retain the reviewed outer-confinement candidate with on-request approvals for qualification, never the bypass flag. These findings define the next local configuration/private-home implementation and its synthetic canary tests; they do not claim authenticated operation or waive effective configuration validation.
+
+Source scoper performed read-only inspection only. No Substrate changes, credentials, login or model requests. The other session remains owner of substrate#112.

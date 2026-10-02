@@ -1,0 +1,7 @@
+   Compiling serde_core v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling memchr v2.8.3
+   Compiling mantle-docs v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-docs)
+    Finished `dev` profile [unoptimized] target(s) in 5.19s
+     Running `/dev/shm/mantle-wave4-target-integration/debug/mantle-docs build --out website/build --commit 2f7ad062a89bf12f6c936d05c81e9403093d6876`
+Mantle documentation built at website/build

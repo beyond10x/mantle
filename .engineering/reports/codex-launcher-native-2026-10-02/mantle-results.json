@@ -1,0 +1,1303 @@
+{
+  "completed_at": 1790951741726,
+  "format": "ess-conformance-results/1",
+  "results": [
+    {
+      "scenario_id": "mantle.manifest.Parse/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest.ValidateMemory/outcome/accepted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest.ValidateMemory/outcome/refused",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest.ValidatePids/outcome/accepted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest.ValidatePids/outcome/refused",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest.ValidateRetention/outcome/accepted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest.ValidateRetention/outcome/refused",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/allow-default",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/capabilities-are-subset-not-policy",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/cpu-unsigned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/cpu-width",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/cwd-36",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/cwd-37",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/cwd-38",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/cwd-39",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/cwd-40",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/cwd-41",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/defaults",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/detach-false",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/duplicate-mount",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/lower-resource-bounds",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/memory-low",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/memory-multiplication-overflow",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/memory-overflow",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/memory-unit",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/mount-28",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/mount-29",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/mount-30",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/mount-31",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/name-leading-dash",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/name-too-long",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/name-uppercase",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/nested-cwd",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/no-repositories",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/non-https",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/original-bytes-hashed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/pids-high",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/pids-zero",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/ref-32",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/ref-33",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/ref-34",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/ref-35",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/retention-high",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/retention-overflow",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/retention-unit",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/retention-upper-bound",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/retention-zero",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/unknown-nested-field",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/unknown-root-field",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/unserved-capability",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/workspace-root-cwd",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/wrong-agent",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/wrong-api",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/wrong-kind",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/wrong-root",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/wrong-runtime",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.manifest/authored/zero-cpu-clamped",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration.Observe/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration.Request/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration.Start/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration.Stop/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration.Worker/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration.WorkerRecords/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/agent-request",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/attach-request",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-down-missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-down-running",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-down-stopped",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-down-stopping",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-new-profile-idle-alarm",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-refused-alarm",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-refused-find",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-refused-group",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-refused-image",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-refused-launch",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-refused-profile",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-refused-wait-running-600",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-up-missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-up-pending",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-up-running",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-up-stopped",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/aws-up-stopping",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/exec-request",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/kubevirt-down-always",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/kubevirt-down-missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/kubevirt-refused-find",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/kubevirt-refused-launch",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/kubevirt-refused-wait-running-2400",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/kubevirt-up-always",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/kubevirt-up-halted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/kubevirt-up-missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-all-facts-absent",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-all-required-facts",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-common-without-claude",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-measured",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-measured-current-absent",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-missing-cgroup-memory",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-missing-cgroup-processes",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-missing-exec-argv-only",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-missing-exec-cgroup-kill",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-missing-exec-cgroup-limits",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-missing-exec-egress-apertures",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-missing-exec-no-egress",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-missing-secrets-slots",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-missing-sessions-pty",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-pending",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/observe-unavailable",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/start-attach",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/start-detached",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/start-invalid-observed-commit",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/start-pinned-commit",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/start-refused-agent",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/start-refused-attach",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/start-refused-clone",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/start-refused-create",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/start-refused-mkdir",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/start-refused-rev-parse",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-absent-agent",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-absent-workspace",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-live-agent",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-no-resources",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-refused-destroy",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-refused-get-exec",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-refused-get-workspace",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-refused-retire",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-refused-signal",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-refused-wait",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-resumes",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-terminal-agent",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-transport-unknown-readback",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-unknown-readback",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-unknown-readback-error",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-unknown-still-present",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-upstream-destroy-error",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-upstream-exec-error",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/stop-upstream-workspace-error",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/worker-missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.orchestration/authored/worker-upsert",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AgentStartFailed/outcome/missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AgentStartFailed/outcome/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AgentStarted/outcome/missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AgentStarted/outcome/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AssessAgentInstallation/outcome/already-current",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AssessAgentInstallation/outcome/installed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AssessAgentInstallation/outcome/refused",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AssessSharedBinaryUpgrade/outcome/applicable",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AssessSharedBinaryUpgrade/outcome/deferred",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AssessWorkerReadiness/outcome/missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.AssessWorkerReadiness/outcome/ready",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.BeginStop/outcome/missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.BeginStop/outcome/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.FinishStop/outcome/missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.FinishStop/outcome/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.InsertSession/outcome/conflict",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.InsertSession/outcome/recorded",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.MaterializationFailed/outcome/missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.MaterializationFailed/outcome/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Materialized/outcome/missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Materialized/outcome/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.PutSource/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.ReadSources/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.AgentStartFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.AgentStarted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.FinishStop",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.MaterializationFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.Materialized",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.AgentStartFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.AgentStarted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.FinishStop",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.MaterializationFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.Materialized",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Materializing/refuses/mantle.session.AgentStartFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Materializing/refuses/mantle.session.AgentStarted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Materializing/refuses/mantle.session.FinishStop",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Running/refuses/mantle.session.AgentStartFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Running/refuses/mantle.session.AgentStarted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Running/refuses/mantle.session.FinishStop",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Running/refuses/mantle.session.MaterializationFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Running/refuses/mantle.session.Materialized",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Starting/refuses/mantle.session.FinishStop",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Starting/refuses/mantle.session.MaterializationFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Starting/refuses/mantle.session.Materialized",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopped/refuses/mantle.session.AgentStartFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopped/refuses/mantle.session.AgentStarted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopped/refuses/mantle.session.BeginStop",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopped/refuses/mantle.session.FinishStop",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopped/refuses/mantle.session.MaterializationFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopped/refuses/mantle.session.Materialized",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopping/refuses/mantle.session.AgentStartFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopping/refuses/mantle.session.AgentStarted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopping/refuses/mantle.session.BeginStop",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopping/refuses/mantle.session.MaterializationFailed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/state/Stopping/refuses/mantle.session.Materialized",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/transition/materialization_failed/by/mantle.session.MaterializationFailed/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/transition/materialized/by/mantle.session.Materialized/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/transition/start_failed/by/mantle.session.AgentStartFailed/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/transition/started/by/mantle.session.AgentStarted/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/transition/stopped/by/mantle.session.FinishStop/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.Session/transition/stopping/by/mantle.session.BeginStop/moved",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.SetAgentExec/outcome/missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.SetAgentExec/outcome/recorded",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.SetWorkspace/outcome/missing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session.SetWorkspace/outcome/recorded",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session/authored/aw-01-through-aw-05-worker-decisions",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session/authored/live-name-failedagentstart",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session/authored/live-name-failedmaterialization",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session/authored/live-name-materializing",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session/authored/live-name-running",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session/authored/live-name-starting",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session/authored/live-name-stopped",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session/authored/live-name-stopping",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session/authored/source-composite-insert-isolation",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.session/authored/source-rows-survive-stop",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress.CheckBudgets/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress.CheckDefaultDestination/outcome/allowed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress.CheckDefaultDestination/outcome/denied",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress.CheckDrain/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress.ClassifyAddress/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress.Exchange/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-0",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-1",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-10",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-11",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-12",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-13",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-14",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-15",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-16",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-17",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-18",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-19",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-2",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-20",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-21",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-22",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-23",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-24",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-25",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-26",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-27",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-28",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-3",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-4",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-5",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-6",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-7",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-8",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/address-9",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/allow-api-anthropic-com",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/allow-codeload-github-com",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/allow-crates-io",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/allow-github-com",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/allow-index-crates-io",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/allow-objects-githubusercontent-com",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/allow-platform-claude-com",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/allow-static-crates-io",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/authority-normalization",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/bad-header",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/bad-version",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/closed-incomplete",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/connect-failure",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/connect-opaque-bytes",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/connect-timeout",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/connection-budgets",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/head-timeout",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/idle-timeout",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/ip-literal",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/missing-port",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/mixed-dns-only-dials-public",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/non-connect",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/oversize-header",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/port-must-match",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/resolver-empty",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/resolver-failure",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/resolver-private",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/resolver-timeout",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/shutdown-drain",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/suffix-is-not-allowed",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.egress/authored/zero-port",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.Emit/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.FileSafety/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.Lifecycle/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.ParseArgs/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.ParseWindow/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.PersistentReplayCompatibility/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.ReadSecret/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.ReplayRing/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.Signals/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.SlowReader/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.ValidateScrollback/outcome/accepted",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.ValidateScrollback/outcome/refused",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.VolatileReplayBounds/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.VolatileReplayExitPaths/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.VolatileReplayLifecycle/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch.VolatileReplayPreflight/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/argument-byte-preservation",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/argument-defaults",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/attach-no-tty",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/bad-environment-name",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/bounded-scrollback",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/filesystem-links-and-locks",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/missing-command",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/os-argument-bytes-and-exit",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/oversize-scrollback-write",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/persistent-replay-compatibility",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/process-group-signals",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/proxy-userinfo",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/pty-fifo-lifecycle",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/relative-dir",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/replay-policy-arguments",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/secret-empty",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/secret-fd-pair",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/secret-non-utf8",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/secret-nul",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/secret-overflow",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/secret-trailing-whitespace",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/slow-reader-bounded-output",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/standard-secret-fd",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/volatile-replay-bounds",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/volatile-replay-exit-paths",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/volatile-replay-lifecycle",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/volatile-replay-preflight",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/window-fragmentation",
+      "status": "passed"
+    },
+    {
+      "scenario_id": "mantle.launch/authored/window-oversize-discard",
+      "status": "passed"
+    }
+  ],
+  "suite_digest": "sha256:a012d43f115e030e793cbad8efd2a205b7aafae9b2237d57d4a8a6e90f69b464"
+}

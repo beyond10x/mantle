@@ -1,0 +1,27 @@
+   Compiling serde_core v1.0.229
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling serde_derive v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling serde v1.0.229
+   Compiling serde_derive_internals v0.29.1
+   Compiling schemars_derive v0.8.22
+   Compiling thiserror-impl v2.0.21
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling thiserror v2.0.21
+   Compiling schemars v0.8.22
+   Compiling digest v0.11.3
+   Compiling ess-primitives v0.50.0 (https://github.com/beyond10x/ess?rev=8700d0808e8f3b19711629d8a17afc5281680f58#8700d080)
+   Compiling sha2 v0.11.0
+   Compiling bitflags v2.13.2
+   Compiling pulldown-cmark v0.13.4
+   Compiling ess-domain v0.50.0 (https://github.com/beyond10x/ess?rev=8700d0808e8f3b19711629d8a17afc5281680f58#8700d080)
+   Compiling clap_derive v4.6.7
+   Compiling clap v4.6.7
+   Compiling ess-compiler v0.50.0 (https://github.com/beyond10x/ess?rev=8700d0808e8f3b19711629d8a17afc5281680f58#8700d080)
+   Compiling ess-gen v0.50.0 (https://github.com/beyond10x/ess?rev=8700d0808e8f3b19711629d8a17afc5281680f58#8700d080)
+   Compiling ess-conformance v0.50.0 (https://github.com/beyond10x/ess?rev=8700d0808e8f3b19711629d8a17afc5281680f58#8700d080)
+   Compiling mantle-conformance v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-conformance)
+    Finished `dev` profile [unoptimized] target(s) in 33.33s
+     Running `/dev/shm/mantle-wave4-target-integration/debug/mantle-conformance --root .`
+Complete ESS inventory: 324 passed; 0 failed, skipped, unsupported, outside or refused

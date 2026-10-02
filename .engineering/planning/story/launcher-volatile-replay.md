@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:launcher-volatile-replay
 kind: story
-status: active
+status: implemented
 title: Keep launcher replay in memory without writing last-output
 relations:
 - decomposes: epic:codex-parity
@@ -28,9 +28,13 @@ scope:
 - confidence: cited
   path: spec/README.md
 - confidence: cited
+  path: spec/components.yaml
+- confidence: cited
   path: spec/conformance-baseline.json
 - confidence: cited
   path: spec/domains/launch.yaml
+- confidence: cited
+  path: spec/ess-inputs.yaml
 - confidence: cited
   path: spec/scenarios/launch/argument-byte-preservation.yaml
 - confidence: cited
@@ -47,10 +51,11 @@ scope:
   path: spec/scenarios/launch/volatile-replay-lifecycle.yaml
 - confidence: inferred
   path: spec/scenarios/launch/volatile-replay-preflight.yaml
-revision: 5
+revision: 8
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T13:50:24Z", actor: "human:timo", revision: 4}
 - {from: "proposed", to: "active", at: "2026-10-02T13:50:24Z", actor: "human:timo", revision: 5}
+- {from: "active", to: "implemented", at: "2026-10-02T14:37:29Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"test_result":1,"review_outcome":1,"verification":1,"ess_conformance_coverage_v1":1}}}
 ---
 ## Context
 
@@ -88,3 +93,7 @@ Cited: spec/domains/launch.yaml; crates/mantle-launch/src/cli.rs; crates/mantle-
 Inferred new scenario files: spec/scenarios/launch/replay-policy-arguments.yaml; spec/scenarios/launch/volatile-replay-lifecycle.yaml; spec/scenarios/launch/volatile-replay-exit-paths.yaml; spec/scenarios/launch/volatile-replay-preflight.yaml; spec/scenarios/launch/volatile-replay-bounds.yaml; spec/scenarios/launch/persistent-replay-compatibility.yaml.
 
 Collides with interactive-start and dual-agent-session-parity on launcher/ESS/generated provenance; run this story first, then interactive-start, then parity. It has no dependency on the upstream capture issue because its acceptance is limited to this local sink. Safety fact (source level 3, unproven at runtime): attach reads only live FIFO output and serve has one last-output write; no transport redesign is required.
+
+## Scope correction before implementation
+
+Implementation preparation found spec/ess-inputs.yaml explicitly enumerates authored scenario files and spec/components.yaml enumerates admitted native commands. Both are cited required scope, added before the implementor edits them; without those changes new tests could silently be excluded. Existing count218 is the baseline and must increase when six LP files are admitted. No acceptance changed.

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T14:19:57Z",
+  "actor": "human:timo",
+  "artifact": "story:launcher-volatile-replay",
+  "kind": "story",
+  "revision": 7,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "VERIFIED: same serve input, base exit2 unsupported flag; unit child exit0 with last-output absent and canary absent from diagnostics; implementor CLI-only runtime red also retained",
+    "reference": "~/.cache/mantle-wave4/scratch-integration/claim/baseline-result vs treatment-result; ~/.cache/mantle-wave4/scratch-launcher/red-runtime.log"
+  }
+}
