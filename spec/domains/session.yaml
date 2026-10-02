@@ -1,5 +1,16 @@
 domain: mantle.session
 
+# Proposed Codex parity vocabulary; not a claim that either runtime conforms yet.
+# Wire agent.kind remains claude-code or codex. Absent fields on old records mean
+# ClaudeCode/ClaudeOauth; new records must carry the resolved values.
+types:
+  - name: mantle.session.AgentKind
+    kind: enum
+    variants: [ClaudeCode, Codex]
+  - name: mantle.session.AuthenticationMethod
+    kind: enum
+    variants: [ClaudeOauth, ChatgptDevice]
+
 entities:
   - name: mantle.session.Session
     identity:
@@ -16,6 +27,10 @@ entities:
         type: String
       - name: agent_exec
         type: String
+      - name: agent_kind
+        type: Optional<mantle.session.AgentKind>
+      - name: authentication_method
+        type: Optional<mantle.session.AuthenticationMethod>
     relations:
       - name: worker
         kind: references
