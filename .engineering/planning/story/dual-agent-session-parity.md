@@ -51,7 +51,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/agent-parity.yaml
-revision: 22
+revision: 23
 ---
 ## Context
 
@@ -103,3 +103,7 @@ Exact files below are proposed ownership, with confidence retained from the curr
 - cited: `generated/worker-model/types.rs`
 - inferred: `spec/domains/session.yaml`
 - inferred: `spec/scenarios/cli/agent-parity.yaml`
+
+## Current acceptance audit
+
+At source66e20bdf8e7252eed7ac21df377e08ddc6f14b98, the current requirement-by-requirement audit is.engineering/reports/codex-acceptance-audit-2026-10-02/audit.md. It accounts for everyCQ/AW/LP/CS/DP requirement and distinguishes offline, unauthenticated live and missing authenticated evidence. The prepared login target is codex-ready; its current process has the compiler correction. Old Codex/Claude workspaces remain preserved. Two-Codex file isolation and cleanup, OpenAI-host CONNECT/TLS, unlisted-host refusal and direct-egress refusal are observed; no real login/model/refresh/rendered lifecycle pass is claimed. Metadata-only auth-cache presence check returns remote1. Operator device login remains the required next external action. No new Substrate blocker or end-to-end no-recording prerequisite applies. The parent/epic remains incomplete.

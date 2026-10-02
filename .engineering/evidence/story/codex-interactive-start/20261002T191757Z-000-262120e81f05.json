@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T19:17:57Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-interactive-start",
+  "kind": "story",
+  "revision": 40,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Partial unauthenticated production startup, TLS and negative-network observations; authentication absent",
+    "reference": ".engineering/reports/codex-acceptance-audit-2026-10-02/audit.md"
+  }
+}

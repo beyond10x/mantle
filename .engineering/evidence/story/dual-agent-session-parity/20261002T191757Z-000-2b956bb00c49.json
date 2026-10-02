@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T19:17:57Z",
+  "actor": "human:timo",
+  "artifact": "story:dual-agent-session-parity",
+  "kind": "story",
+  "revision": 23,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Partial two-Codex file isolation and cleanup observations; authenticated dual-agent parity not established",
+    "reference": ".engineering/reports/codex-acceptance-audit-2026-10-02/audit.md"
+  }
+}

@@ -72,7 +72,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/codex-start.yaml
-revision: 39
+revision: 40
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T18:17:04Z", actor: "human:timo", revision: 36}
 - {from: "proposed", to: "active", at: "2026-10-02T18:17:04Z", actor: "human:timo", revision: 37}
@@ -224,3 +224,7 @@ This proves production startup and confined supplementary execution, not authent
 Supplementary execution needs Cargo's gateway explicitly configured: without it direct DNS is denied. After http.proxy is set to the existing fixed gateway, crates download successfully. The baseline GNU linker lookup fails because/usr/bin/cc points into unmounted/etc/alternatives. Setting target.x86_64-unknown-linux-gnu.linker=gcc makes the same real b10x-substrate-wire check pass under unchanged confinement. story:worker-rust-linker owns default selection for agent and supplementary requests. This causal probe is not an authenticated model/tool turn and does not close DP06 for either agent.
 
 Metadata-only inspection of the actual Codex process root observed its private home as0700 owned900:900, both configured diagnostic filesystems astmpfs, and auth.json absent. No secret file contents or login screen was read. Real authentication therefore remains unavailable for acceptance until the operator completes device login. Documentation0.1.1 provenance is now verified live at95573ba9e73f6effd576ab9ffc8646db3ec6c5f4; main's repeated checks and documentation pipeline are also successful.
+
+## Current acceptance audit
+
+At source66e20bdf8e7252eed7ac21df377e08ddc6f14b98, the current requirement-by-requirement audit is.engineering/reports/codex-acceptance-audit-2026-10-02/audit.md. It accounts for everyCQ/AW/LP/CS/DP requirement and distinguishes offline, unauthenticated live and missing authenticated evidence. The prepared login target is codex-ready; its current process has the compiler correction. Old Codex/Claude workspaces remain preserved. Two-Codex file isolation and cleanup, OpenAI-host CONNECT/TLS, unlisted-host refusal and direct-egress refusal are observed; no real login/model/refresh/rendered lifecycle pass is claimed. Metadata-only auth-cache presence check returns remote1. Operator device login remains the required next external action. No new Substrate blocker or end-to-end no-recording prerequisite applies. The parent/epic remains incomplete.

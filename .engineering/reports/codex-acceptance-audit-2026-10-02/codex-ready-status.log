@@ -1,0 +1,24 @@
+Session
+  id              ses_01m3z04vyw154h0470x0a5zafs
+  recorded state  RUNNING
+  agent           codex
+  auth method     chatgpt-device (not an authenticated-status observation)
+  manifest        sha256:81391d25a865835da306bc49ce0ba010a7c663d62964bf9cadcf0ce2307855e2
+Placement
+  worker          kubevirt/k3d-mantle/mantle 4b378e47-faf8-4c13-b248-5bba94af2c41
+Sources
+  /workspace/substrate    main@6af1b91889edf5fa5455c03e68829b56e6b6cc56
+Resources       requested              enforcement
+  cpu           4 not enforced (Substrate 0.7.8 bounds cumulative CPU time only); CARGO_BUILD_JOBS=4
+  memory        16.0 GiB               cgroup memory limit (fact exec.cgroup_limits.memory)
+  pids          4096 cgroup pids limit (fact exec.cgroup_limits.processes)
+  storage       none                   NOT enforced (no quota fact)
+Network
+  aperture        egress -> worker gateway; gateway allowlist is fixed (see mantle-egress)
+  everything else no route (Substrate exec.no_egress)
+Agent
+  exec            ex_01M3Z04Y9BXGP4VKA5FAA26RS8
+  state           Running (observed 2026-10-02 19:06:10.111891072 UTC)
+  cgroup          substrate-ex_01M3Z04Y9BXGP4VKA5FAA26RS8
+  lease ends by   2026-10-03 03:06:10.091413098 UTC
+  usage           not observed

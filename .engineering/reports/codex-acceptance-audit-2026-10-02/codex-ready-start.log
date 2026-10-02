@@ -1,0 +1,8 @@
+Session        codex-ready (ses_01m3z04vyw154h0470x0a5zafs)
+Worker         kubevirt/k3d-mantle/mantle 4b378e47-faf8-4c13-b248-5bba94af2c41
+Manifest       sha256:81391d25a865835da306bc49ce0ba010a7c663d62964bf9cadcf0ce2307855e2
+Workspace      ws_01M3Z04VZ8GN0NZWPBXNHMD1XQ
+Source         /workspace/substrate main@6af1b91889edf5fa5455c03e68829b56e6b6cc56
+Agent          ex_01M3Z04Y9BXGP4VKA5FAA26RS8 (running, ends after 8h at the latest)
+Attach with    mantle attach codex-ready
+Authentication complete only after attached Codex login; process readiness does not establish it.
