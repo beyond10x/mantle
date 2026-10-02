@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T20:15:01Z",
+  "actor": "human:timo",
+  "artifact": "task:release-0-1-2",
+  "kind": "task",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Local release gate and static musl build passed; 187 Rust tests and 336 native ESS scenarios",
+    "reference": ".engineering/reports/release-0.1.2/validation.md"
+  }
+}

@@ -1,5 +1,31 @@
 # Codex qualification under Substrate — 2026-10-02
 
+## Release 0.1.2 update — live worker observations
+
+The later [acceptance audit](../../.engineering/reports/codex-acceptance-audit-2026-10-02/audit.md)
+accounts for every planned acceptance item. The earlier qualification observations below remain
+historical evidence; they are not a claim that authenticated parity is complete.
+
+On the existing Ubuntu 24.04 KubeVirt worker, a confined supplementary command checked
+Substrate revision `6af1b91889edf5fa5455c03e68829b56e6b6cc56`, package
+`b10x-substrate-host`, with remote exit 0. Worker elapsed time was 62.76 seconds; laptop elapsed
+time was 64.10 seconds with 0.13 seconds of laptop CPU time. Native dependency compilation
+worked after Mantle selected `CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=gcc`, `CC=gcc`
+and `CXX=g++`. The old `cc`/`c++` alternatives required paths outside the confined mount set.
+No additional mounts or broader network access were introduced. The command used an explicit
+Cargo proxy setting for `http://127.0.0.1:3128`; standalone `mantle exec` does not supply it.
+
+Two running Codex sessions passed workspace marker-isolation checks. Probes verified TLS
+through the gateway to OpenAI destinations and denial of an unlisted destination and direct
+egress. Disposable-session stop and workspace removal were observed. These were supplementary
+commands, not authenticated model-issued tool calls. The printed remote `ExecExit` is the
+execution result; the current Mantle client's process exit can still be zero on remote failure.
+
+Device login, authenticated model/tool turns, token refresh and complete live lifecycle parity
+remain unverified. Source release 0.1.2 includes the compiler correction and these documentation
+updates without closing those acceptance items. Build evidence and exact commands are retained
+in the [compiler-fix closure](../../.engineering/reports/codex-live-wave10-2026-10-02/closure.md).
+
 ## Private runtime preparation — CW01–CW09
 
 The local `runtime-sinks` probe reverified pinned Codex 0.153.4 against SHA256

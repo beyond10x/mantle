@@ -48,6 +48,29 @@ Local launcher, confinement and integration checks are recorded in the
 [qualification evidence](docs/evidence/codex-compatibility.md). Real device login, authenticated
 model/tool turns and token refresh have not yet been verified end to end.
 
+## Release 0.1.2
+
+This source release fixes Rust and native dependency builds inside confinement by selecting
+`gcc` as the Rust linker and C compiler, and `g++` as the C++ compiler. Both agents and
+supplementary `mantle exec` commands receive these defaults on new execution requests. The
+worker's filesystem and network boundaries are unchanged.
+
+A real KubeVirt worker completed a confined `cargo check --locked -p b10x-substrate-host`,
+including native dependencies. Two live Codex workspaces passed marker-isolation checks;
+OpenAI TLS access through the gateway worked, while unlisted destinations and direct egress
+were denied. These supplementary-command checks do not establish authenticated Codex tool use.
+See the [current acceptance audit](.engineering/reports/codex-acceptance-audit-2026-10-02/audit.md).
+
+Standalone `mantle exec` commands need an explicit proxy setting for networked Cargo builds:
+
+```console
+mantle exec SESSION -- cargo --config 'http.proxy="http://127.0.0.1:3128"' check --locked --manifest-path /workspace/PROJECT/Cargo.toml
+```
+
+Read the printed remote `ExecExit`: the current CLI can return success even when the remote
+command fails. Release archives contain source; build the laptop CLI and static worker binaries
+from the same tag. Upgrade worker binaries only when no sessions are active.
+
 ## Requirements on the laptop
 
 - Linux, Rust 1.97 (`rust-toolchain.toml`), [go-task](https://taskfile.dev)
