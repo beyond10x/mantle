@@ -12,6 +12,9 @@ types:
       - {name: cwd, type: Bytes}
       - {name: mkdirs, type: 'List<Bytes>'}
       - {name: scrollback_bytes, type: Integer}
+      # Proposed launcher-only policy: keep bounded live replay, never write last-output.
+      # CLI omission remains false; this does not control Substrate or Codex recording.
+      - {name: volatile_replay, type: Boolean}
       - {name: command, type: 'List<Bytes>'}
     # The CLI's bound is the ValidateScrollback command, exercised through clap itself.
   - name: mantle.launch.AttachArgs

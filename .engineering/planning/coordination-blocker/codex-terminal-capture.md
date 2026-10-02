@@ -4,9 +4,12 @@ id: coordination-blocker:codex-terminal-capture
 kind: coordination-blocker
 status: open
 title: Resolve terminal capture before Codex device login
+refs:
+- provider: github
+  reference: beyond10x/substrate#112
 relations:
 - blocks: story:codex-interactive-start
-revision: 1
+revision: 4
 ---
 ## Observation
 
@@ -37,9 +40,8 @@ The credential-independent worker story and its review/live acceptance can conti
 
 ## Clearance evidence and next owner
 
-The Mantle coordinator must establish a supported transport/design that keeps login credentials
-and codes out of persistent output while retaining the approved terminal experience and outer
-confinement. Record its typed contract before implementation, concrete bounded verifier strategy,
-and independent plan review. No Substrate source change is authorized or proposed by this blocker.
-Candidate approaches need evidence; no solution is selected merely by this record. Auth-phase
-handling and repeated login remain separate obligations even after downstream capture is resolved.
+Upstream owner: Substrate, via https://github.com/beyond10x/substrate/issues/112. The operator requested a GitHub issue instead of taking over Substrate implementation. No Substrate code or planning-store edits belong to this Mantle wave.
+
+Clear only after a supported exact Substrate/SDK revision supplies policy-controlled non-recording streaming, accurate lifecycle/exit/resource/audit metadata and independent finite stream/buffer/backpressure bounds, with no terminal output in SQLite/WAL or diagnostics across success/failure/recovery paths. Mantle must request and verify the effective mode and refuse unsupported/denied requests before login; no silent fallback to captured output. Filing or closing the issue, probe-only success or later row deletion is insufficient evidence.
+
+Mantle's launcher and Codex diagnostic sinks are separate mandatory obligations. Independent launcher work can proceed while this blocker remains open. Real login remains blocked until supported upstream behavior and downstream synthetic sink proof are available. design:codex-terminal-confidentiality records the inspected seams, ownership and proposed proof.

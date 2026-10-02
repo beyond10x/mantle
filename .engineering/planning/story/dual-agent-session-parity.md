@@ -31,12 +31,26 @@ scope:
 - confidence: inferred
   path: docs/evidence/agent-parity.md
 - confidence: inferred
-  path: generated/
+  path: generated/session-model/Cargo.toml
+- confidence: inferred
+  path: generated/session-model/source.schema.json
+- confidence: inferred
+  path: generated/session-model/types-report.json
+- confidence: inferred
+  path: generated/session-model/types.rs
+- confidence: cited
+  path: generated/worker-model/Cargo.toml
+- confidence: cited
+  path: generated/worker-model/source.schema.json
+- confidence: cited
+  path: generated/worker-model/types-report.json
+- confidence: cited
+  path: generated/worker-model/types.rs
 - confidence: inferred
   path: spec/domains/session.yaml
 - confidence: inferred
-  path: spec/scenarios/agent-parity.yaml
-revision: 3
+  path: spec/scenarios/cli/agent-parity.yaml
+revision: 22
 ---
 ## Context
 
@@ -65,6 +79,26 @@ Preserve the user's current session. Use disposable sessions and bounded caches;
 
 ## Scope
 
-Cited: `crates/mantle/src/app/session.rs`, `crates/mantle/src/app/terminal.rs`, `crates/mantle-launch/src/serve.rs`, `crates/mantle-launch/src/attach.rs`, `spec/domains/session.yaml`, `Taskfile.yml`, `README.md`, `.engineering/planning/story/session-lifecycle.md`, `.engineering/planning/story/slice-evidence.md`.
-Inferred new: `crates/mantle/tests/agent_parity.rs`, `crates/mantle-launch/tests/agent_parity.rs`, `spec/scenarios/agent-parity.yaml`, `docs/evidence/agent-parity.md`, `generated/`.
-Depends on codex-interactive-start. Changes to shared AEP records are coordinated through one writer and the AEP CLI. Additional production fixes outside these paths require a scope update before dispatch.
+Exact files below are proposed ownership, with confidence retained from the current source review. New generated bindings and scenario paths are inferred until implementation confirms them. Shared launcher/session/ESS/generated provenance surfaces serialize interactive-start and lifecycle parity after the Substrate contract is reviewed. Future stories are rescoped again before selection; no broad directory reservation remains.
+
+- inferred: `.engineering/planning/story/session-lifecycle.md`
+- inferred: `.engineering/planning/story/slice-evidence.md`
+- cited: `README.md`
+- cited: `Taskfile.yml`
+- inferred: `crates/mantle-launch/src/attach.rs`
+- inferred: `crates/mantle-launch/src/serve.rs`
+- inferred: `crates/mantle-launch/tests/agent_parity.rs`
+- inferred: `crates/mantle/src/app/session.rs`
+- inferred: `crates/mantle/src/app/terminal.rs`
+- inferred: `crates/mantle/tests/agent_parity.rs`
+- inferred: `docs/evidence/agent-parity.md`
+- inferred: `generated/session-model/Cargo.toml`
+- inferred: `generated/session-model/source.schema.json`
+- inferred: `generated/session-model/types-report.json`
+- inferred: `generated/session-model/types.rs`
+- cited: `generated/worker-model/Cargo.toml`
+- cited: `generated/worker-model/source.schema.json`
+- cited: `generated/worker-model/types-report.json`
+- cited: `generated/worker-model/types.rs`
+- inferred: `spec/domains/session.yaml`
+- inferred: `spec/scenarios/cli/agent-parity.yaml`

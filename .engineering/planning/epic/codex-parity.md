@@ -7,7 +7,7 @@ title: Codex sessions with Claude-equivalent terminal behavior
 relations:
 - informed_by: epic:vertical-slice
 - informed_by: executable-system-specification:mantle-session
-revision: 5
+revision: 15
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":1}}}
@@ -45,22 +45,23 @@ Read at Mantle `11b69db`; this is a proposal, not delivered Codex support.
 
 ## Ownership and sequence
 
-- `story:codex-confinement-qualification`: resolve version, auth, IPC, proxy and terminal feasibility with an executable, bounded probe and red-capable controls.
-- `story:agent-ready-worker`: credential-independent worker readiness and verified Codex installation, preserving Claude-only configurations.
-- `story:codex-interactive-start`: first authenticated Codex conversation end to end (manifest, selected readiness, auth, gateway, launch and status).
-- `story:dual-agent-session-parity`: persistent interactive lifecycle, isolation, regression and live evidence for both agents.
+- story:codex-confinement-qualification and story:agent-ready-worker are implemented. Worker integration b3372f054bc5bf84df31d3e59b508bba074593f6 includes the ESS sweep, 167 Rust tests and 313 native scenarios. Wave 3 VM/worktree cleanup completed.
+- Substrate capture support is an upstream dependency tracked in https://github.com/beyond10x/substrate/issues/112. This Mantle effort does not implement Substrate or edit its store. coordination-blocker:codex-terminal-capture remains open.
+- story:launcher-volatile-replay is the independent next Mantle candidate: explicit bounded live replay without last-output. It covers only the launcher sink and does not clear the upstream blocker.
+- story:codex-interactive-start follows launcher replay and supported upstream capability: exact SDK consumption, manifest/DB selection, safe home/config/diagnostics, real login/model/tool, refresh/revocation and observed network behavior. It remains blocked.
+- story:dual-agent-session-parity follows interactive-start: real two-agent lifecycle, confinement and isolation evidence.
 
-Qualification and worker preparation may proceed independently in isolated test environments; provisioning uses the same 0.153.4 candidate and must not be accepted as runtime support until qualification passes. Start needs both. Lifecycle follows start because both touch launcher/session behavior. Shared ESS files and Taskfile scopes are explicitly serialized. Existing active stories retain their status; the new epic is informed by the vertical slice, not blocked on unfinished EC2 acceptance.
+The encrypted story:codex-private-terminal is archived and excluded. Its ciphertext budget and manual-reattach proposal are not selected. Shared launcher, session, ESS and generated-provenance files require serialized implementation in the sequence above. Scope is rescoped before each wave. Standing approval covers local commits/merges; source publication and release remain outside it. The separate explicit issue-filing instruction authorized Substrate #112.
 
 ## Acceptance
 
-Starting from a baseline that rejects Codex manifests, the completed Mantle change earns a passing result for every named CQ, AW, CS and DP scenario in the two-agent acceptance matrix, with no required live case replaced by a skipped or reference-only result.
+The completed change passes every required CQ, AW, LP, CS and DP case in the two-agent matrix, with no mandatory live case replaced by a skip or reference-only result. LP01–LP06 isolate the launcher sink; their success cannot substitute for supported upstream capture behavior, Codex diagnostic privacy or real login/conversation. The upstream issue's sink and resource-bound evidence must be verified at the exact consumed revision. The archived encryption PT cases are excluded. Terminal privacy remains required across Substrate, launcher and Codex sinks, including failures.
 
 ## Completion and exclusions
 
 A new Codex session can perform a real model turn and a remote Rust build, then retain its process and conversation through detach and transport interruption; a same-size reattach and resize render correctly; stop removes only that session. The same lifecycle matrix is demonstrated for Claude. Two simultaneous workspaces cannot read each other's files or credentials. Unknown execution state stays unknown. Evidence includes worker/laptop CPU measurements, exact versions/digests, endpoints, commands, timestamps and pass/fail/not-run results without credentials.
 
-Local KubeVirt is the live acceptance target. AWS remains paused for cost approval; shared provider-independent behavior and EC2 rendering get offline coverage, with no new EC2 spend. No Substrate implementation change, new cloud provider, generic agent plugin architecture, desktop/IDE integration, fleet management, auth broker, VM recovery, cloud tasks, arbitrary MCP/plugin/network parity, or migration of the laptop's entire Codex configuration. Repository AGENTS.md and ordinary Rust/Git tools are included. API-key mode is deferred unless the operator chooses it.
+Local KubeVirt is the live acceptance target. AWS remains paused for cost approval; shared provider-independent behavior and EC2 rendering get offline coverage, with no new EC2 spend. Assess a Substrate capture capability before Mantle integration. No new cloud provider, generic agent plugin architecture, desktop/IDE integration, fleet management, auth broker, VM recovery, cloud tasks, arbitrary MCP/plugin/network parity, or migration of the laptop's entire Codex configuration. Repository AGENTS.md and ordinary Rust/Git tools are included. API-key mode is deferred unless the operator chooses it.
 
 ## Sources and confidence
 
@@ -99,3 +100,9 @@ observations. The current direct outer-profile controls do not discharge those o
 Source: read-only story-scoper report against `2e6b116`; incoming conformance.rs complete-subject
 snapshot checks; qualification live JSON and docs/evidence/codex-compatibility.md. This sequencing
 clarification is the coordinator's inference and does not weaken final acceptance.
+
+## Current delivery goal and upstream ownership
+
+Deliver Mantle Codex parity through reviewed AEP waves, preserving confinement and Claude-equivalent start, attach, resize, detach, reconnect, status, exec and stop. Track Substrate's policy-controlled non-recording terminal capability in upstream GitHub issue beyond10x/substrate#112; do not implement a Mantle encryption workaround or take over Substrate implementation. Continue independent Mantle work, integrate an exact supported SDK revision when available, and prove launcher/Codex diagnostic privacy, real authentication, model/tool turns, refresh and two-agent lifecycle acceptance. Do not claim completion while mandatory upstream or live acceptance remains missing. No token budget is imposed.
+
+This restates the operator's delivery goal rather than replacing it with issue filing. The goal service reports the existing goal as paused and refused create_goal with: "cannot create a new goal because this thread has an unfinished goal; complete the existing goal first". Available goal tools cannot edit or resume it. The existing goal is unfinished and has not been marked complete to bypass that restriction. This AEP section is the current operative objective, and work continues under the user's instruction.

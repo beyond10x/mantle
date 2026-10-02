@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T13:25:16Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-private-terminal",
+  "kind": "story",
+  "revision": 47,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Planning age0.12.1/generated-envelope size proof: green0, undersized-cap and omitted-finish negative controls101; implementation/native/live acceptance not yet run.",
+    "reference": ".engineering/reports/codex-terminal-age-proof-2026-10-02.md"
+  }
+}

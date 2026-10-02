@@ -28,6 +28,7 @@
           "secret_env": null,
           "proxy": null,
           "scrollback_bytes": 262144,
+          "volatile_replay": false,
           "mkdirs": [],
           "command": [
             "L2FnZW50"

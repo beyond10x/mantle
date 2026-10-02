@@ -8,6 +8,7 @@ relations:
 - decomposes: epic:codex-parity
 - depends_on: story:codex-confinement-qualification
 - depends_on: story:agent-ready-worker
+- depends_on: story:launcher-volatile-replay
 scope:
 - confidence: cited
   path: AGENTS.md
@@ -46,12 +47,30 @@ scope:
 - confidence: inferred
   path: examples/config.toml
 - confidence: inferred
-  path: generated/
+  path: generated/session-model/Cargo.toml
+- confidence: inferred
+  path: generated/session-model/source.schema.json
+- confidence: inferred
+  path: generated/session-model/types-report.json
+- confidence: inferred
+  path: generated/session-model/types.rs
+- confidence: cited
+  path: generated/worker-model/Cargo.toml
+- confidence: cited
+  path: generated/worker-model/source.schema.json
+- confidence: cited
+  path: generated/worker-model/types-report.json
+- confidence: cited
+  path: generated/worker-model/types.rs
+- confidence: cited
+  path: spec/domains/manifest.yaml
+- confidence: cited
+  path: spec/domains/orchestration.yaml
 - confidence: inferred
   path: spec/domains/session.yaml
 - confidence: inferred
-  path: spec/scenarios/codex-start.yaml
-revision: 4
+  path: spec/scenarios/cli/codex-start.yaml
+revision: 27
 ---
 ## Context
 
@@ -74,19 +93,50 @@ A valid Codex manifest that the baseline rejects starts a confined, subscription
 
 ## Implementation boundaries
 
-Persist selected agent/auth identity, validate manifests, select runtime argv and readiness, and add `examples/codex.yaml`. Keep the relay agent-neutral. Device login must run in the same private HOME as Codex; the current FD-to-env launcher hook is not an OAuth-cache adapter. Do not label CODEX_API_KEY injection as interactive subscription support. Login-screen suppression/redaction must prevent the generic scrollback and last-output facilities from retaining device codes or credentials; resume ordinary replay only after authentication.
+Persist selected agent/auth identity, validate manifests, select runtime argv/readiness and add examples/codex.yaml. Device login and the main Codex TUI use the same private session home. Do not label API-key injection as interactive subscription support. The operator has paused encrypted transport. This story remains blocked pending a supported Substrate non-recording mode assessed in design:codex-terminal-confidentiality. Select the admitted mode through the SDK and prove actual Substrate, launcher and Codex diagnostic sink behavior with canaries before real login. Substrate support alone does not discharge the launcher or real-program obligations.
 
-Use credentials only inside the trusted session boundary; generated child commands can read the same user's files, as with today's Claude environment. Do not promise a broker or same-uid secret isolation. Keep all secrets out of the non-secret state database and errors. Amend AGENTS.md's credential rule explicitly to describe the Codex private auth-cache exception while preserving the Claude slot requirement.
+This draft proposes replacing the earlier unsupported phase-suppression mechanism: bounded live replay is permitted for the authorized attached terminal, while every persistent plaintext transcript/diagnostic/state sink remains forbidden. Codex never writes launcher last-output; no cache-existence or previous login success is treated as a reliable TUI authentication-phase signal. This prose is a proposal for the forthcoming critic round, not approval or blocker clearance.
 
-Add exact-host network policy from CQ, with fail-closed matching and existing DoS/address protections. The gateway is worker-shared; document the combined allowlist's scope rather than claiming per-agent destination separation. Transport settings and a model override, if exposed, are validated non-secret config, not arbitrary argv injection.
+Use credentials only inside the trusted session boundary; generated child commands can read the same user's files, as with today's Claude environment. Do not promise a broker or same-uid secret isolation. Keep all secrets out of non-secret state/errors. Amend AGENTS.md's credential rule explicitly for the private Codex auth-cache exception while preserving Claude's slot route. Generated Codex configuration, environment and home paths must prevent real Codex logging/config precedence from creating credential transcripts; restrictive file modes alone are insufficient.
 
-Extend Session ESS commands/outcomes/views and authored CS scenarios before implementation; generate model bindings and run the actual Rust adapter in task check. A mocked provider can exercise refusal/cleanup and canary paths, but a successful real model turn is separately required for live acceptance.
+Add exact-host network policy from CQ, with fail-closed matching and existing DoS/address protections. The gateway is worker-shared; document its combined allowlist's scope rather than claiming per-agent destination separation. Transport settings and any exposed model override are validated non-secret config, not arbitrary argv injection.
+
+Extend Session ESS commands/outcomes/views and authored CS scenarios before implementation; generate model bindings and run the real Rust adapter in task check. A mocked provider can exercise refusal/cleanup/canary paths, but the actual operator-completed device login, model/tool turn, refresh/revocation and required network observations are separate mandatory acceptance evidence. Missing operator participation can block live completion, never justify claiming success from offline tests.
 
 ## Scope
 
-Cited: `AGENTS.md`, `crates/mantle/src/domain/manifest.rs`, `crates/mantle/src/domain/session.rs`, `crates/mantle/src/config.rs`, `crates/mantle/src/app/session.rs`, `crates/mantle/src/app/worker.rs`, `crates/mantle/src/adapters/state.rs`, `crates/mantle/src/adapters/substrate.rs`, `crates/mantle-launch/src/cli.rs`, `crates/mantle-launch/src/serve.rs`, `crates/mantle-launch/src/secret.rs`, `crates/mantle-egress/src/allow.rs`, `deploy/substrate.service`, `examples/config.toml`, `spec/domains/session.yaml`, `Taskfile.yml`, `README.md`.
-Inferred new: `examples/codex.yaml`, `spec/scenarios/codex-start.yaml`, `crates/mantle/tests/codex_start.rs`, `generated/`.
-Depends on qualification and worker readiness. The lifecycle story follows this one because its fixes and conformance cases share session.rs, serve.rs, the ESS domain and the gate.
+Exact files below are proposed ownership, with confidence retained from the current source review. New generated bindings and scenario paths are inferred until implementation confirms them. Shared launcher/session/ESS/generated provenance surfaces serialize interactive-start and lifecycle parity after the Substrate contract is reviewed. Future stories are rescoped again before selection; no broad directory reservation remains.
+
+- cited: `AGENTS.md`
+- cited: `README.md`
+- cited: `Taskfile.yml`
+- inferred: `crates/mantle-egress/src/allow.rs`
+- inferred: `crates/mantle-launch/src/cli.rs`
+- inferred: `crates/mantle-launch/src/secret.rs`
+- inferred: `crates/mantle-launch/src/serve.rs`
+- inferred: `crates/mantle/src/adapters/state.rs`
+- inferred: `crates/mantle/src/adapters/substrate.rs`
+- inferred: `crates/mantle/src/app/session.rs`
+- inferred: `crates/mantle/src/app/worker.rs`
+- inferred: `crates/mantle/src/config.rs`
+- inferred: `crates/mantle/src/domain/manifest.rs`
+- inferred: `crates/mantle/src/domain/session.rs`
+- inferred: `crates/mantle/tests/codex_start.rs`
+- inferred: `deploy/substrate.service`
+- inferred: `examples/codex.yaml`
+- inferred: `examples/config.toml`
+- inferred: `generated/session-model/Cargo.toml`
+- inferred: `generated/session-model/source.schema.json`
+- inferred: `generated/session-model/types-report.json`
+- inferred: `generated/session-model/types.rs`
+- cited: `generated/worker-model/Cargo.toml`
+- cited: `generated/worker-model/source.schema.json`
+- cited: `generated/worker-model/types-report.json`
+- cited: `generated/worker-model/types.rs`
+- cited: `spec/domains/manifest.yaml`
+- cited: `spec/domains/orchestration.yaml`
+- inferred: `spec/domains/session.yaml`
+- inferred: `spec/scenarios/cli/codex-start.yaml`
 
 ## Reconciliation with implemented ESS contracts
 
@@ -107,3 +157,7 @@ observations. The current direct outer-profile controls do not discharge those o
 Source: read-only story-scoper report against `2e6b116`; incoming conformance.rs complete-subject
 snapshot checks; qualification live JSON and docs/evidence/codex-compatibility.md. This sequencing
 clarification is the coordinator's inference and does not weaken final acceptance.
+
+## Launcher prerequisite ownership
+
+story:launcher-volatile-replay owns the launcher Boolean --volatile-replay policy and native LP01–LP06 proof. This interactive-start story consumes that policy for every Codex launcher invocation and owns safe production request construction, exact supported Substrate SDK pin, effective capture-mode verification/refusal, actual Codex diagnostics and all CS evidence. It must not reimplement the launcher primitive or infer end-to-end privacy from its local tests. Shared files are serialized by depends_on:story:launcher-volatile-replay; dual-agent-session-parity follows this story. Synthetic local preparation may precede upstream delivery, but real login and the story's completion cannot.
