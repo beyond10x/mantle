@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T11:37:23Z",
+  "actor": "human:timo",
+  "artifact": "story:public-site-clarity",
+  "kind": "story",
+  "revision": 4,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check; final mantle-docs tests and site-build; Chromium responsive, keyboard, manifest-text and contrast probes",
+    "reference": ".engineering/reports/public-site-clarity.md"
+  }
+}
