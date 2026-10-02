@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T22:12:26Z",
+  "actor": "human:timo",
+  "artifact": "story:attach-startup-readiness",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "NOT VERIFIED live: exact candidate terminal with READY/ACK, continuously drained 100x50 PTY, 500ms attach delay, exit1 after77822bytes; remote Cancelled/session.output-backpressure on worker0.7.8",
+    "reference": ".engineering/reports/attach-startup-2026-10-02/diagnosis.md"
+  }
+}

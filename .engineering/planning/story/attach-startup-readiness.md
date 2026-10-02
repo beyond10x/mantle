@@ -18,8 +18,10 @@ scope:
 - confidence: cited
   path: crates/mantle/src/app/terminal.rs
 - confidence: cited
+  path: spec/scenarios/cli/codex-start.yaml
+- confidence: cited
   path: spec/scenarios/cli/orchestration-attach-request.yaml
-revision: 4
+revision: 6
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T21:46:38Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"test_result":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T21:46:38Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"test_result":1}}}
@@ -35,3 +37,7 @@ Cited: crates/mantle/src/app/{session,terminal}.rs; crates/mantle-launch/src/{cl
 
 ## Delivery
 Standing operator approval covers this corrective wave. Root owns the AEP store and integration; implementor uses an isolated managed tree; independent adversary reviews the implementation before integration. Actual source release tags remain unchanged until a separately authorized release.
+
+## Upstream queue dependency
+
+The 500ms delayed real-PTY candidate completed READY/ACK but still failed after 77,822 output bytes on worker0.7.8. Readiness remains partial. Substrate issue115 and its separately accepted story:live-output-stall own bounded asynchronous queue reservation. That cross-repository correction does not change Mantle transport bounds or implement the separate capture feature. Local candidate20c96f79 has a red-to-green host regression; independent review, full gates and combined transport proof remain pending. Installed SDK/runtime promotion requires a compatible, verified upstream release; no deployment claim is made here.

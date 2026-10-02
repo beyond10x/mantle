@@ -1,0 +1,137 @@
+   Compiling mantle-launch v0.1.2 ($HOME/.local/state/worktree/trees/b10x/mantle/mantle-attach-readiness/crates/mantle-launch)
+    Finished `test` profile [unoptimized] target(s) in 1.94s
+     Running unittests src/lib.rs (/dev/shm/mantle-wave11-target-unit/debug/deps/mantle_launch-916f4a1a730cf344)
+
+running 45 tests
+test cli::tests::env_names_are_validated ... ok
+test cli::tests::proxy_urls_carry_no_userinfo_or_path ... ok
+test ctl::tests::non_utf8_is_ignored ... ok
+test ctl::tests::line_round_trips ... ok
+test ctl::tests::lines_split_across_reads_are_joined ... ok
+test ctl::tests::over_long_lines_are_dropped_whole ... ok
+test ctl::tests::parses_columns_then_rows ... ok
+test ctl::tests::refuses_malformed_and_out_of_bounds_lines ... ok
+test ring::tests::a_push_larger_than_capacity_keeps_its_tail ... ok
+test ring::tests::drops_the_oldest_bytes_on_overflow ... ok
+test ring::tests::push_reports_how_many_bytes_it_dropped ... ok
+test ring::tests::push_ring_copies_oldest_first_and_respects_the_target_capacity ... ok
+test ring::tests::keeps_everything_within_capacity ... ok
+test ring::tests::front_and_consume_drain_in_order_across_wraparound ... ok
+test serve::tests::a_nudge_holds_a_real_size_change_before_restoring ... ok
+test secret::tests::unopened_descriptor_is_reported ... ok
+test serve::tests::a_one_row_window_is_nudged_up ... ok
+test serve::tests::dropped_output_is_repainted_once_the_terminal_has_caught_up ... ok
+test serve::tests::nothing_is_repainted_while_no_output_was_dropped ... ok
+test serve::tests::poll_does_not_sleep_past_a_pending_restore ... ok
+test serve::tests::volatile_preflight_refuses_metadata_errors_other_than_absence ... ok
+test session::tests::a_held_lock_is_refused_and_freed_on_drop ... ok
+test session::tests::a_lock_on_an_unlinked_file_does_not_count ... ok
+test session::tests::a_symlinked_lock_is_refused_and_its_target_left_alone ... ok
+test cli::tests::secret_proxy_and_scrollback_are_optional ... ok
+test serve::tests::private_output_refuses_links_and_resets_the_mode ... ok
+test cli::tests::secret_fd_and_env_require_each_other ... ok
+test serve::tests::a_new_terminal_does_not_inherit_an_owed_repaint ... ok
+test cli::tests::program_is_required_after_separator ... ok
+test session::tests::fifos_are_private ... ok
+test ring::tests::clear_empties ... ok
+test serve::tests::a_nudge_under_way_is_not_restarted_and_can_be_cancelled ... ok
+test secret::tests::errors_do_not_echo_the_value ... ok
+test session::tests::open_fifo_refuses_a_symlink_and_a_file_that_is_not_a_pipe ... ok
+test cli::tests::paths_must_be_absolute ... ok
+test cli::tests::full_command_line_parses ... ok
+test cli::tests::dir_and_cwd_are_required ... ok
+test cli::tests::standard_descriptors_are_refused ... ok
+test secret::tests::trailing_newline_is_trimmed ... ok
+test secret::tests::empty_value_is_refused ... ok
+test secret::tests::oversized_value_is_refused ... ok
+test session::tests::stale_fifos_are_removed_and_other_files_left_alone ... ok
+test cli::tests::scrollback_is_bounded ... ok
+test cli::tests::attach_parses_and_hides_no_tty ... ok
+test cli::tests::removed_tmux_flags_are_refused ... ok
+
+test result: ok. 45 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (/dev/shm/mantle-wave11-target-unit/debug/deps/mantle_launch-2d93f071ff91f5b0)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/adversary.rs (/dev/shm/mantle-wave11-target-unit/debug/deps/adversary-b4f3feacff8fe630)
+
+running 9 tests
+test the_secret_descriptor_does_not_reach_the_agent ... ok
+test a_symlinked_session_dir_is_not_followed ... ok
+test exit_code_is_the_agents ... ok
+test last_output_does_not_follow_a_planted_symlink ... ok
+test session_dir_is_owner_only_even_when_it_already_exists ... ok
+test last_output_is_owner_only_even_when_the_file_already_exists ... ok
+test sigterm_to_serve_ends_the_agents_whole_process_group ... ok
+test a_flooded_ctl_pipe_does_not_stall_the_agent ... ok
+test a_client_that_never_reads_does_not_block_the_agent ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.23s
+
+     Running tests/adversary_2.rs (/dev/shm/mantle-wave11-target-unit/debug/deps/adversary_2-c435f8b4c051081b)
+
+running 3 tests
+test a_size_aware_agent_repaints_on_a_real_resize ... ok
+test attaching_at_an_unchanged_size_makes_the_agent_repaint ... ok
+test a_terminal_that_lost_output_gets_a_repaint_once_it_catches_up ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.61s
+
+     Running tests/codex_compatibility.rs (/dev/shm/mantle-wave11-target-unit/debug/deps/codex_compatibility-7d03f41ef5d89bb3)
+
+running 2 tests
+
+running 1 test
+test local_socket_control_rejects_af_unix ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+test local_socket_control_rejects_af_unix ... ok
+mantle-launch: received signal 15; stopping the agent
+mantle-launch: agent exited (signal: 1 (SIGHUP))
+test fifo_launcher_relays_without_unix_sockets_or_secret_slot ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/conformance.rs (/dev/shm/mantle-wave11-target-unit/debug/deps/conformance-b0ec56bceae5fa4c)
+
+running 16 tests
+test adversary_nonblocking_setup_failure_restores_earlier_aliased_descriptors ... ok
+test adversary_private_paths_accept_tmpfs_and_preserve_auth_metadata ... ok
+test adversary_volatile_preflight_preserves_fifo_and_socket_without_readiness ... ok
+test adversary_private_file_special_entries_refuse_without_opening_or_dispatch ... ok
+test adversary_sigint_while_detached_never_persists_replay ... ok
+test private_path_initialization_preserves_auth_and_refuses_unsafe_entries ... ok
+test adversary_closed_stdout_restores_pty_and_flags_and_releases_client_lock ... ok
+test adversary_persistent_tail_refuses_volatile_reuse_then_clean_retry_runs ... ok
+test adversary_stalled_aliased_terminal_services_resize_then_sigint ... ok
+test adversary_readiness_resize_before_ack_reaches_same_agent ... ok
+test adversary_readiness_fragmented_ack_and_late_mismatch_preserve_agent ... ok
+test volatile_runtime_does_not_persist_output_on_exit ... ok
+test attach_readiness_holds_replay_and_preserves_first_keyboard_bytes ... ok
+test attach_cancellation_under_finite_output_and_input_backpressure ... ok
+test attach_readiness_missing_invalid_and_signalled_peers_are_bounded ... ok
+test ess_launch_conformance ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.22s
+
+     Running tests/launch.rs (/dev/shm/mantle-wave11-target-unit/debug/deps/launch-61647e04656b73a2)
+
+running 4 tests
+test attach_without_a_server_is_refused ... ok
+test secret_stays_out_of_stderr_when_the_agent_cannot_start ... ok
+test second_server_is_refused_and_sigterm_stops_the_first ... ok
+test attach_relays_replays_scrollback_and_survives_a_detach ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.69s
+
+   Doc-tests mantle_launch
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
