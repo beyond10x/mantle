@@ -41,6 +41,6 @@ git-ignored `.engineering/drafts/`.
 |---|---|
 | `crates/mantle` | laptop CLI: `domain/`, `app/`, `adapters/{aws,ssh,substrate,state}` |
 | `crates/mantle-egress` | worker-side CONNECT proxy with a fixed allowlist |
-| `crates/mantle-launch` | in-sandbox launcher: reads the credential slot, starts the agent under tmux |
+| `crates/mantle-launch` | in-sandbox launcher: `serve` holds the agent on a pseudo-terminal, `attach` relays a terminal to it over FIFOs (the sandbox refuses AF_UNIX sockets) |
 | `deploy/` | cloud-init, systemd units and the AppArmor profile embedded into the CLI |
 | `spec/` | ESS specification |

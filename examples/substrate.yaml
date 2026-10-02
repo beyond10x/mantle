@@ -1,0 +1,40 @@
+apiVersion: mantle.beyond10x.dev/v1alpha1
+kind: Session
+
+metadata:
+  name: substrate-work
+
+placement:
+  class: aws-dev-large
+
+runtime:
+  profile: rust-dev
+
+workspace:
+  root: /workspace
+  repositories:
+    - name: substrate
+      repository: https://github.com/beyond10x/substrate.git
+      ref: main
+      mount: substrate
+
+agent:
+  kind: claude-code
+  cwd: /workspace/substrate
+
+resources:
+  cpu: 16
+  memory: 48GiB
+  pids: 4096
+  storage: 100GiB
+
+network:
+  default: deny
+  capabilities:
+    - model.anthropic
+    - git.github
+    - rust.crates
+
+lifecycle:
+  detachKeepsRunning: true
+  retainFor: 8h

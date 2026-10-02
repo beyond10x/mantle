@@ -2,12 +2,15 @@
 format: aep.planning-md/3
 id: epic:vertical-slice
 kind: epic
-status: draft
+status: active
 title: Mantle vertical slice on one EC2 worker
 summary: Remote confined Claude Code session on one On-Demand EC2 worker
 relations:
 - informed_by: executable-system-specification:mantle-session
-revision: 1
+revision: 4
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-01T22:38:38Z", actor: "human:timo", revision: 2}
+- {from: "proposed", to: "active", at: "2026-10-01T22:38:39Z", actor: "human:timo", revision: 3}
 ---
 # Epic: Mantle vertical slice on one EC2 worker
 
@@ -24,7 +27,7 @@ session; the worker can be stopped and started without losing the workspace volu
   § 62–63 first experiments), including the correction block for Substrate `0.7.8`.
 - Domain: `spec/domains/session.yaml` (`Session`, `Worker`, `SourceResolution`), validated by
   `ess specify validate --path spec`.
-- Substrate pin: tag `0.7.8`, commit `6169ef75392a98b6a503f9f5933b784cc14505ef`.
+- Substrate pin: tag `0.7.8`, commit `05695970b069f79e6678f2f02cbd78bbe5fa2a56`.
 
 ## Decisions taken for the slice
 

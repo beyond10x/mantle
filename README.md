@@ -7,7 +7,7 @@ the terminal; builds use the worker's CPU.
 ```console
 mantle worker up                 # one EC2 worker, reachable only through AWS SSM
 mantle start examples/substrate.yaml
-mantle attach substrate-work     # Ctrl-b d detaches; the agent keeps running
+mantle attach substrate-work     # Ctrl-] d detaches; the agent keeps running
 mantle status substrate-work
 mantle stop substrate-work
 mantle worker down

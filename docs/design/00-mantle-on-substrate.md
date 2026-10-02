@@ -13,14 +13,18 @@
 
 This document supersedes the earlier `rbuild` / local-source-sync design.
 
-> **Corrections against Substrate `0.7.8` (`6169ef7`), checked 2026-10-02.** Three statements below
+> **Corrections against Substrate `0.7.8` (`0569597`), checked 2026-10-02.** Three statements below
 > do not hold for the tagged source, and the first vertical slice works around them:
 >
 > 1. **A PTY session cannot be detached and reattached** (§10). It has exactly one attachment;
 >    disconnect, protocol failure or send timeout cancels the whole process tree
 >    (`adr/0008-pipe-sessions-have-distinct-durable-identity.md`, "Upgrade failure, disconnect …
->    triggers whole-tree cancellation"). The slice runs the agent inside a `tmux` server held by a
->    long-lived exec, and `mantle attach` opens a fresh PTY session running a `tmux` client. A
+>    triggers whole-tree cancellation"). The confinement seccomp profile also refuses
+>    `socket(AF_UNIX, …)` with `EACCES` and datagram socketpairs (`substrate-host/src/seccomp.rs`,
+>    `DENIED_FAMILIES`), so `tmux`, `screen` and any tool that serves a Unix socket cannot run in a
+>    session. The slice runs `mantle-launch serve` as a long-lived exec that holds the agent on a
+>    pseudo-terminal, and `mantle attach` opens a fresh PTY session running `mantle-launch attach`,
+>    which relays to it through FIFOs in `/workspace/.mantle/agent`; `Ctrl-] d` detaches. A
 >    reattachable session mode is a candidate product-neutral Substrate extension.
 > 2. **The remote SDK transport requires a hosted Identity authority** (§11, §12). `ClientBuilder`
 >    accepts a Unix socket, or HTTPS with trust roots, a DNS identity and an access-token provider;

@@ -2,13 +2,31 @@
 format: aep.planning-md/3
 id: story:session-lifecycle
 kind: story
-status: draft
+status: active
 title: Start, attach, detach and stop a confined Claude Code session
 relations:
 - decomposes: epic:vertical-slice
 - depends_on: story:worker-provisioning
 - depends_on: story:egress-gateway
-revision: 1
+scope:
+- confidence: cited
+  path: crates/mantle-launch
+- confidence: cited
+  path: crates/mantle/src/adapters/state.rs
+- confidence: cited
+  path: crates/mantle/src/adapters/substrate.rs
+- confidence: cited
+  path: crates/mantle/src/app/session.rs
+- confidence: cited
+  path: crates/mantle/src/app/terminal.rs
+- confidence: cited
+  path: crates/mantle/src/domain
+- confidence: cited
+  path: examples/substrate.yaml
+revision: 4
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-01T22:38:40Z", actor: "human:timo", revision: 2}
+- {from: "proposed", to: "active", at: "2026-10-01T22:38:40Z", actor: "human:timo", revision: 3}
 ---
 # Story: Start, attach, detach and stop a confined Claude Code session
 
