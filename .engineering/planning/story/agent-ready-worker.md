@@ -69,7 +69,7 @@ scope:
   path: spec/scenarios/cli/agent-worker.yaml
 - confidence: inferred
   path: spec/scenarios/cli/orchestration-observe-common-without-claude.yaml
-revision: 45
+revision: 46
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T10:13:54Z", actor: "human:timo", revision: 24}
 - {from: "proposed", to: "active", at: "2026-10-02T10:13:54Z", actor: "human:timo", revision: 25}
@@ -227,3 +227,11 @@ Source: wave3_worker_implementor's reconciliation report, incoming adapters/orch
 ## Native worker scenario placement
 
 The native runner selects authored CLI cases under spec/scenarios/cli. Move the unchanged agent-worker sequence from the provisional root-level spec/scenarios/agent-worker.yaml to spec/scenarios/cli/agent-worker.yaml and update the input manifest. The root-level placement would reach aggregate synthesis but not the CLI component, so it cannot pass complete-inventory reconciliation. This supersedes the old root-level path in the historical scope confirmation. Source: implementor inspection of the incoming native component runner during rebase reconciliation; selected path remains inferred until the actual diff and run confirm it.
+
+## Rebase installer test diagnosis
+
+The first full workspace run after rebase failed the retained interrupted-activation installer case with ETXTBSY and the generated provenance drift check (rebase-workspace-first.log, exit101). Regeneration addressed changed specification provenance. An unchanged isolated installer case and four later selected/full/traced probes passing did not erase the intermittent failure.
+
+Ranked hypotheses from implementor inspection: (1) a sibling test's fork temporarily inherits another installer thread's writable staging descriptor; (2) the installer retains its own writer; (3) another installer writes the same inode. The local writer is explicitly dropped before execution; private staging and per-root locking oppose the latter two. A deterministic isolated Rust probe invoked actual run_bounded: it returned ETXTBSY after the parent closed its writer while a fork child retained that descriptor, and the same executable succeeded after that child exited. This proves the inherited-writer mechanism; attribution of the original intermittent scheduling interleaving remains inferred. Evidence: scratch-worker/rebase-inherited-writer.log and the retained trace/report.
+
+Actual production topology is one synchronous Installer invocation in standalone mantle-worker main. Concurrent worker-up operations create independent helper processes and cannot inherit each other's writers. The parallel test process combines several independent installers with subprocess/cancellation fixtures. Coordinator authorized test-process isolation for each installer case, preserving all assertions and explicit concurrent-install threads within their isolated child. No production retry, sleep, widened deadline, blanket test serialization or weakened assertion is authorized. Rerun the original full suite and native aggregate after this correction; independent attack2 remains pending.
