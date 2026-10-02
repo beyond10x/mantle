@@ -1,0 +1,4 @@
+   Compiling mantle-docs v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-docs)
+    Finished `dev` profile [unoptimized] target(s) in 0.41s
+     Running `/dev/shm/mantle-wave4-target-integration/debug/mantle-docs build --out website/build --commit d864749db5a34e09a68897591098b794a7c783e4`
+Mantle documentation built at website/build

@@ -1,0 +1,5 @@
+    Checking mantle-worker-model v0.0.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/generated/worker-model)
+    Checking mantle-docs v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-docs)
+    Checking mantle-worker v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-worker)
+    Checking mantle v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle)
+    Finished `dev` profile [unoptimized] target(s) in 4.96s

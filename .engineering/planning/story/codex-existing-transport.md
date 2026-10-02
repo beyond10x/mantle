@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:codex-existing-transport
 kind: story
-status: active
+status: implemented
 title: Enable Codex through the existing Claude terminal transport
 relations:
 - decomposes: story:codex-interactive-start
@@ -41,10 +41,11 @@ scope:
   path: spec/scenarios/cli/codex-start.yaml
 - confidence: cited
   path: website/index.html
-revision: 20
+revision: 22
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T17:43:30Z", actor: "human:timo", revision: 2}
 - {from: "proposed", to: "active", at: "2026-10-02T17:43:30Z", actor: "human:timo", revision: 3}
+- {from: "active", to: "implemented", at: "2026-10-02T18:02:48Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"test_result":1,"verification":1}}}
 ---
 ## Acceptance
 
@@ -56,4 +57,4 @@ The operator explicitly removes the non-recording startup prerequisite on 2026-1
 
 ## Scope
 
-Source scope is being confirmed by an independent read-only scoper before dispatch. Root owns planning records; docs are delegated separately with disjoint paths.
+Independent story-scoper read all five guard callers in app/session.rs, the adapter definition in adapters/substrate.rs, the refusal-based conformance adapter and CLI tests, two authored ESS scenarios and orchestration response contract. Exact cited paths are recorded in typed scope; generated worker provenance paths were initially inferred and will be confirmed by regeneration. Docs lane owns README.md, website/index.html, docs/design/00-mantle-on-substrate.md, docs/evidence/codex-compatibility.md and examples/codex.yaml. Source lane owns all other typed paths. Root alone owns .engineering. No launcher/worker/gateway/SDK pin edit is needed. Source: capture_gate_scope report, 2026-10-02, against3329356. The patch removes existing policy only, introducing no model entity.

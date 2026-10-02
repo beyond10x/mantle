@@ -7,8 +7,8 @@ title: Mantle implemented contracts
 summary: Five ESS domains; complete native conformance with zero unresolved mappings
 relations:
 - specifies: epic:vertical-slice
-model_digest: 1ca3ff3a7d740833ed3ce317e750e276d26288e5d46f601017adf0e34557f6de
-revision: 31
+model_digest: 2663d3a490a552f6816533b57499e88067d72dc284f8b972cf833a9c40a06197
+revision: 32
 transitions:
 - {from: "draft", to: "validated", at: "2026-10-02T08:42:41Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"test_result":1}}}
 - {from: "validated", to: "conforming", at: "2026-10-02T10:39:51Z", actor: "human:timo", revision: 9, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}, executor: "agent:codex-mantle"}

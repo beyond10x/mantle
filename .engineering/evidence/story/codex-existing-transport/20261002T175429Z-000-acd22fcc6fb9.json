@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T17:54:29Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-existing-transport",
+  "kind": "story",
+  "revision": 21,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "Identical isolated mantle start --detached probe: capture refusal on baseline, ordinary missing-worker boundary on treatment",
+    "reference": ".engineering/reports/codex-activation-wave8-2026-10-02/coordinator-claim.md"
+  }
+}

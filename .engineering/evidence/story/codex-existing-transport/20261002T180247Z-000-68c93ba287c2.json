@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T18:02:47Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-existing-transport",
+  "kind": "story",
+  "revision": 21,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Seven-step full gate:187Rust and336native scenarios, all exits0",
+    "reference": ".engineering/reports/codex-activation-wave8-2026-10-02/closure.md"
+  }
+}
