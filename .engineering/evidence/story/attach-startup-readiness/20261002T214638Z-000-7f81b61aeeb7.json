@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T21:46:38Z",
+  "actor": "human:timo",
+  "artifact": "story:attach-startup-readiness",
+  "kind": "story",
+  "revision": 2,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Real production PTY attach twice fails session.output-backpressure before cursor queries",
+    "reference": ".engineering/reports/attach-startup-2026-10-02/diagnosis.md"
+  }
+}

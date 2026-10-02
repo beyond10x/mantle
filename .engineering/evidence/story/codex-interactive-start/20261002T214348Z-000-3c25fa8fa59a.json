@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T21:43:48Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-interactive-start",
+  "kind": "story",
+  "revision": 41,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Operator live attach: corrupted rendering and session.output-backpressure; agent survives",
+    "reference": "story:codex-interactive-start#operator-attach-failure-after-release-012"
+  }
+}
