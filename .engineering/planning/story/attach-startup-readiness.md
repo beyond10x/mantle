@@ -27,7 +27,7 @@ scope:
   path: spec/scenarios/cli/codex-start.yaml
 - confidence: cited
   path: spec/scenarios/cli/orchestration-attach-request.yaml
-revision: 8
+revision: 9
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T21:46:38Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"test_result":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T21:46:38Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"test_result":1}}}
@@ -51,3 +51,7 @@ The 500ms delayed real-PTY candidate completed READY/ACK but still failed after 
 ## Runtime adoption
 
 Continue the original release intent after operator instruction to keep working. Both source corrections are merged (Mantle PR2, Substrate PR116). Adopt the verified Substrate0.7.10 release: pin SDK to its exact tagged source revision, worker daemon image and layer digests to its signed released artifacts. CurrentSDK0.16/daemon0.7.8 are incompatible with the new0.17 discovery bundle. Preserve queue limits and capture policy. Validate full Mantle gate and docs, publish a patch release, and prove real installed attach before reporting this story complete. A source release does not by itself authorize ending existing agent processes or destroying workspaces; prefer an isolated updated worker/runtime for acceptance while preserving them.
+
+## Installed verification
+
+The public installed-runtime-proof report records the published signed Substrate0.7.10 daemon, exact source/image/layer/binary identities and real Codex0.153.4 attachment with Mantle implementationfac3b79. Two100x50PTY runs drained329157 and346630bytes with exit0, normal detach, zero CLIstderr and the same observed Running agent. Original worker/sessions were preserved. Full integration gate and336nativeESS scenarios passed. Independent reviewer found no source or artifact-binding defect. Authentication and terminal-app visual rendering remain unverified. Patch release0.1.3 publication is the remaining story acceptance step.

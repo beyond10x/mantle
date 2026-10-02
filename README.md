@@ -60,8 +60,11 @@ can still end the attachment with `session.output-backpressure`.
 
 An isolated, confined synthetic test delivered the full 256 KiB replay twice through real PTYs,
 preserved keyboard input and terminal settings, and detached/reconnected to the same agent.
-This is transport evidence, not a verified login or a claim that an existing worker was upgraded.
-See the [qualification update](docs/evidence/codex-compatibility.md).
+An isolated KubeVirt worker with the signed Substrate 0.7.10 runtime also passed two real
+Codex 0.153.4 attachments through 100×50 PTYs: each ran for 12 seconds and detached with exit 0;
+the second reused the same agent. Existing workers and sessions were preserved. These checks
+establish transport behavior; they do not establish visual screen correctness, device login or
+authenticated model/tool use. See the [qualification update](docs/evidence/codex-compatibility.md).
 
 ### Existing workers
 

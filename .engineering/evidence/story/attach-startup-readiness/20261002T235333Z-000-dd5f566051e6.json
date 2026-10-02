@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T23:53:33Z",
+  "actor": "human:timo",
+  "artifact": "story:attach-startup-readiness",
+  "kind": "story",
+  "revision": 8,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Full Mantle integration gate and static musl build: all9steps exit0; nativeESS336passed with0failed/skipped/unsupported/outside/refused",
+    "reference": ".engineering/reports/attach-startup-2026-10-02/installed-runtime-proof.md"
+  }
+}
