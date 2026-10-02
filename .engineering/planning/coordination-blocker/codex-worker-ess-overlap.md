@@ -2,11 +2,13 @@
 format: aep.planning-md/3
 id: coordination-blocker:codex-worker-ess-overlap
 kind: coordination-blocker
-status: open
+status: cleared
 title: Reconcile active Mantle ESS work before worker changes
 relations:
 - blocks: story:agent-ready-worker
-revision: 3
+revision: 5
+transitions:
+- {from: "open", to: "cleared", at: "2026-10-02T09:58:09Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"verification":1}}}
 ---
 ## Observation
 
@@ -33,3 +35,16 @@ The same commit bundles separately authorised public repository/site work. This 
 not published it or changed its owner's checkout. Reconciliation with our proposed Codex fields
 is still required before clearing this blocker and scheduling worker work. Do not make public
 publication a prerequisite for local implementation; integrate the exact source when appropriate.
+
+## Resolution
+
+Published ESS source `2e6b116` was merged in `4bb052c`, retaining its actual stored records and
+conformance adapter. Proposed Codex values are vocabulary only until their real implementations
+and migrations exist. Integration `e4e866c` runs127 Rust tests, including57 local ESS scenarios with
+zero skipped/failures; the compiled spec validates. The worker was rescoped to exact helper,
+generated model, SSH, service, configuration and conformance paths; four refined plan critics
+approve it. The competing checkout was never modified or leased by this coordinator.
+
+This clears the source-overlap prerequisite only. It does not claim worker implementation or live
+Codex acceptance. Evidence: `.engineering/reports/codex-qualification-gate/summary.md`, the four
+`review-result:codex-worker-*-refined` artifacts and the revised worker scope.

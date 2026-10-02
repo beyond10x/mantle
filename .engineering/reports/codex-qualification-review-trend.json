@@ -1,0 +1,21 @@
+{
+  "artifact": "story:codex-confinement-qualification",
+  "reviews": 10,
+  "from": "review-result:codex-qualification-adversary-1",
+  "from_reviewer": "unattributed",
+  "to": "review-result:codex-qualification-adversary-2",
+  "to_reviewer": "unattributed",
+  "carried": [],
+  "new": [],
+  "resolved": [
+    {
+      "file": "crates/mantle/examples/codex_qualification.rs",
+      "line": 116,
+      "category": "boundary",
+      "severity": "blocker",
+      "verdict": "NEEDS-CHANGE",
+      "origin": "introduced",
+      "message": "A FIFO binary path blocks in File::open before its regular-file guard, so the bounded probe never reaches its execution deadlines."
+    }
+  ]
+}

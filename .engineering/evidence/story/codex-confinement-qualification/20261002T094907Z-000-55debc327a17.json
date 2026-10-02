@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T09:49:07Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-confinement-qualification",
+  "kind": "story",
+  "revision": 15,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "base/treatment cargo run --locked -p mantle --example codex_qualification -- --help; digest refusal; independent regression and live observation reports",
+    "reference": ".engineering/reports/codex-qualification-verification.md"
+  }
+}

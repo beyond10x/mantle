@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized] target(s) in 0.18s
+     Running unittests examples/codex_qualification.rs ($HOME/.cache/mantle-wave2/target-qualification/debug/examples/codex_qualification-ba921f870707f2bc)
+
+running 6 tests
+test tests::digest_format_is_strict ... ok
+test tests::fixed_observation_never_exports_terminal_payload ... ok
+test tests::unsafe_scratch_parents_are_refused_without_creating_children ... ok
+test tests::scratch_budget_refuses_large_files_and_does_not_follow_links ... ok
+test tests::terminal_observation_is_bounded_and_handles_split_queries ... ok
+test tests::cq01_rejects_wrong_digest_before_executing_a_binary ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+

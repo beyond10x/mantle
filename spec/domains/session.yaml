@@ -12,6 +12,18 @@ types:
   - name: mantle.session.AuthenticationMethod
     kind: enum
     variants: [ClaudeOauth, ChatgptDevice]
+  # Proposed observed installation values for story:agent-ready-worker. These are
+  # not persisted WorkerRecord fields or proof that an agent is authenticated.
+  - name: mantle.session.AgentInstallationFacts
+    kind: struct
+    fields:
+      - {name: version, type: String}
+      - {name: architecture, type: String}
+      - {name: compressed_sha256, type: String}
+      - {name: binary_sha256, type: String}
+  - name: mantle.session.AgentInstallationOutcome
+    kind: enum
+    variants: [AlreadyCurrent, Installed, Refused]
   # crates/mantle/src/adapters/state.rs:44,60: composite PRIMARY KEY(session_id,mount).
   # UNMAPPED[source-identity]: ESS has one identity field; sources have a composite key.
   # Keep the actual value type; do not invent a persisted source_id or deletion cascade.

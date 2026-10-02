@@ -1,0 +1,31 @@
+    Blocking waiting for file lock on build directory
+   Compiling syn v3.0.6
+   Compiling clap_derive v4.6.7
+   Compiling clap v4.6.7
+   Compiling mantle-launch v0.1.0 ($HOME/.local/state/worktree/trees/b10x/mantle/mantle-wave2-qualification/crates/mantle-launch)
+    Finished `test` profile [unoptimized] target(s) in 1m 38s
+     Running tests/codex_compatibility.rs ($HOME/.cache/mantle-wave2/target-qualification/debug/deps/codex_compatibility-4f792352bb6843e4)
+
+running 2 tests
+
+running 1 test
+test local_socket_control_rejects_af_unix ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+mantle-launch: cannot start /bin/cat: Operation not permitted (os error 1)
+test local_socket_control_rejects_af_unix ... ok
+
+thread 'fifo_launcher_relays_without_unix_sockets_or_secret_slot' (2881470) panicked at crates/mantle-launch/tests/codex_compatibility.rs:125:9:
+launcher exited
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test fifo_launcher_relays_without_unix_sockets_or_secret_slot ... FAILED
+
+failures:
+
+failures:
+    fifo_launcher_relays_without_unix_sockets_or_secret_slot
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p mantle-launch --test codex_compatibility`

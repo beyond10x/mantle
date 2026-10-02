@@ -1,0 +1,9 @@
+   Compiling serde_core v1.0.229
+   Compiling syn v3.0.6
+   Compiling serde_json v1.0.151
+   Compiling clap_derive v4.6.7
+   Compiling clap v4.6.7
+   Compiling mantle-docs v0.1.0 ($HOME/.local/state/worktree/trees/b10x/mantle/mantle-codex-plan-20261002/crates/mantle-docs)
+    Finished `dev` profile [unoptimized] target(s) in 2.81s
+     Running `/dev/shm/mantle-wave2-target-int-codex/debug/mantle-docs build --out website/build --commit e4e866cd989da75d7e6cbb058a682d43f643853d`
+Mantle documentation built at website/build

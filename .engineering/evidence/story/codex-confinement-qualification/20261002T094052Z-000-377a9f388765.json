@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-02T09:40:52Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-confinement-qualification",
+  "kind": "story",
+  "revision": 15,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:codex-qualification-adversary-1",
+    "reference": ".engineering/reports/codex-qualification-correction-1.md",
+    "review": "review-result:codex-qualification-adversary-1",
+    "outcome": "fixed"
+  }
+}

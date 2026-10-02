@@ -7,7 +7,7 @@ title: Codex sessions with Claude-equivalent terminal behavior
 relations:
 - informed_by: epic:vertical-slice
 - informed_by: executable-system-specification:mantle-session
-revision: 4
+revision: 5
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":1}}}
@@ -79,3 +79,23 @@ Local KubeVirt is the live acceptance target. AWS remains paused for cost approv
 On 2026-10-02, `task check` exited 0 with 112 existing Rust tests plus fmt, clippy, ESS and AEP validation. `ess verify conform synthesize --path spec` produced 0 scenarios and 0 refusals: this validates the proposal's shape only and is not Codex conformance evidence. The implementations above own the missing executable contracts.
 
 The four aep:plan-critic roles run read-only through generic agents following the packaged role procedures; this host has no native named-role dispatcher or Sonnet model. They use the inherited session model, with three concurrent worker slots, so the fourth review begins when a slot opens. Reviewers do not receive one another's findings. Results are immutable review-result artifacts; at most two rounds are run. The acceptance correction from round 1 adds the single matrix-level acceptance above; it does not change runtime scope.
+
+## Reconciliation with implemented ESS contracts
+
+Integration commit `4bb052c` reconciles incoming published source `2e6b116` with the Codex plan.
+The actual Session entity, constructor and views keep their implemented SQLite shape; proposed
+AgentKind and AuthenticationMethod remain enum vocabulary only. The earlier provisional optional
+fields are superseded. `story:codex-interactive-start` adds real agent/auth fields, DB migration,
+constructor inputs, command assignments, both views and implementation adapter snapshots together.
+Legacy Claude values are resolved by that migration, not invented by today's conformance adapter.
+
+Qualification's completed harness/report may contain exact refusals and not-run cases. Missing
+operator authentication blocks live acceptance and completion of interactive start, not construction
+of the login plumbing needed to resolve it. A demonstrated confinement violation or mandatory
+unavailable socket remains a design blocker. Final epic acceptance still requires the full named
+CQ/AW/CS/DP behavior, including actual authentication, model tools, approval prompts and lifecycle
+observations. The current direct outer-profile controls do not discharge those obligations.
+
+Source: read-only story-scoper report against `2e6b116`; incoming conformance.rs complete-subject
+snapshot checks; qualification live JSON and docs/evidence/codex-compatibility.md. This sequencing
+clarification is the coordinator's inference and does not weaken final acceptance.

@@ -1,0 +1,2 @@
+    Checking mantle v0.1.0 ($HOME/.local/state/worktree/trees/b10x/mantle/mantle-wave2-qualification/crates/mantle)
+    Finished `dev` profile [unoptimized] target(s) in 0.60s

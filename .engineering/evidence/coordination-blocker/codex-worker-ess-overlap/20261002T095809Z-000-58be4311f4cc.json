@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T09:58:09Z",
+  "actor": "human:timo",
+  "artifact": "coordination-blocker:codex-worker-ess-overlap",
+  "kind": "coordination-blocker",
+  "revision": 4,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "merged ESS source, passing integration conformance and reviewed exact worker scope",
+    "reference": ".engineering/reports/codex-qualification-gate/summary.md"
+  }
+}

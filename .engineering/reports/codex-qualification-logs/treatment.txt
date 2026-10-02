@@ -1,0 +1,14 @@
+    Finished `dev` profile [unoptimized] target(s) in 0.14s
+     Running `$HOME/.cache/mantle-wave2/target-qualification/debug/examples/codex_qualification --help`
+Bounded unauthenticated Codex probe; output is observations, not qualification approval
+
+Usage: codex_qualification <COMMAND>
+
+Commands:
+  local     Run where invoked. This mode alone never establishes Substrate confinement
+  confined  Invoke the same helper in a new, no-egress/no-secret Substrate workspace
+  controls  Internal negative controls; no authentication or program output is read
+  help      Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help

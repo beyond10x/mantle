@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized] target(s) in 0.30s
+     Running unittests examples/codex_qualification.rs ($HOME/.cache/mantle-wave2/target-qualification/debug/examples/codex_qualification-ba921f870707f2bc)
+
+running 1 test
+
+running 1 test
+
+thread 'adversary::non_regular_binary_input_is_refused_without_waiting_for_a_fifo_writer' (2990444) panicked at crates/mantle/examples/tests/codex_qualification_adversary.rs:45:5:
+non-regular binary path blocked beyond the deadline instead of being refused
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test adversary::non_regular_binary_input_is_refused_without_waiting_for_a_fifo_writer ... FAILED
+
+failures:
+
+failures:
+    adversary::non_regular_binary_input_is_refused_without_waiting_for_a_fifo_writer
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 2.01s
+
+error: test failed, to rerun pass `-p mantle --example codex_qualification`

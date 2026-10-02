@@ -51,7 +51,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/codex-start.yaml
-revision: 3
+revision: 4
 ---
 ## Context
 
@@ -87,3 +87,23 @@ Extend Session ESS commands/outcomes/views and authored CS scenarios before impl
 Cited: `AGENTS.md`, `crates/mantle/src/domain/manifest.rs`, `crates/mantle/src/domain/session.rs`, `crates/mantle/src/config.rs`, `crates/mantle/src/app/session.rs`, `crates/mantle/src/app/worker.rs`, `crates/mantle/src/adapters/state.rs`, `crates/mantle/src/adapters/substrate.rs`, `crates/mantle-launch/src/cli.rs`, `crates/mantle-launch/src/serve.rs`, `crates/mantle-launch/src/secret.rs`, `crates/mantle-egress/src/allow.rs`, `deploy/substrate.service`, `examples/config.toml`, `spec/domains/session.yaml`, `Taskfile.yml`, `README.md`.
 Inferred new: `examples/codex.yaml`, `spec/scenarios/codex-start.yaml`, `crates/mantle/tests/codex_start.rs`, `generated/`.
 Depends on qualification and worker readiness. The lifecycle story follows this one because its fixes and conformance cases share session.rs, serve.rs, the ESS domain and the gate.
+
+## Reconciliation with implemented ESS contracts
+
+Integration commit `4bb052c` reconciles incoming published source `2e6b116` with the Codex plan.
+The actual Session entity, constructor and views keep their implemented SQLite shape; proposed
+AgentKind and AuthenticationMethod remain enum vocabulary only. The earlier provisional optional
+fields are superseded. `story:codex-interactive-start` adds real agent/auth fields, DB migration,
+constructor inputs, command assignments, both views and implementation adapter snapshots together.
+Legacy Claude values are resolved by that migration, not invented by today's conformance adapter.
+
+Qualification's completed harness/report may contain exact refusals and not-run cases. Missing
+operator authentication blocks live acceptance and completion of interactive start, not construction
+of the login plumbing needed to resolve it. A demonstrated confinement violation or mandatory
+unavailable socket remains a design blocker. Final epic acceptance still requires the full named
+CQ/AW/CS/DP behavior, including actual authentication, model tools, approval prompts and lifecycle
+observations. The current direct outer-profile controls do not discharge those obligations.
+
+Source: read-only story-scoper report against `2e6b116`; incoming conformance.rs complete-subject
+snapshot checks; qualification live JSON and docs/evidence/codex-compatibility.md. This sequencing
+clarification is the coordinator's inference and does not weaken final acceptance.

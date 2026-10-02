@@ -1,0 +1,186 @@
+{
+  "completed_at": "2026-10-02T09:56:26.167255920+00:00",
+  "failed": 0,
+  "format": "mantle-local-conformance/1",
+  "outcomes": {
+    "mantle.egress.CheckDefaultDestination/outcome/allowed": {
+      "status": "passed"
+    },
+    "mantle.egress.CheckDefaultDestination/outcome/denied": {
+      "status": "passed"
+    },
+    "mantle.session.AgentStartFailed/outcome/missing": {
+      "status": "passed"
+    },
+    "mantle.session.AgentStartFailed/outcome/moved": {
+      "status": "passed"
+    },
+    "mantle.session.AgentStarted/outcome/missing": {
+      "status": "passed"
+    },
+    "mantle.session.AgentStarted/outcome/moved": {
+      "status": "passed"
+    },
+    "mantle.session.BeginStop/outcome/missing": {
+      "status": "passed"
+    },
+    "mantle.session.BeginStop/outcome/moved": {
+      "status": "passed"
+    },
+    "mantle.session.FinishStop/outcome/missing": {
+      "status": "passed"
+    },
+    "mantle.session.FinishStop/outcome/moved": {
+      "status": "passed"
+    },
+    "mantle.session.InsertSession/outcome/recorded": {
+      "status": "passed"
+    },
+    "mantle.session.MaterializationFailed/outcome/missing": {
+      "status": "passed"
+    },
+    "mantle.session.MaterializationFailed/outcome/moved": {
+      "status": "passed"
+    },
+    "mantle.session.Materialized/outcome/missing": {
+      "status": "passed"
+    },
+    "mantle.session.Materialized/outcome/moved": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.AgentStartFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.AgentStarted": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.FinishStop": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.MaterializationFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.Materialized": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.AgentStartFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.AgentStarted": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.FinishStop": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.MaterializationFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.Materialized": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Materializing/refuses/mantle.session.AgentStartFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Materializing/refuses/mantle.session.AgentStarted": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Materializing/refuses/mantle.session.FinishStop": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Running/refuses/mantle.session.AgentStartFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Running/refuses/mantle.session.AgentStarted": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Running/refuses/mantle.session.FinishStop": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Running/refuses/mantle.session.MaterializationFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Running/refuses/mantle.session.Materialized": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Starting/refuses/mantle.session.FinishStop": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Starting/refuses/mantle.session.MaterializationFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Starting/refuses/mantle.session.Materialized": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopped/refuses/mantle.session.AgentStartFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopped/refuses/mantle.session.AgentStarted": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopped/refuses/mantle.session.BeginStop": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopped/refuses/mantle.session.FinishStop": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopped/refuses/mantle.session.MaterializationFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopped/refuses/mantle.session.Materialized": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopping/refuses/mantle.session.AgentStartFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopping/refuses/mantle.session.AgentStarted": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopping/refuses/mantle.session.BeginStop": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopping/refuses/mantle.session.MaterializationFailed": {
+      "status": "passed"
+    },
+    "mantle.session.Session/state/Stopping/refuses/mantle.session.Materialized": {
+      "status": "passed"
+    },
+    "mantle.session.Session/transition/materialization_failed/by/mantle.session.MaterializationFailed/moved": {
+      "status": "passed"
+    },
+    "mantle.session.Session/transition/materialized/by/mantle.session.Materialized/moved": {
+      "status": "passed"
+    },
+    "mantle.session.Session/transition/start_failed/by/mantle.session.AgentStartFailed/moved": {
+      "status": "passed"
+    },
+    "mantle.session.Session/transition/started/by/mantle.session.AgentStarted/moved": {
+      "status": "passed"
+    },
+    "mantle.session.Session/transition/stopped/by/mantle.session.FinishStop/moved": {
+      "status": "passed"
+    },
+    "mantle.session.Session/transition/stopping/by/mantle.session.BeginStop/moved": {
+      "status": "passed"
+    },
+    "mantle.session.SetAgentExec/outcome/missing": {
+      "status": "passed"
+    },
+    "mantle.session.SetAgentExec/outcome/recorded": {
+      "status": "passed"
+    },
+    "mantle.session.SetWorkspace/outcome/missing": {
+      "status": "passed"
+    },
+    "mantle.session.SetWorkspace/outcome/recorded": {
+      "status": "passed"
+    }
+  },
+  "passed": 57,
+  "scope": "SQLite session operations and normalized default allowlist only",
+  "skipped": 0,
+  "spec_digest": "9d516b98e127473571c4fb0e5a285948f2d5a7399a59ba99b681df08ba2263cf",
+  "synthesis_refusals": [
+    "refused: refusal[ESS-SYNTH-013]: type mantle.launch.ServeArgs has no scenario",
+    "refused: refusal[ESS-SYNTH-013]: type mantle.manifest.Resolved has no scenario"
+  ]
+}

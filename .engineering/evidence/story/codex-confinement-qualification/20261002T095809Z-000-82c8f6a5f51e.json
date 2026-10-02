@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T09:58:09Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-confinement-qualification",
+  "kind": "story",
+  "revision": 16,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "repository task check steps individually; all six exit 0; 127 Rust tests and 57 local ESS scenarios",
+    "reference": ".engineering/reports/codex-qualification-gate/summary.md"
+  }
+}
