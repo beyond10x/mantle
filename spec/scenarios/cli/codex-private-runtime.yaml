@@ -95,12 +95,24 @@
             "value": "/workspace/.mantle/cargo"
           },
           {
+            "name": "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER",
+            "value": "gcc"
+          },
+          {
+            "name": "CC",
+            "value": "gcc"
+          },
+          {
             "name": "CODEX_HOME",
             "value": "/workspace/.mantle/home/.codex"
           },
           {
             "name": "CODEX_TUI_RECORD_SESSION",
             "value": "0"
+          },
+          {
+            "name": "CXX",
+            "value": "g++"
           },
           {
             "name": "GIT_CONFIG_NOSYSTEM",
