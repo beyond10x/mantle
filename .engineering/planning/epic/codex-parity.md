@@ -7,7 +7,7 @@ title: Codex sessions with Claude-equivalent terminal behavior
 relations:
 - informed_by: epic:vertical-slice
 - informed_by: executable-system-specification:mantle-session
-revision: 20
+revision: 21
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":1}}}
@@ -119,3 +119,11 @@ The next substantive step requires either an explicit transport-policy answer or
 ## Current transport and release decision
 
 On 2026-10-02 the operator explicitly removed the Codex-only non-recording capture prerequisite, authorizing the existing Claude Substrate terminal transport, and requested immediate source release with parallel documentation updates. This supersedes all earlier pending-answer and capture-blocked wording. coordination-blocker:codex-terminal-capture is cleared by the policy decision, not by an upstream delivery claim. story:codex-existing-transport owns code, ESS and documentation alignment. Preserve private home, temporary Codex diagnostics, launcher volatile replay and confinement. Source release can describe this implementation without claiming unobserved authenticated CS/DP acceptance; the full epic remains incomplete until those observations exist.
+
+## Released integration and observed live startup
+
+Mantle0.1.1 is published at95573ba9e73f6effd576ab9ffc8646db3ec6c5f4 (bot release402066028; exact candidate Gate37048284479 and common37048285313, tag common37048877606 all successful). The static worker portability correction is implemented and CI now builds that target. All187 top-level Rust tests and336 native ESS scenarios pass. Current source and public setup documentation explain the operator-approved existing Claude capture transport. Documentation index was verified byte-exact live atfd205aa; subsequent release publication is asynchronous.
+
+At2026-10-02T18:35Z the idle KubeVirt worker received the verified0.1.1 static egress/launcher/worker binaries after checking there were no active execution cgroups. The existing expired Claude workspace was preserved. Worker readiness reports pinned Codex0.153.4 and unchanged Substrate0.7.8. Using a configuration without a Claude credential section, a real detached start created disposable codex-acceptance, session ses_01m3yyc60xy3c51rkpw7jrxvjh, workspace ws_01M3YYC62DG3BYPVGTSASHH9Z8 and agent exec ex_01M3YYCA86H8RPCQX3EQFFAY73. Source is substrate main@6af1b91889edf5fa5455c03e68829b56e6b6cc56. Status observes Running and lease ending2026-10-03T02:35:14.566867124Z; host process inventory confirms a real codex process in that execution cgroup. A supplementary mantle exec -- pwd returned/workspace with remote exit0.
+
+This proves production startup and confined supplementary execution, not authentication or a model turn. The operator was given mantle attach codex-acceptance for device login. No login screen, code or credential contents were captured. Real authentication/refresh/model tools and authenticated lifecycle acceptance remain unverified. The local CLI was installed at~/.local/bin/mantle. Private raw runtime logs and status/exit observations remain under~/.cache/mantle-wave9/runtime; release evidence under~/.cache/mantle-wave9/release. Full acceptance remains active and incomplete; no upstream capture dependency is reintroduced.

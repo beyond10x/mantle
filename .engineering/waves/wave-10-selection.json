@@ -1,0 +1,338 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "artifacts": [
+        {
+          "id": "story:codex-interactive-start",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "AGENTS.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "Taskfile.yml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-egress/src/allow.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/cli.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/secret.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/serve.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/adapters/state.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/adapters/substrate.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/session.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/worker.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/config.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/domain/manifest.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/domain/session.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/tests/codex_start.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "deploy/substrate.service"
+            },
+            {
+              "confidence": "inferred",
+              "path": "examples/codex.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "examples/config.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/Cargo.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/source.schema.json"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/types-report.json"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/Cargo.toml"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/source.schema.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types-report.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/manifest.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/orchestration.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/domains/session.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli/codex-start.yaml"
+            }
+          ]
+        },
+        {
+          "id": "story:egress-gateway",
+          "inferred": false,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-egress"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 2,
+      "artifacts": [
+        {
+          "id": "story:kubevirt-provider",
+          "inferred": false,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "Taskfile.yml"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/kubevirt.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/ssh.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/app/worker.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/config.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "deploy/cloud-init.yaml"
+            }
+          ]
+        },
+        {
+          "id": "story:worker-rust-linker",
+          "inferred": false,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/substrate.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/codex-private-runtime.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/orchestration-agent-request.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/orchestration-exec-request.yaml"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 3,
+      "artifacts": [
+        {
+          "id": "story:worker-provisioning",
+          "inferred": false,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/aws.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/ssh.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/app/worker.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "deploy"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 4,
+      "artifacts": [
+        {
+          "id": "story:session-lifecycle",
+          "inferred": false,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/state.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/substrate.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/app/session.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/app/terminal.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/domain"
+            },
+            {
+              "confidence": "cited",
+              "path": "examples/substrate.yaml"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "collisions": [
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:kubevirt-provider",
+      "path": "Taskfile.yml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:kubevirt-provider",
+      "path": "crates/mantle/src/app/worker.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:kubevirt-provider",
+      "path": "crates/mantle/src/config.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:session-lifecycle",
+      "path": "crates/mantle/src/adapters/state.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:session-lifecycle",
+      "path": "crates/mantle/src/adapters/substrate.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:session-lifecycle",
+      "path": "crates/mantle/src/app/session.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:worker-provisioning",
+      "path": "crates/mantle/src/app/worker.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:worker-rust-linker",
+      "path": "crates/mantle/src/adapters/substrate.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:kubevirt-provider",
+      "b": "story:worker-provisioning",
+      "path": "crates/mantle/src/adapters/ssh.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:kubevirt-provider",
+      "b": "story:worker-provisioning",
+      "path": "crates/mantle/src/app/worker.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:session-lifecycle",
+      "b": "story:worker-rust-linker",
+      "path": "crates/mantle/src/adapters/substrate.rs",
+      "confidence": "cited"
+    }
+  ],
+  "unassessed": [],
+  "cycles": []
+}
