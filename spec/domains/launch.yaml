@@ -5,28 +5,119 @@ types:
   - name: mantle.launch.ServeArgs
     kind: struct
     fields:
-      - {name: dir, type: String}
+      - {name: dir, type: Bytes}
       - {name: secret_fd, type: 'Optional<Integer>'}
       - {name: secret_env, type: 'Optional<String>'}
       - {name: proxy, type: 'Optional<String>'}
-      - {name: cwd, type: String}
-      - {name: mkdirs, type: 'List<String>'}
+      - {name: cwd, type: Bytes}
+      - {name: mkdirs, type: 'List<Bytes>'}
       - {name: scrollback_bytes, type: Integer}
-      - {name: command, type: 'List<String>'}
-    invariants:
-      - scrollback_bytes >= 1024
-      - scrollback_bytes <= 67108864
+      - {name: command, type: 'List<Bytes>'}
+    # The CLI's bound is the ValidateScrollback command, exercised through clap itself.
   - name: mantle.launch.AttachArgs
     kind: struct
     fields:
-      - {name: dir, type: String}
+      - {name: dir, type: Bytes}
       - {name: no_tty, type: Boolean}
   - name: mantle.launch.Window
     kind: struct
     fields:
       - {name: cols, type: Integer}
       - {name: rows, type: Integer}
-# UNMAPPED[launcher-os]: OsString may contain non-UTF8 bytes; ESS String is only its textual subset.
-# PTY/FIFO locks, descriptor ownership, secret lifetime, single attachment, detach survival,
-# scrollback replay, resize and signal forwarding are tested by tests/launch.rs and adversary*.rs.
-# They have no persisted lifecycle; do not fabricate Attached/Detached session database states.
+# Bytes preserve non-UTF8 OS arguments. Native scenarios run real PTYs, FIFOs and processes
+# for locking, credential descriptor closure, detach/replay, resize, signals and slow readers.
+# These are OS observations; Attached/Detached are not invented database states.
+errors:
+  - name: mantle.launch.InvalidScrollback
+    fields: []
+commands:
+  - name: mantle.launch.ParseArgs
+    input: [{name: argv, type: 'List<Bytes>'}]
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: diagnostic, type: 'Optional<String>'}
+      - {name: serve, type: 'Optional<mantle.launch.ServeArgs>'}
+      - {name: attach, type: 'Optional<mantle.launch.AttachArgs>'}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.launch.ReadSecret
+    # Only synthetic credential bytes enter this conformance boundary. Observe a digest, not a secret.
+    input: [{name: bytes, type: Bytes}]
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: digest, type: 'Optional<String>'}
+      - {name: diagnostic, type: 'Optional<String>'}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.launch.ParseWindow
+    input: [{name: chunks, type: 'List<Bytes>'}]
+    response: [{name: windows, type: 'List<mantle.launch.Window>'}]
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.launch.ReplayRing
+    input:
+      - {name: capacity, type: Integer, example: 8}
+      - {name: chunks, type: 'List<Bytes>'}
+    response: [{name: bytes, type: Bytes}]
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.launch.Emit
+    # A real launcher + Rust fixture process observes OS argv bytes and exit propagation.
+    input:
+      - {name: argv, type: 'List<Bytes>'}
+      - {name: exit, type: Integer}
+    response:
+      - {name: exit, type: 'Optional<Integer>'}
+      - {name: output, type: Bytes}
+      - {name: credential_in_diagnostic, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.launch.Lifecycle
+    # Real PTY, FIFOs and processes: one attachment, detach/replay, resize, credential FD closure.
+    response:
+      - {name: relayed, type: Boolean}
+      - {name: replayed, type: Boolean}
+      - {name: survived_detach, type: Boolean}
+      - {name: duplicate_attach_refused, type: Boolean}
+      - {name: duplicate_server_refused, type: Boolean}
+      - {name: fifo_permissions, type: 'List<Integer>'}
+      - {name: resized, type: Boolean}
+      - {name: server_exit, type: 'Optional<Integer>'}
+      - {name: cleaned, type: Boolean}
+      - {name: secret_descriptor_closed, type: Boolean}
+      - {name: credential_fingerprint, type: 'Optional<List<Integer>>'}
+      - {name: credential_in_diagnostic, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.launch.ValidateScrollback
+    # Parse the --scrollback-bytes value with otherwise-valid serve arguments.
+    input: [{name: bytes, type: Integer, example: 262144}]
+    response: [{name: valid, type: Boolean}]
+    outcomes:
+      - name: accepted
+        when: {all: [bytes >= 1024, bytes <= 67108864]}
+        returns: true
+      - name: refused
+        error: mantle.launch.InvalidScrollback
+
+  - name: mantle.launch.Signals
+    response:
+      - {name: exit, type: 'Optional<Integer>'}
+      - {name: signal_forwarded, type: 'Boolean'}
+      - {name: descendant_exited, type: 'Boolean'}
+    outcomes: [{name: returned, returns: true}]
+
+  - name: mantle.launch.SlowReader
+    response:
+      - {name: exit, type: 'Optional<Integer>'}
+      - {name: retained_bytes, type: 'Integer'}
+      - {name: tail_is_output, type: 'Boolean'}
+    outcomes: [{name: returned, returns: true}]
+
+  - name: mantle.launch.FileSafety
+    response:
+      - {name: directory_link_refused, type: 'Boolean'}
+      - {name: lock_link_refused, type: 'Boolean'}
+      - {name: fifo_link_refused, type: 'Boolean'}
+      - {name: regular_fifo_refused, type: 'Boolean'}
+      - {name: remove_regular_refused, type: 'Boolean'}
+      - {name: target_mode, type: 'Integer'}
+      - {name: file_bytes, type: 'Bytes'}
+      - {name: directory_mode, type: 'Integer'}
+      - {name: duplicate_refused, type: 'Boolean'}
+      - {name: reacquired, type: 'Boolean'}
+    outcomes: [{name: returned, returns: true}]

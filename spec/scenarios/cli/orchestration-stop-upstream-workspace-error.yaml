@@ -1,0 +1,27 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "stop-upstream-workspace-error",
+  "summary": "Production application boundary: stop-upstream-workspace-error",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Stop",
+      "input": {
+        "state": "RUNNING",
+        "exec": "running",
+        "workspace": "error",
+        "destroy": "success",
+        "readback": [],
+        "fail": "none",
+        "has_exec": true,
+        "has_workspace": true
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": false,
+        "state": "STOPPING"
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "window-fragmentation",
+  "summary": "window-fragmentation",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.ParseWindow",
+      "input": {
+        "chunks": [
+          "MTI=",
+          "MCA0MAowIDEKMTAwMSAxCg==",
+          "MSAxMDAwCg=="
+        ]
+      },
+      "outcome": "returned",
+      "response": {
+        "windows": [
+          {
+            "cols": 120,
+            "rows": 40
+          },
+          {
+            "cols": 1,
+            "rows": 1000
+          }
+        ]
+      }
+    }
+  ]
+}

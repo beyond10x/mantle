@@ -2,6 +2,12 @@ domain: mantle.egress
 summary: The exact default allowlist decision after authority parsing, before DNS or dialing.
 # Source: crates/mantle-egress/src/allow.rs:6-88. Destination is already normalized by parse_authority.
 types:
+  - name: mantle.egress.ResolverFixture
+    kind: enum
+    variants: [public, private, mixed, empty, failure, timeout]
+  - name: mantle.egress.ConnectorFixture
+    kind: enum
+    variants: [echo, failure, timeout]
   - name: mantle.egress.Destination
     kind: struct
     fields:
@@ -20,11 +26,42 @@ errors:
   - name: mantle.egress.NotAllowed
     fields: []
 commands:
+  - name: mantle.egress.CheckBudgets
+    # One held tunnel saturates max_connections=1. Releasing it restores capacity; 32 silent
+    # head readers consume their separate budget and must not prevent a well-formed tunnel.
+    response: [{name: statuses, type: 'List<Integer>'}]
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.egress.CheckDrain
+    # A live tunnel has a 10s idle deadline; shutdown's 60ms drain deadline must close it first.
+    response:
+      - {name: first_status, type: Integer}
+      - {name: stopped_accepting, type: Boolean}
+      - {name: connection_closed, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.egress.Exchange
+    # A raw client exchange against serve(), with controlled DNS/dial IO only.
+    input:
+      - {name: request, type: Bytes}
+      - {name: resolver, type: mantle.egress.ResolverFixture}
+      - {name: connector, type: mantle.egress.ConnectorFixture}
+      - {name: half_close, type: Boolean}
+    response:
+      - {name: status, type: Integer}
+      - {name: body, type: Bytes}
+      - {name: forwarded, type: Bytes}
+      - {name: resolved_names, type: 'List<String>'}
+      - {name: dialled, type: 'List<String>'}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.egress.ClassifyAddress
+    input: [{name: address, type: String, example: '127.0.0.1'}]
+    response: [{name: refusal, type: 'Optional<String>'}]
+    outcomes: [{name: returned, returns: true}]
   - name: mantle.egress.CheckDefaultDestination
     # Allowlist::default_list().permits(), projected to the proxy's refusal.
     input:
       - {name: host, type: String}
       - {name: port, type: Integer}
+    response: [{name: allowed, type: Boolean}]
     outcomes:
       - name: allowed
         when:
@@ -32,10 +69,12 @@ commands:
             - port == 443
             - host:
                 in: [api.anthropic.com, platform.claude.com, github.com, codeload.github.com, objects.githubusercontent.com, index.crates.io, static.crates.io, crates.io]
-        accepts: nothing
+        returns: true
       - name: denied
         error: mantle.egress.NotAllowed
-# UNMAPPED[egress-transport]: raw HTTP/1.1 CONNECT syntax, authority normalization, IP-literal
-# rejection, all-address DNS public-range checks and rebinding, concurrency budgets, deadlines,
-# byte forwarding and shutdown are temporal/OS boundaries. Sources: head.rs, addr.rs, proxy.rs.
-# Success here only admits a normalized destination; it never promises a connected tunnel.
+# Exchange drives the production CONNECT handler over TCP with controlled DNS/dial IO.
+# Authored scenarios hold normalization, address filtering, pinned public dialing, byte
+# forwarding, deadlines, connection budgets and shutdown. A permitted name alone is not a tunnel.
+
+# Controlled upstream IO is fixture environment, not client authority. Network::resolve/connect
+# are substituted; the production serve/head/allow/address/deadline/splice path always runs.

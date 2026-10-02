@@ -1,0 +1,30 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "aws-up-pending",
+  "summary": "Production application boundary: aws-up-pending",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Worker",
+      "input": {
+        "provider": "aws",
+        "action": "up",
+        "initial": "pending",
+        "fail": "none",
+        "new_profile": false,
+        "idle_stop": false
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "calls": [
+          "find",
+          "wait-running-600"
+        ],
+        "instance": "instance-1",
+        "volume": "volume-1"
+      }
+    }
+  ]
+}

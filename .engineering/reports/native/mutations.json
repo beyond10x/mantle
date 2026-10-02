@@ -1,0 +1,165 @@
+{
+  "format": "mantle-mutation-evidence/1",
+  "mutations": [
+    {
+      "mutation": "source-composite-key",
+      "path": "crates/mantle/src/adapters/state.rs",
+      "change": {
+        "from": "PRIMARY KEY (session_id, mount)",
+        "to": "PRIMARY KEY (session_id)"
+      },
+      "failed": [
+        {
+          "scenario": "mantle.session/authored/source-composite-insert-isolation",
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "mutation": "live-name-uniqueness",
+      "path": "crates/mantle/src/adapters/state.rs",
+      "change": {
+        "from": "CREATE UNIQUE INDEX IF NOT EXISTS sessions_live_name ON sessions(name) WHERE state <> 'STOPPED';",
+        "to": "CREATE INDEX IF NOT EXISTS sessions_live_name ON sessions(name);"
+      },
+      "failed": [
+        {
+          "scenario": "mantle.session.InsertSession/outcome/conflict",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.session/authored/live-name-failedagentstart",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.session/authored/live-name-failedmaterialization",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.session/authored/live-name-materializing",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.session/authored/live-name-running",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.session/authored/live-name-starting",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.session/authored/live-name-stopping",
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "mutation": "manifest-memory-bound",
+      "path": "crates/mantle/src/domain/manifest.rs",
+      "change": {
+        "from": "if bytes < (512 << 20)",
+        "to": "if bytes < 1"
+      },
+      "failed": [
+        {
+          "scenario": "mantle.manifest.ValidateMemory/outcome/refused",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.manifest/authored/memory-low",
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "mutation": "stop-unknown-outcome",
+      "path": "crates/mantle/src/app/session.rs",
+      "change": {
+        "from": "wait_until_destroyed(port, id).await?;",
+        "to": "let _ = port;"
+      },
+      "failed": [
+        {
+          "scenario": "mantle.orchestration/authored/stop-transport-unknown-readback",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.orchestration/authored/stop-unknown-readback",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.orchestration/authored/stop-unknown-readback-error",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.orchestration/authored/stop-unknown-still-present",
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "mutation": "worker-stopped-resume",
+      "path": "crates/mantle/src/app/worker.rs",
+      "change": {
+        "from": "InstanceStateName::Stopped | InstanceStateName::Stopping",
+        "to": "InstanceStateName::Running | InstanceStateName::Stopping"
+      },
+      "failed": [
+        {
+          "scenario": "mantle.orchestration/authored/aws-up-running",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.orchestration/authored/aws-up-stopped",
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "mutation": "resource-observation",
+      "path": "crates/mantle/src/adapters/substrate.rs",
+      "change": {
+        "from": "\"not observed\".to_owned()",
+        "to": "\"observed\".to_owned()"
+      },
+      "failed": [
+        {
+          "scenario": "mantle.orchestration/authored/observe-all-required-facts",
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "mutation": "egress-private-dns",
+      "path": "crates/mantle-egress/src/proxy.rs",
+      "change": {
+        "from": ".filter(|a| addr::refusal(a.ip()).is_none())",
+        "to": ".filter(|_| true)"
+      },
+      "failed": [
+        {
+          "scenario": "mantle.egress/authored/mixed-dns-only-dials-public",
+          "status": "failed"
+        },
+        {
+          "scenario": "mantle.egress/authored/resolver-private",
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "mutation": "launcher-secret-nul",
+      "path": "crates/mantle-launch/src/secret.rs",
+      "change": {
+        "from": "if value.contains('\\0')",
+        "to": "if false"
+      },
+      "failed": [
+        {
+          "scenario": "mantle.launch/authored/secret-nul",
+          "status": "failed"
+        }
+      ]
+    }
+  ]
+}

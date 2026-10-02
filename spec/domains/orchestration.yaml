@@ -1,0 +1,389 @@
+{
+  "domain": "mantle.orchestration",
+  "summary": "Application flows over provider IO ports; observations come from production SQLite and the calls the real flow makes. No cloud deployment claim.",
+  "types": [
+    {
+      "name": "mantle.orchestration.SourceObservation",
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "mount",
+          "type": "String"
+        },
+        {
+          "name": "commit",
+          "type": "String"
+        },
+        {
+          "name": "declared_ref",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "mantle.orchestration.WorkerRecord",
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "name": "instance",
+          "type": "String"
+        },
+        {
+          "name": "region",
+          "type": "String"
+        },
+        {
+          "name": "data_volume",
+          "type": "Optional<String>"
+        }
+      ]
+    },
+    {
+      "name": "mantle.orchestration.EnvironmentEntry",
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "name": "value",
+          "type": "String"
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "mantle.orchestration.Start",
+      "input": [
+        {
+          "name": "manifest",
+          "type": "String",
+          "example": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\n"
+        },
+        {
+          "name": "fail",
+          "type": "String",
+          "example": "none"
+        },
+        {
+          "name": "commit",
+          "type": "String",
+          "example": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "name": "attach",
+          "type": "Boolean"
+        }
+      ],
+      "response": [
+        {
+          "name": "succeeded",
+          "type": "Boolean"
+        },
+        {
+          "name": "state",
+          "type": "String"
+        },
+        {
+          "name": "workspace",
+          "type": "Optional<String>"
+        },
+        {
+          "name": "agent_exec",
+          "type": "Optional<String>"
+        },
+        {
+          "name": "failure",
+          "type": "Optional<String>"
+        },
+        {
+          "name": "calls",
+          "type": "List<String>"
+        },
+        {
+          "name": "sources",
+          "type": "List<mantle.orchestration.SourceObservation>"
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "returned",
+          "returns": true
+        }
+      ]
+    },
+    {
+      "name": "mantle.orchestration.Stop",
+      "input": [
+        {
+          "name": "state",
+          "type": "String",
+          "example": "RUNNING"
+        },
+        {
+          "name": "exec",
+          "type": "String",
+          "example": "running"
+        },
+        {
+          "name": "workspace",
+          "type": "String",
+          "example": "present"
+        },
+        {
+          "name": "destroy",
+          "type": "String",
+          "example": "success"
+        },
+        {
+          "name": "readback",
+          "type": "List<String>"
+        },
+        {
+          "name": "fail",
+          "type": "String",
+          "example": "none"
+        },
+        {
+          "name": "has_exec",
+          "type": "Boolean"
+        },
+        {
+          "name": "has_workspace",
+          "type": "Boolean"
+        }
+      ],
+      "response": [
+        {
+          "name": "succeeded",
+          "type": "Boolean"
+        },
+        {
+          "name": "state",
+          "type": "String"
+        },
+        {
+          "name": "workspace",
+          "type": "Optional<String>"
+        },
+        {
+          "name": "agent_exec",
+          "type": "Optional<String>"
+        },
+        {
+          "name": "failure",
+          "type": "Optional<String>"
+        },
+        {
+          "name": "calls",
+          "type": "List<String>"
+        },
+        {
+          "name": "sources",
+          "type": "List<mantle.orchestration.SourceObservation>"
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "returned",
+          "returns": true
+        }
+      ]
+    },
+    {
+      "name": "mantle.orchestration.Worker",
+      "input": [
+        {
+          "name": "provider",
+          "type": "String",
+          "example": "aws"
+        },
+        {
+          "name": "action",
+          "type": "String",
+          "example": "up"
+        },
+        {
+          "name": "initial",
+          "type": "String",
+          "example": "running"
+        },
+        {
+          "name": "fail",
+          "type": "String",
+          "example": "none"
+        },
+        {
+          "name": "new_profile",
+          "type": "Boolean"
+        },
+        {
+          "name": "idle_stop",
+          "type": "Boolean"
+        }
+      ],
+      "response": [
+        {
+          "name": "succeeded",
+          "type": "Boolean"
+        },
+        {
+          "name": "calls",
+          "type": "List<String>"
+        },
+        {
+          "name": "instance",
+          "type": "Optional<String>"
+        },
+        {
+          "name": "volume",
+          "type": "Optional<String>"
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "returned",
+          "returns": true
+        }
+      ]
+    },
+    {
+      "name": "mantle.orchestration.WorkerRecords",
+      "input": [
+        {
+          "name": "records",
+          "type": "List<mantle.orchestration.WorkerRecord>"
+        },
+        {
+          "name": "name",
+          "type": "String"
+        }
+      ],
+      "response": [
+        {
+          "name": "record",
+          "type": "Optional<mantle.orchestration.WorkerRecord>"
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "returned",
+          "returns": true
+        }
+      ]
+    },
+    {
+      "name": "mantle.orchestration.Request",
+      "input": [
+        {
+          "name": "kind",
+          "type": "String",
+          "example": "agent"
+        },
+        {
+          "name": "manifest",
+          "type": "String",
+          "example": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\n"
+        },
+        {
+          "name": "argv",
+          "type": "List<String>"
+        },
+        {
+          "name": "cpu",
+          "type": "Integer",
+          "example": 4
+        }
+      ],
+      "response": [
+        {
+          "name": "argv",
+          "type": "List<String>"
+        },
+        {
+          "name": "environment",
+          "type": "List<mantle.orchestration.EnvironmentEntry>"
+        },
+        {
+          "name": "aperture",
+          "type": "Optional<String>"
+        },
+        {
+          "name": "root",
+          "type": "String"
+        },
+        {
+          "name": "secret_slot",
+          "type": "Optional<String>"
+        },
+        {
+          "name": "secret_fd",
+          "type": "Optional<Integer>"
+        },
+        {
+          "name": "timeout_secs",
+          "type": "Integer"
+        },
+        {
+          "name": "memory_bytes",
+          "type": "Integer"
+        },
+        {
+          "name": "processes",
+          "type": "Integer"
+        },
+        {
+          "name": "lease_secs",
+          "type": "Optional<Integer>"
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "returned",
+          "returns": true
+        }
+      ]
+    },
+    {
+      "name": "mantle.orchestration.Observe",
+      "input": [
+        {
+          "name": "facts_json",
+          "type": "String",
+          "example": "{\"operation.ledger-subject-max-rows\":1000,\"operation.ledger-subject-max-bytes\":1048576,\"operation.ledger-global-max-rows\":10000,\"operation.ledger-global-max-bytes\":10485760,\"exec.argv-only\":true,\"exec.no-egress\":true,\"exec.cgroup-limits\":{\"processes\":true,\"memory\":true,\"cpu\":false},\"exec.cgroup-kill\":true,\"sessions.pty\":true,\"exec.egress-apertures\":[{\"name\":\"egress\",\"destination\":\"127.0.0.1:3128\",\"max_bytes\":null}],\"secrets.slots\":[\"claude\"]}"
+        },
+        {
+          "name": "usage_json",
+          "type": "Optional<String>",
+          "example": "{\"status\":\"pending\",\"observed_at\":\"2026-10-02T00:00:00Z\"}"
+        }
+      ],
+      "response": [
+        {
+          "name": "missing",
+          "type": "List<String>"
+        },
+        {
+          "name": "quota_served",
+          "type": "Boolean"
+        },
+        {
+          "name": "usage",
+          "type": "List<mantle.orchestration.EnvironmentEntry>"
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "returned",
+          "returns": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "start-detached",
+  "summary": "Production application boundary: start-detached",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Start",
+      "input": {
+        "manifest": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\n",
+        "fail": "none",
+        "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "attach": false
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "state": "RUNNING",
+        "workspace": "workspace-1",
+        "agent_exec": "exec-1",
+        "failure": null,
+        "calls": [
+          "create",
+          "isolated:/usr/bin/mkdir -p /workspace/.mantle/home /workspace/.mantle/cargo",
+          "network:/usr/bin/git -c http.proxy=http://127.0.0.1:3128 clone --no-tags --branch main -- https://example.com/r.git /workspace/r",
+          "isolated:/usr/bin/git -C /workspace/r rev-parse HEAD",
+          "agent"
+        ],
+        "sources": [
+          {
+            "mount": "r",
+            "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "declared_ref": "main"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -98,44 +98,81 @@ pub async fn start(
     println!("Worker         {} {}", worker.region, worker.instance);
     println!("Manifest       {}", resolved.digest);
 
-    let mut builder = connected
-        .client
-        .workspace()
-        .empty()
-        .label("mantle-session", id.as_str())
-        .label("mantle-name", resolved.name.as_str());
-    match (
-        &machine.facts.workspace_storage_quota,
-        resolved.storage_bytes,
-    ) {
-        (Some(quota), Some(requested)) => {
-            builder = builder.storage(StorageLimit {
-                max_bytes: requested.min(quota.max_bytes),
-                max_inodes: quota.max_inodes,
-            });
-        }
-        (None, Some(_)) => {
-            println!("Storage        requested, NOT enforced: the worker serves no workspace quota")
-        }
-        _ => {}
-    }
-    let workspace = builder.create().await.context("creating the workspace")?;
-    store.set_workspace(&id, workspace.id())?;
-    println!("Workspace      {}", workspace.id());
+    start_recorded(store, &id, &resolved, &connected, attach).await
+}
 
-    if let Err(error) = materialize(store, &id, &workspace, &resolved).await {
+pub(crate) trait StartPort {
+    type Workspace: InitPort;
+    async fn create(&self, id: &str, resolved: &Resolved) -> Result<Self::Workspace>;
+    fn workspace_id<'a>(&self, workspace: &'a Self::Workspace) -> &'a str;
+    async fn start_agent(&self, workspace: &Self::Workspace, resolved: &Resolved)
+    -> Result<String>;
+    async fn attach(&self, workspace: &Self::Workspace, name: &str) -> Result<()>;
+}
+impl StartPort for Connected {
+    type Workspace = Workspace;
+    async fn create(&self, id: &str, resolved: &Resolved) -> Result<Workspace> {
+        let machine = self.client.machine();
+        let mut builder = self
+            .client
+            .workspace()
+            .empty()
+            .label("mantle-session", id)
+            .label("mantle-name", resolved.name.as_str());
+        match (
+            &machine.facts.workspace_storage_quota,
+            resolved.storage_bytes,
+        ) {
+            (Some(quota), Some(requested)) => {
+                builder = builder.storage(StorageLimit {
+                    max_bytes: requested.min(quota.max_bytes),
+                    max_inodes: quota.max_inodes,
+                });
+            }
+            (None, Some(_)) => {
+                println!(
+                    "Storage        requested, NOT enforced: the worker serves no workspace quota"
+                )
+            }
+            _ => {}
+        }
+        builder.create().await.context("creating the workspace")
+    }
+    fn workspace_id<'a>(&self, workspace: &'a Workspace) -> &'a str {
+        workspace.id()
+    }
+    async fn start_agent(&self, workspace: &Workspace, resolved: &Resolved) -> Result<String> {
+        start_agent(workspace, resolved).await
+    }
+    async fn attach(&self, workspace: &Workspace, name: &str) -> Result<()> {
+        attach_workspace(workspace, name).await
+    }
+}
+
+pub(crate) async fn start_recorded(
+    store: &Store,
+    id: &str,
+    resolved: &Resolved,
+    port: &impl StartPort,
+    attach: bool,
+) -> Result<()> {
+    let workspace = port.create(id, resolved).await?;
+    store.set_workspace(id, port.workspace_id(&workspace))?;
+    println!("Workspace      {}", port.workspace_id(&workspace));
+
+    if let Err(error) = materialize(store, id, &workspace, resolved).await {
         store.move_session(
-            &id,
+            id,
             SessionState::FailedMaterialization,
             Some(&format!("{error:#}")),
         )?;
         return Err(error.context("FAILED_MATERIALIZATION"));
     }
-    store.move_session(&id, SessionState::Starting, None)?;
-    match start_agent(&workspace, &resolved).await {
+    store.move_session(id, SessionState::Starting, None)?;
+    match port.start_agent(&workspace, resolved).await {
         Ok(exec) => {
-            store.set_agent_exec(&id, &exec)?;
-            store.move_session(&id, SessionState::Running, None)?;
+            store.set_agent_exec(id, &exec)?;
+            store.move_session(id, SessionState::Running, None)?;
             println!(
                 "Agent          {exec} (running, ends after {}h at the latest)",
                 resolved.retain_for.as_secs() / 3600
@@ -143,7 +180,7 @@ pub async fn start(
         }
         Err(error) => {
             store.move_session(
-                &id,
+                id,
                 SessionState::FailedAgentStart,
                 Some(&format!("{error:#}")),
             )?;
@@ -151,7 +188,7 @@ pub async fn start(
         }
     }
     if attach {
-        attach_workspace(&workspace, &resolved.name).await?;
+        port.attach(&workspace, &resolved.name).await?;
     } else {
         println!("Attach with    mantle attach {}", resolved.name);
     }
@@ -203,79 +240,85 @@ async fn run_init(workspace: &Workspace, argv: &[&str], network: bool) -> Result
     Ok(String::from_utf8_lossy(&output.stdout).trim().to_owned())
 }
 
-async fn materialize(
+pub(crate) trait InitPort {
+    async fn run(&self, argv: &[&str], network: bool) -> Result<String>;
+}
+impl InitPort for Workspace {
+    async fn run(&self, argv: &[&str], network: bool) -> Result<String> {
+        run_init(self, argv, network).await
+    }
+}
+
+pub(crate) async fn materialize(
     store: &Store,
     id: &str,
-    workspace: &Workspace,
+    workspace: &impl InitPort,
     resolved: &Resolved,
 ) -> Result<()> {
-    run_init(
-        workspace,
-        &[
-            "/usr/bin/mkdir",
-            "-p",
-            "/workspace/.mantle/home",
-            "/workspace/.mantle/cargo",
-        ],
-        false,
-    )
-    .await?;
-    for repository in &resolved.repositories {
-        let path = format!("/workspace/{}", repository.mount);
-        if manifest::is_commit(&repository.reference) {
-            run_init(
-                workspace,
-                &[
-                    "/usr/bin/git",
-                    "-c",
-                    GIT_PROXY,
-                    "clone",
-                    "--no-tags",
-                    "--",
-                    &repository.repository,
-                    &path,
-                ],
-                true,
-            )
-            .await?;
-            run_init(
-                workspace,
-                &[
-                    "/usr/bin/git",
-                    "-C",
-                    &path,
-                    "checkout",
-                    "--detach",
-                    &repository.reference,
-                ],
-                false,
-            )
-            .await?;
-        } else {
-            run_init(
-                workspace,
-                &[
-                    "/usr/bin/git",
-                    "-c",
-                    GIT_PROXY,
-                    "clone",
-                    "--no-tags",
-                    "--branch",
-                    &repository.reference,
-                    "--",
-                    &repository.repository,
-                    &path,
-                ],
-                true,
-            )
-            .await?;
-        }
-        let commit = run_init(
-            workspace,
-            &["/usr/bin/git", "-C", &path, "rev-parse", "HEAD"],
+    workspace
+        .run(
+            &[
+                "/usr/bin/mkdir",
+                "-p",
+                "/workspace/.mantle/home",
+                "/workspace/.mantle/cargo",
+            ],
             false,
         )
         .await?;
+    for repository in &resolved.repositories {
+        let path = format!("/workspace/{}", repository.mount);
+        if manifest::is_commit(&repository.reference) {
+            workspace
+                .run(
+                    &[
+                        "/usr/bin/git",
+                        "-c",
+                        GIT_PROXY,
+                        "clone",
+                        "--no-tags",
+                        "--",
+                        &repository.repository,
+                        &path,
+                    ],
+                    true,
+                )
+                .await?;
+            workspace
+                .run(
+                    &[
+                        "/usr/bin/git",
+                        "-C",
+                        &path,
+                        "checkout",
+                        "--detach",
+                        &repository.reference,
+                    ],
+                    false,
+                )
+                .await?;
+        } else {
+            workspace
+                .run(
+                    &[
+                        "/usr/bin/git",
+                        "-c",
+                        GIT_PROXY,
+                        "clone",
+                        "--no-tags",
+                        "--branch",
+                        &repository.reference,
+                        "--",
+                        &repository.repository,
+                        &path,
+                    ],
+                    true,
+                )
+                .await?;
+        }
+        let commit = workspace
+            .run(&["/usr/bin/git", "-C", &path, "rev-parse", "HEAD"], false)
+            .await?;
         if !manifest::is_commit(&commit) {
             bail!(
                 "{}: rev-parse answered {commit:?}, not a commit",
@@ -298,42 +341,7 @@ async fn materialize(
 }
 
 async fn start_agent(workspace: &Workspace, resolved: &Resolved) -> Result<String> {
-    let mut command = workspace
-        .command("/opt/mantle/bin/mantle-launch")
-        .args([
-            "serve",
-            "--dir",
-            sub::AGENT_DIR,
-            "--secret-fd",
-            "3",
-            "--secret-env",
-            "CLAUDE_CODE_OAUTH_TOKEN",
-            "--cwd",
-            &resolved.agent_cwd,
-            "--mkdir",
-            "/workspace/.mantle/home",
-            "--mkdir",
-            "/workspace/.mantle/cargo",
-            "--proxy",
-            sub::PROXY,
-            "--",
-            "/opt/mantle/bin/claude",
-        ])
-        .aperture(sub::APERTURE)
-        .read_only_root(sub::toolchain_root())
-        .secret_slot(SecretSlotRequest {
-            slot: sub::CLAUDE_SLOT.to_owned(),
-            fd: sub::CLAUDE_FD,
-        })
-        .policy(sub::policy(
-            resolved.retain_for,
-            resolved.memory_bytes,
-            resolved.pids,
-        )?)
-        .lease(resolved.retain_for);
-    for (name, value) in sub::base_environment(resolved.cpu) {
-        command = command.env(name, value);
-    }
+    let command = agent_request(resolved).command(workspace)?;
     let mut exec = command.start().await.context("starting the agent")?;
     // The launcher refuses quickly (bad secret, stale server); give it that long to do so.
     tokio::time::sleep(Duration::from_secs(3)).await;
@@ -355,15 +363,8 @@ async fn start_agent(workspace: &Workspace, resolved: &Resolved) -> Result<Strin
 }
 
 async fn attach_workspace(workspace: &Workspace, name: &str) -> Result<()> {
-    let session = workspace
-        .pty_session("/opt/mantle/bin/mantle-launch", terminal::local_window())
-        .args(["attach", "--dir", sub::AGENT_DIR])
-        .read_only_root(sub::toolchain_root())
-        .env("TERM", "xterm-256color")
-        .env("LANG", "C.UTF-8")
-        .env("HOME", "/workspace/.mantle/home")
-        .policy(sub::policy(ATTACH_TIMEOUT, 256 << 20, 32)?)
-        .lease(ATTACH_TIMEOUT)
+    let session = attach_request()
+        .pty(workspace)?
         .input_limit_bytes(b10x_substrate_sdk::MAX_SESSION_INPUT_BYTES)
         .frame_limit_bytes(b10x_substrate_sdk::MAX_SESSION_FRAME_BYTES)
         .queued_frames(b10x_substrate_sdk::MAX_SESSION_QUEUED_FRAMES)
@@ -434,15 +435,7 @@ pub async fn exec(config: &Config, store: &Store, name: &str, argv: &[String]) -
         .as_u64()
         .and_then(|cpu| u32::try_from(cpu).ok())
         .unwrap_or(4);
-    let mut command = workspace
-        .command(program.as_str())
-        .args(args.iter().map(String::as_str))
-        .aperture(sub::APERTURE)
-        .read_only_root(sub::toolchain_root())
-        .policy(sub::policy(INIT_TIMEOUT, 4 << 30, 512)?);
-    for (key, value) in sub::base_environment(cpu) {
-        command = command.env(key, value);
-    }
+    let command = exec_request(program, args, cpu).command(&workspace)?;
     let output = command.run().await.context("running the command")?;
     use std::io::Write as _;
     std::io::stdout().write_all(&output.stdout)?;
@@ -587,50 +580,105 @@ pub async fn status(config: &Config, store: &Store, name: &str) -> Result<()> {
 pub async fn stop(config: &Config, store: &Store, name: &str) -> Result<()> {
     let record = live(store, name)?;
     let connected = connect(config, &worker(store)?).await?;
+    stop_recorded(&connected.client, store, &record, name).await
+}
+
+pub(crate) trait StopPort {
+    type Exec;
+    type Workspace;
+    async fn get_exec(&self, id: &str) -> Result<Self::Exec, b10x_substrate_sdk::SdkError>;
+    fn terminal(&self, exec: &Self::Exec) -> bool;
+    async fn signal(&self, exec: &mut Self::Exec) -> Result<()>;
+    async fn wait(&self, exec: &mut Self::Exec) -> Result<()>;
+    async fn retire(&self, exec: Self::Exec) -> Result<()>;
+    async fn get_workspace(
+        &self,
+        id: &str,
+    ) -> Result<Self::Workspace, b10x_substrate_sdk::SdkError>;
+    async fn destroy(&self, workspace: Self::Workspace)
+    -> Result<(), b10x_substrate_sdk::SdkError>;
+}
+impl StopPort for Client {
+    type Exec = b10x_substrate_sdk::Exec;
+    type Workspace = Workspace;
+    async fn get_exec(&self, id: &str) -> Result<Self::Exec, b10x_substrate_sdk::SdkError> {
+        self.get_exec(id).await
+    }
+    fn terminal(&self, exec: &Self::Exec) -> bool {
+        exec.observation().state.terminal()
+    }
+    async fn signal(&self, exec: &mut Self::Exec) -> Result<()> {
+        exec.signal(
+            b10x_substrate_sdk::Signal::Terminate,
+            Duration::from_secs(10),
+        )
+        .await?;
+        Ok(())
+    }
+    async fn wait(&self, exec: &mut Self::Exec) -> Result<()> {
+        let observed = exec.wait_for(Duration::from_secs(60)).await?;
+        println!("Agent          {:?} {:?}", observed.state, observed.exit);
+        Ok(())
+    }
+    async fn retire(&self, exec: Self::Exec) -> Result<()> {
+        exec.retire().await?;
+        Ok(())
+    }
+    async fn get_workspace(&self, id: &str) -> Result<Workspace, b10x_substrate_sdk::SdkError> {
+        self.get_workspace(id).await
+    }
+    async fn destroy(&self, workspace: Workspace) -> Result<(), b10x_substrate_sdk::SdkError> {
+        workspace.destroy().await?;
+        Ok(())
+    }
+}
+
+pub(crate) async fn stop_recorded(
+    port: &impl StopPort,
+    store: &Store,
+    record: &SessionRecord,
+    name: &str,
+) -> Result<()> {
     // A stop interrupted earlier resumes from STOPPING.
     if record.state != SessionState::Stopping {
         store.move_session(&record.id, SessionState::Stopping, None)?;
     }
     if let Some(exec_id) = &record.agent_exec {
-        let mut exec = match connected.client.get_exec(exec_id).await {
+        let mut exec = match port.get_exec(exec_id).await {
             Ok(exec) => exec,
             Err(error) if not_found(&error) => {
                 println!("Agent          {exec_id} already retired");
-                return finish_stop(&connected, store, &record, name).await;
+                return finish_stop(port, store, record, name).await;
             }
             Err(error) => return Err(error.into()),
         };
-        if !exec.observation().state.terminal() {
-            exec.signal(
-                b10x_substrate_sdk::Signal::Terminate,
-                Duration::from_secs(10),
-            )
-            .await
-            .context("signalling the agent")?;
-            let observed = exec.wait_for(Duration::from_secs(60)).await?;
-            println!("Agent          {:?} {:?}", observed.state, observed.exit);
+        if !port.terminal(&exec) {
+            port.signal(&mut exec)
+                .await
+                .context("signalling the agent")?;
+            port.wait(&mut exec).await?;
         }
-        exec.retire().await.context("retiring the agent exec")?;
+        port.retire(exec).await.context("retiring the agent exec")?;
     }
-    finish_stop(&connected, store, &record, name).await
+    finish_stop(port, store, record, name).await
 }
 
 /// Destroys the workspace and records the stop. A workspace Substrate no longer has is one an
 /// earlier, interrupted stop already destroyed.
 async fn finish_stop(
-    connected: &Connected,
+    port: &impl StopPort,
     store: &Store,
     record: &SessionRecord,
     name: &str,
 ) -> Result<()> {
     if let Some(id) = &record.workspace {
-        match connected.client.get_workspace(id).await {
-            Ok(workspace) => match workspace.destroy().await {
+        match port.get_workspace(id).await {
+            Ok(workspace) => match port.destroy(workspace).await {
                 Ok(_) => println!("Workspace      destroyed"),
                 // Destroying a workspace with a built tree outlasts the operation's answer
                 // (observed 2026-10-02); the outcome is read back rather than assumed.
                 Err(error) if outcome_unknown(&error) => {
-                    wait_until_destroyed(connected, id).await?;
+                    wait_until_destroyed(port, id).await?;
                     println!("Workspace      destroyed (confirmed by read-back)");
                 }
                 Err(error) => return Err(error).context("destroying the workspace"),
@@ -658,10 +706,10 @@ fn outcome_unknown(error: &b10x_substrate_sdk::SdkError) -> bool {
 }
 
 /// Reads the workspace back until Substrate no longer has it, for at most five minutes.
-async fn wait_until_destroyed(connected: &Connected, id: &str) -> Result<()> {
+async fn wait_until_destroyed(port: &impl StopPort, id: &str) -> Result<()> {
     let deadline = tokio::time::Instant::now() + Duration::from_secs(300);
     loop {
-        match connected.client.get_workspace(id).await {
+        match port.get_workspace(id).await {
             Err(error) if not_found(&error) => return Ok(()),
             Err(error) => return Err(error).context("reading the workspace back"),
             Ok(_) if tokio::time::Instant::now() > deadline => {
@@ -674,4 +722,158 @@ async fn wait_until_destroyed(connected: &Connected, id: &str) -> Result<()> {
 
 fn not_found(error: &b10x_substrate_sdk::SdkError) -> bool {
     matches!(error, b10x_substrate_sdk::SdkError::Refusal(refusal) if refusal.code == "resource.not-found")
+}
+
+/// The exact command request Mantle passes to the pinned SDK. No credential value belongs here.
+#[derive(serde::Serialize)]
+pub(crate) struct RunRequest {
+    argv: Vec<String>,
+    environment: std::collections::BTreeMap<String, String>,
+    aperture: Option<String>,
+    root: String,
+    secret_slot: Option<String>,
+    secret_fd: Option<u32>,
+    timeout_secs: u64,
+    memory_bytes: u64,
+    processes: u32,
+    lease_secs: Option<u64>,
+}
+impl RunRequest {
+    fn command(&self, workspace: &Workspace) -> Result<b10x_substrate_sdk::CommandBuilder> {
+        let (program, args) = self.argv.split_first().context("empty argv")?;
+        let mut command = workspace
+            .command(program.as_str())
+            .args(args.iter().map(String::as_str))
+            .read_only_root(b10x_substrate_sdk::ReadOnlyRoot {
+                host_path: self.root.clone(),
+                mount: self.root.clone(),
+            })
+            .policy(sub::policy(
+                Duration::from_secs(self.timeout_secs),
+                self.memory_bytes,
+                self.processes,
+            )?);
+        for (key, value) in &self.environment {
+            command = command.env(key, value);
+        }
+        if let Some(aperture) = &self.aperture {
+            command = command.aperture(aperture);
+        }
+        if let Some(slot) = &self.secret_slot {
+            command = command.secret_slot(SecretSlotRequest {
+                slot: slot.clone(),
+                fd: self.secret_fd.context("secret fd")?,
+            });
+        }
+        if let Some(lease) = self.lease_secs {
+            command = command.lease(Duration::from_secs(lease));
+        }
+        Ok(command)
+    }
+    fn pty(&self, workspace: &Workspace) -> Result<b10x_substrate_sdk::PipeSessionBuilder> {
+        let (program, args) = self.argv.split_first().context("empty argv")?;
+        let mut command = workspace
+            .pty_session(program.as_str(), terminal::local_window())
+            .args(args.iter().map(String::as_str))
+            .read_only_root(b10x_substrate_sdk::ReadOnlyRoot {
+                host_path: self.root.clone(),
+                mount: self.root.clone(),
+            })
+            .policy(sub::policy(
+                Duration::from_secs(self.timeout_secs),
+                self.memory_bytes,
+                self.processes,
+            )?);
+        for (key, value) in &self.environment {
+            command = command.env(key, value);
+        }
+        if let Some(lease) = self.lease_secs {
+            command = command.lease(Duration::from_secs(lease));
+        }
+        Ok(command)
+    }
+}
+pub(crate) fn agent_request(resolved: &Resolved) -> RunRequest {
+    RunRequest {
+        argv: [
+            "/opt/mantle/bin/mantle-launch",
+            "serve",
+            "--dir",
+            sub::AGENT_DIR,
+            "--secret-fd",
+            "3",
+            "--secret-env",
+            "CLAUDE_CODE_OAUTH_TOKEN",
+            "--cwd",
+            resolved.agent_cwd.as_str(),
+            "--mkdir",
+            "/workspace/.mantle/home",
+            "--mkdir",
+            "/workspace/.mantle/cargo",
+            "--proxy",
+            sub::PROXY,
+            "--",
+            "/opt/mantle/bin/claude",
+        ]
+        .into_iter()
+        .map(str::to_owned)
+        .collect(),
+        environment: sub::base_environment(resolved.cpu)
+            .into_iter()
+            .map(|(k, v)| (k.to_owned(), v))
+            .collect(),
+        aperture: Some(sub::APERTURE.into()),
+        root: sub::TOOLCHAIN_ROOT.into(),
+        secret_slot: Some(sub::CLAUDE_SLOT.into()),
+        secret_fd: Some(sub::CLAUDE_FD),
+        timeout_secs: resolved.retain_for.as_secs(),
+        memory_bytes: resolved.memory_bytes,
+        processes: resolved.pids,
+        lease_secs: Some(resolved.retain_for.as_secs()),
+    }
+}
+pub(crate) fn exec_request(program: &str, args: &[String], cpu: u32) -> RunRequest {
+    RunRequest {
+        argv: std::iter::once(program.to_owned())
+            .chain(args.iter().cloned())
+            .collect(),
+        environment: sub::base_environment(cpu)
+            .into_iter()
+            .map(|(k, v)| (k.to_owned(), v))
+            .collect(),
+        aperture: Some(sub::APERTURE.into()),
+        root: sub::TOOLCHAIN_ROOT.into(),
+        secret_slot: None,
+        secret_fd: None,
+        timeout_secs: INIT_TIMEOUT.as_secs(),
+        memory_bytes: 4 << 30,
+        processes: 512,
+        lease_secs: None,
+    }
+}
+pub(crate) fn attach_request() -> RunRequest {
+    RunRequest {
+        argv: vec![
+            "/opt/mantle/bin/mantle-launch".into(),
+            "attach".into(),
+            "--dir".into(),
+            sub::AGENT_DIR.into(),
+        ],
+        environment: [
+            ("TERM", "xterm-256color"),
+            ("LANG", "C.UTF-8"),
+            ("HOME", "/workspace/.mantle/home"),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.into(), v.into()))
+        .collect(),
+        aperture: None,
+        root: sub::TOOLCHAIN_ROOT.into(),
+        secret_slot: None,
+        secret_fd: None,
+        timeout_secs: ATTACH_TIMEOUT.as_secs(),
+        memory_bytes: 256 << 20,
+        processes: 32,
+        lease_secs: Some(ATTACH_TIMEOUT.as_secs()),
+    }
 }

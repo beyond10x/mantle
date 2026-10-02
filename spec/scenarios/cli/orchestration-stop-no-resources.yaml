@@ -1,0 +1,28 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "stop-no-resources",
+  "summary": "Production application boundary: stop-no-resources",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Stop",
+      "input": {
+        "state": "RUNNING",
+        "exec": "running",
+        "workspace": "present",
+        "destroy": "success",
+        "readback": [],
+        "fail": "none",
+        "has_exec": false,
+        "has_workspace": false
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "state": "STOPPED",
+        "calls": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "completed_at": 1790937879592,
+  "conformance_status": "passed",
+  "counts": {
+    "error": 0,
+    "failed": 0,
+    "passed": 34,
+    "skipped": 0,
+    "total": 34,
+    "unsupported": 0
+  },
+  "coverage": {
+    "counts": {
+      "authored": 23,
+      "generated": 11,
+      "outside": 77,
+      "refused": 0
+    },
+    "knowledge": "complete_inventory",
+    "refused": [],
+    "selection": {
+      "filter": {
+        "kind": "all"
+      },
+      "origins": "generated_and_authored",
+      "scope": {
+        "component": "mantle-launch",
+        "kind": "component"
+      }
+    }
+  },
+  "execution_status": "passed",
+  "format": "ess-conformance-report/2",
+  "implementation": "mantle-native 0.1.0",
+  "outcomes": {
+    "error": [],
+    "failed": [],
+    "passed": [
+      "mantle.launch.Emit/outcome/returned",
+      "mantle.launch.FileSafety/outcome/returned",
+      "mantle.launch.Lifecycle/outcome/returned",
+      "mantle.launch.ParseArgs/outcome/returned",
+      "mantle.launch.ParseWindow/outcome/returned",
+      "mantle.launch.ReadSecret/outcome/returned",
+      "mantle.launch.ReplayRing/outcome/returned",
+      "mantle.launch.Signals/outcome/returned",
+      "mantle.launch.SlowReader/outcome/returned",
+      "mantle.launch.ValidateScrollback/outcome/accepted",
+      "mantle.launch.ValidateScrollback/outcome/refused",
+      "mantle.launch/authored/argument-byte-preservation",
+      "mantle.launch/authored/argument-defaults",
+      "mantle.launch/authored/attach-no-tty",
+      "mantle.launch/authored/bad-environment-name",
+      "mantle.launch/authored/bounded-scrollback",
+      "mantle.launch/authored/filesystem-links-and-locks",
+      "mantle.launch/authored/missing-command",
+      "mantle.launch/authored/os-argument-bytes-and-exit",
+      "mantle.launch/authored/oversize-scrollback-write",
+      "mantle.launch/authored/process-group-signals",
+      "mantle.launch/authored/proxy-userinfo",
+      "mantle.launch/authored/pty-fifo-lifecycle",
+      "mantle.launch/authored/relative-dir",
+      "mantle.launch/authored/secret-empty",
+      "mantle.launch/authored/secret-fd-pair",
+      "mantle.launch/authored/secret-non-utf8",
+      "mantle.launch/authored/secret-nul",
+      "mantle.launch/authored/secret-overflow",
+      "mantle.launch/authored/secret-trailing-whitespace",
+      "mantle.launch/authored/slow-reader-bounded-output",
+      "mantle.launch/authored/standard-secret-fd",
+      "mantle.launch/authored/window-fragmentation",
+      "mantle.launch/authored/window-oversize-discard"
+    ],
+    "skipped": [],
+    "unsupported": []
+  },
+  "policy": "complete-selection/1",
+  "producer_profile": "rust-scenario-status/1",
+  "spec_digest": "8336f2747da565d5095d1469d79302729d8f9583382a012cdef92b09840e9ece",
+  "specification": "mantle/v1",
+  "suite": {
+    "digest": "sha256:8a8c36d0c37959d0abb525fdee406b77f4dc550086c3e03d2d89d9e14415ff1e",
+    "digest_profile": "sha256-json-bytes/1",
+    "version": "ess-conformance/29"
+  }
+}

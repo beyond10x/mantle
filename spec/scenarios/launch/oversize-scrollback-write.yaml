@@ -1,0 +1,22 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "oversize-scrollback-write",
+  "summary": "oversize-scrollback-write",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.ReplayRing",
+      "input": {
+        "capacity": 4,
+        "chunks": [
+          "YWJjZGVmZ2g="
+        ]
+      },
+      "outcome": "returned",
+      "response": {
+        "bytes": "ZWZnaA=="
+      }
+    }
+  ]
+}

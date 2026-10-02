@@ -1,0 +1,38 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "start-pinned-commit",
+  "summary": "Production application boundary: start-pinned-commit",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Start",
+      "input": {
+        "manifest": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\n",
+        "fail": "none",
+        "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "attach": false
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "state": "RUNNING",
+        "sources": [
+          {
+            "mount": "r",
+            "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "declared_ref": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "calls": [
+          "create",
+          "isolated:/usr/bin/mkdir -p /workspace/.mantle/home /workspace/.mantle/cargo",
+          "network:/usr/bin/git -c http.proxy=http://127.0.0.1:3128 clone --no-tags -- https://example.com/r.git /workspace/r",
+          "isolated:/usr/bin/git -C /workspace/r checkout --detach aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "isolated:/usr/bin/git -C /workspace/r rev-parse HEAD",
+          "agent"
+        ]
+      }
+    }
+  ]
+}

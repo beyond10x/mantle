@@ -1,0 +1,25 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "bad-header",
+  "summary": "bad-header",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBnaXRodWIuY29tOjQ0MyBIVFRQLzEuMQ0KQmFkIE5hbWU6IHgNCg0K",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 400,
+        "forwarded": "",
+        "dialled": [],
+        "resolved_names": []
+      }
+    }
+  ]
+}

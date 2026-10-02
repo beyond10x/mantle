@@ -1,0 +1,22 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "observe-missing-sessions-pty",
+  "summary": "Observe production capability or usage mapping: missing-sessions-pty",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Observe",
+      "input": {
+        "facts_json": "{\"operation.ledger-subject-max-rows\":1000,\"operation.ledger-subject-max-bytes\":1048576,\"operation.ledger-global-max-rows\":10000,\"operation.ledger-global-max-bytes\":10485760,\"exec.argv-only\":true,\"exec.no-egress\":true,\"exec.cgroup-limits\":{\"processes\":true,\"memory\":true,\"cpu\":false},\"exec.cgroup-kill\":true,\"exec.egress-apertures\":[{\"name\":\"egress\",\"destination\":\"127.0.0.1:3128\",\"max_bytes\":null}],\"secrets.slots\":[\"claude\"]}",
+        "usage_json": null
+      },
+      "outcome": "returned",
+      "response": {
+        "missing": [
+          "sessions.pty"
+        ]
+      }
+    }
+  ]
+}

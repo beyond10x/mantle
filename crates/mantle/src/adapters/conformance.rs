@@ -1,44 +1,15 @@
 //! Executes ESS's generated local scenarios against the production SQLite store and allowlist.
 //! This adapter translates calls and reads persisted rows; it never evaluates ESS guards.
-use std::collections::BTreeMap;
-use std::path::Path;
-use std::process::Command;
-
 use anyhow::{Context, Result, bail, ensure};
+use mantle_conformance::{Boundary, Reply, integer};
 use mantle_egress::{Allowlist, Destination};
 use serde_json::{Value, json};
 
-use super::{SessionRecord, Store};
+use super::{SessionRecord, SourceRecord, Store};
 use crate::domain::session::SessionState;
-
-#[derive(Default)]
-struct Reply {
-    command: String,
-    outcome: String,
-    error: Option<String>,
-    events: BTreeMap<String, Value>,
-}
 
 fn text(value: &Value) -> Result<&str> {
     value.as_str().context("expected text")
-}
-
-fn resolve(value: &Value, instances: &BTreeMap<String, Value>, reply: &Reply) -> Result<Value> {
-    Ok(match text(&value["kind"])? {
-        "literal" => value["value"].clone(),
-        "instance" => instances
-            .get(text(&value["instance"])?)
-            .context("uncaptured instance")?
-            .clone(),
-        "observed" => reply
-            .events
-            .get(text(&value["event"])?)
-            .context("unobserved event")?
-            .get(text(&value["field"])?)
-            .context("unobserved field")?
-            .clone(),
-        other => bail!("unsupported value expression {other}"),
-    })
 }
 
 fn row(record: SessionRecord) -> Value {
@@ -72,10 +43,43 @@ fn query(store: &Store, view: &str) -> Result<Value> {
 }
 
 fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
-    let mut reply = Reply {
-        command: command.into(),
-        ..Reply::default()
-    };
+    if command.starts_with("mantle.orchestration.") {
+        return super::orchestration::execute(command, input);
+    }
+    let mut reply = Reply::default();
+    if command.starts_with("mantle.manifest.") {
+        return manifest(command, input);
+    }
+    if command == "mantle.session.PutSource" {
+        let affected = store.put_source(
+            text(&input["key"]["session_id"])?,
+            &SourceRecord {
+                mount: text(&input["key"]["mount"])?.into(),
+                name: text(&input["name"])?.into(),
+                repository: text(&input["repository"])?.into(),
+                declared_ref: text(&input["declared_ref"])?.into(),
+                commit: text(&input["commit"])?.into(),
+            },
+        );
+        return Ok(Reply::returned(match affected {
+            Ok(affected) => json!({"affected": affected, "diagnostic": null}),
+            Err(error) => json!({"affected": 0, "diagnostic": format!("{error:#}")}),
+        }));
+    }
+    if command == "mantle.session.ReadSources" {
+        let id = text(&input["session_id"])?;
+        let rows: Vec<_> = store
+            .sources(id)?
+            .into_iter()
+            .map(|s| {
+                json!({
+                    "session_id": id, "mount": s.mount, "name": s.name,
+                    "repository": s.repository, "declared_ref": s.declared_ref, "commit": s.commit,
+                })
+            })
+            .collect();
+        return Ok(Reply::returned(json!({"rows": rows})));
+    }
     if command == "mantle.egress.CheckDefaultDestination" {
         let port = input["port"].as_f64().context("port is not numeric")?;
         ensure!(port.fract() == 0.0, "port is not an integer");
@@ -93,7 +97,7 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
     }
     let id = text(&input["session_id"])?;
     if command == "mantle.session.InsertSession" {
-        store.insert_session(&SessionRecord {
+        let result = store.insert_session(&SessionRecord {
             id: id.into(),
             name: text(&input["name"])?.into(),
             worker: text(&input["worker"])?.into(),
@@ -104,7 +108,16 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
             requested_json: text(&input["requested_json"])?.into(),
             created_at: text(&input["created_at"])?.into(),
             failure: None,
-        })?;
+        });
+        if let Err(error) = result {
+            ensure!(
+                error.to_string().starts_with("a session named "),
+                "{error:#}"
+            );
+            reply.outcome = "conflict".into();
+            reply.error = Some("mantle.session.RecordConflict".into());
+            return Ok(reply);
+        }
         reply.outcome = "recorded".into();
         reply.events.insert(
             "mantle.session.SessionRecorded".into(),
@@ -167,195 +180,79 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
     Ok(reply)
 }
 
-fn scenario(scenario: &Value) -> Result<()> {
-    let store = Store::in_memory()?;
-    let mut instances = BTreeMap::new();
-    let mut snapshots = BTreeMap::new();
-    let mut queries = BTreeMap::new();
-    let mut reply = Reply::default();
-    for step in scenario["steps"].as_array().context("no steps")? {
-        match text(&step["step"])? {
-            "execute_command" => {
-                let input = step["input"]
-                    .as_object()
-                    .context("no input")?
-                    .iter()
-                    .map(|(k, v)| Ok((k.clone(), resolve(v, &instances, &reply)?)))
-                    .collect::<Result<serde_json::Map<_, _>>>()?;
-                reply = execute(&store, text(&step["command"])?, &Value::Object(input))?;
-            }
-            "expect_outcome" => {
-                ensure!(reply.command == text(&step["outcome"]["command"])?);
-                ensure!(
-                    reply.outcome == text(&step["outcome"]["outcome"])?,
-                    "outcome: {}",
-                    reply.outcome
-                );
-            }
-            "expect_error" => ensure!(reply.error.as_deref() == Some(text(&step["error"])?)),
-            "expect_no_error" => ensure!(reply.error.is_none()),
-            "expect_no_events" => ensure!(reply.events.is_empty()),
-            "expect_no_event" => ensure!(!reply.events.contains_key(text(&step["event"])?)),
-            "expect_event" => {
-                let event = reply
-                    .events
-                    .get(text(&step["event"])?)
-                    .context("event missing")?;
-                for (field, shape) in step["shape"].as_object().context("no event shape")? {
-                    ensure!(
-                        shape == &json!({"holds": "primitive", "kind": "string"}),
-                        "unsupported event shape {shape}"
-                    );
-                    ensure!(event[field].is_string(), "bad event field {field}");
-                }
-            }
-            "capture_instance" => {
-                let event = reply
-                    .events
-                    .get(text(&step["event"])?)
-                    .context("capture event missing")?;
-                let value = event
-                    .get(text(&step["field"])?)
-                    .context("capture field missing")?;
-                instances.insert(text(&step["instance"])?.to_owned(), value.clone());
-            }
-            "query_view" => {
-                let view = text(&step["view"])?;
-                queries.insert(view.to_owned(), query(&store, view)?);
-            }
-            "expect_view" => {
-                let rows = queries
-                    .get(text(&step["view"])?)
-                    .context("view not queried")?
-                    .as_array()
-                    .context("view not rows")?;
-                let fields = step["expectation"]["fields"]
-                    .as_object()
-                    .context("no expected fields")?;
-                let expected = fields
-                    .iter()
-                    .map(|(k, v)| Ok((k, resolve(v, &instances, &reply)?)))
-                    .collect::<Result<Vec<_>>>()?;
-                let contains = rows
-                    .iter()
-                    .any(|r| expected.iter().all(|(k, v)| r.get(*k) == Some(v)));
-                match text(&step["expectation"]["expect"])? {
-                    "contains" => ensure!(contains, "view lacks {expected:?}; read {rows:?}"),
-                    "excludes" => ensure!(!contains, "view unexpectedly contains {expected:?}"),
-                    other => bail!("unsupported view expectation {other}"),
-                }
-            }
-            "snapshot_view" | "snapshot_complete_subject" => {
-                let view = text(&step["view"])?;
-                let rows = query(&store, view)?;
-                if step["step"] == "snapshot_complete_subject" {
-                    let subject = step["subject"].as_object().context("no subject")?;
-                    let (key, value) = subject.iter().next().context("empty subject")?;
-                    let identity = resolve(value, &instances, &reply)?;
-                    let record = rows
-                        .as_array()
-                        .context("no rows")?
-                        .iter()
-                        .find(|r| r.get(key) == Some(&identity))
-                        .context("subject absent")?;
-                    for field in step["shape"]["fields"]
-                        .as_array()
-                        .context("no shape fields")?
-                    {
-                        ensure!(
-                            record.get(text(&field["name"])?).is_some(),
-                            "snapshot missing field"
-                        );
-                    }
-                }
-                // Comparing all rows is stronger than comparing just the subject.
-                snapshots.insert(view.to_owned(), rows);
-            }
-            "expect_view_unchanged" | "expect_complete_subject_unchanged" => {
-                let view = text(&step["view"])?;
-                ensure!(
-                    snapshots.get(view).context("no snapshot")? == &query(&store, view)?,
-                    "{view} mutated on refusal"
-                );
-            }
-            other => bail!("unsupported step {other}"),
-        }
+fn manifest(command: &str, input: &Value) -> Result<Reply> {
+    use crate::domain::manifest as m;
+    if command == "mantle.manifest.Parse" {
+        return Ok(Reply::returned(match m::parse(text(&input["text"])?) {
+            Ok(r) => json!({"diagnostic": null, "resolved": {
+                "name": r.name, "repositories": r.repositories.iter().map(|r| json!({
+                    "name": r.name, "repository": r.repository, "reference": r.reference, "mount": r.mount
+                })).collect::<Vec<_>>(), "agent_cwd": r.agent_cwd, "cpu": r.cpu,
+                "memory_bytes": r.memory_bytes, "pids": r.pids, "storage_bytes": r.storage_bytes,
+                "retain_for_secs": r.retain_for.as_secs(), "digest": r.digest
+            }}),
+            Err(e) => json!({"resolved": null, "diagnostic": format!("{e:#}")}),
+        }));
     }
-    Ok(())
+    let answer = match command {
+        "mantle.manifest.ValidateMemory" => integer(&input["bytes"])
+            .and_then(|v| Ok(u64::try_from(v)?))
+            .and_then(m::validate_memory),
+        "mantle.manifest.ValidatePids" => integer(&input["pids"])
+            .and_then(|v| Ok(u32::try_from(v)?))
+            .and_then(m::validate_pids),
+        "mantle.manifest.ValidateRetention" => integer(&input["seconds"])
+            .and_then(|v| Ok(u64::try_from(v)?))
+            .and_then(|v| m::validate_retention(std::time::Duration::from_secs(v))),
+        _ => bail!("unsupported manifest command {command}"),
+    };
+    Ok(if answer.is_ok() {
+        Reply {
+            outcome: "accepted".into(),
+            ..Reply::default()
+        }
+    } else {
+        Reply {
+            outcome: "refused".into(),
+            error: Some("mantle.manifest.InvalidResource".into()),
+            ..Reply::default()
+        }
+    })
 }
 
+struct CliBoundary(Store);
+impl Default for CliBoundary {
+    fn default() -> Self {
+        Self(Store::in_memory().expect("conformance SQLite"))
+    }
+}
+impl Boundary for CliBoundary {
+    fn external(&mut self, outcome: &str) -> Result<()> {
+        ensure!(
+            outcome == "mantle.session.InsertSession/conflict",
+            "unsupported arrangement {outcome}"
+        );
+        self.0.insert_session(&SessionRecord {
+            id: "pre-existing-session".into(),
+            name: "conformance-session".into(),
+            worker: "w".into(),
+            state: SessionState::Materializing,
+            manifest_digest: "existing".into(),
+            workspace: None,
+            agent_exec: None,
+            requested_json: "{}".into(),
+            created_at: "2026-10-02T00:00:00Z".into(),
+            failure: None,
+        })
+    }
+    fn execute(&mut self, command: &str, input: &Value) -> Result<Reply> {
+        execute(&self.0, command, input)
+    }
+    fn query(&self, view: &str) -> Result<Value> {
+        query(&self.0, view)
+    }
+}
 #[test]
 fn ess_generated_local_conformance() -> Result<()> {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let drafts = root.join(".engineering/drafts");
-    std::fs::create_dir_all(&drafts)?;
-    let suite_path = drafts.join("mantle-conformance.json");
-    let output = Command::new("ess")
-        .current_dir(&root)
-        .args(["verify", "conform", "synthesize", "--path", "spec", "--out"])
-        .arg(&suite_path)
-        .output()?;
-    ensure!(
-        output.status.success(),
-        "ESS synthesis: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    let synthesis = String::from_utf8(output.stdout)?;
-    let refusals: Vec<_> = synthesis
-        .lines()
-        .filter(|line| line.starts_with("refused:"))
-        .collect();
-    ensure!(
-        refusals
-            == [
-                "refused: refusal[ESS-SYNTH-013]: type mantle.launch.ServeArgs has no scenario",
-                "refused: refusal[ESS-SYNTH-013]: type mantle.manifest.Resolved has no scenario",
-            ],
-        "review changed synthesis coverage: {synthesis}"
-    );
-    eprintln!("{synthesis}");
-    let suite: Value = serde_json::from_slice(&std::fs::read(&suite_path)?)?;
-    ensure!(
-        suite["provenance"]["suite_version"] == "ess-conformance/22",
-        "review runner for new suite contract"
-    );
-    let scenarios = suite["scenarios"].as_object().context("no scenarios")?;
-    ensure!(
-        scenarios.len() == 57,
-        "review obligation count: {}",
-        scenarios.len()
-    );
-    let mut outcomes = BTreeMap::new();
-    for (id, steps) in scenarios {
-        let result = scenario(steps);
-        outcomes.insert(
-            id.clone(),
-            match result {
-                Ok(()) => json!({"status": "passed"}),
-                Err(error) => json!({"status": "failed", "reason": format!("{error:#}")}),
-            },
-        );
-    }
-    let failed = outcomes
-        .values()
-        .filter(|r| r["status"] == "failed")
-        .count();
-    let report = json!({
-        "format": "mantle-local-conformance/1", "spec_digest": suite["provenance"]["spec_digest"],
-        "completed_at": chrono::Utc::now().to_rfc3339(),
-        "scope": "SQLite session operations and normalized default allowlist only",
-        "passed": scenarios.len() - failed, "failed": failed, "skipped": 0,
-        "synthesis_refusals": refusals,
-        "outcomes": outcomes,
-    });
-    std::fs::write(
-        drafts.join("mantle-conformance-report.json"),
-        serde_json::to_vec_pretty(&report)?,
-    )?;
-    ensure!(failed == 0, "conformance failures: {outcomes:#?}");
-    eprintln!(
-        "{} local ESS scenarios passed; 0 failed; 0 skipped",
-        scenarios.len()
-    );
-    Ok(())
+    mantle_conformance::run::<CliBoundary>("mantle-cli", 62)
 }

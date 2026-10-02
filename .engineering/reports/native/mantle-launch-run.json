@@ -1,0 +1,834 @@
+{
+  "format": "ess-conformance-run/2",
+  "scenarios": [
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.Emit/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.Emit",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 11,
+      "purpose": "`mantle.launch.Emit` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.Emit/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.FileSafety/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.FileSafety",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "`mantle.launch.FileSafety` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.FileSafety/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.Lifecycle/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.Lifecycle",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 270,
+      "purpose": "`mantle.launch.Lifecycle` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.Lifecycle/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "`mantle.launch.ParseArgs` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.ParseArgs/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseWindow/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseWindow",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "`mantle.launch.ParseWindow` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.ParseWindow/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ReadSecret/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ReadSecret",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "`mantle.launch.ReadSecret` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.ReadSecret/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ReplayRing/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ReplayRing",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "`mantle.launch.ReplayRing` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.ReplayRing/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.Signals/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.Signals",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 222,
+      "purpose": "`mantle.launch.Signals` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.Signals/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.SlowReader/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.SlowReader",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 4128,
+      "purpose": "`mantle.launch.SlowReader` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.SlowReader/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ValidateScrollback/accepted",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ValidateScrollback",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.launch.ValidateScrollback/accepted",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.launch.ValidateScrollback/accepted",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "`mantle.launch.ValidateScrollback` answers `accepted` for an input that satisfies that branch's guard",
+      "scenario": "mantle.launch.ValidateScrollback/outcome/accepted",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ValidateScrollback/refused",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "error mantle.launch.InvalidScrollback",
+          "code": "ESS-CF-ERROR",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.launch.ValidateScrollback/refused",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "error mantle.launch.InvalidScrollback",
+          "code": "ESS-CF-ERROR",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "`mantle.launch.ValidateScrollback` answers `refused` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.ValidateScrollback/outcome/refused",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "argument-byte-preservation",
+      "scenario": "mantle.launch/authored/argument-byte-preservation",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "argument-defaults",
+      "scenario": "mantle.launch/authored/argument-defaults",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "attach-no-tty",
+      "scenario": "mantle.launch/authored/attach-no-tty",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "bad-environment-name",
+      "scenario": "mantle.launch/authored/bad-environment-name",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ReplayRing/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ReplayRing",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "bounded-scrollback",
+      "scenario": "mantle.launch/authored/bounded-scrollback",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.FileSafety/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.FileSafety",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "filesystem-links-and-locks",
+      "scenario": "mantle.launch/authored/filesystem-links-and-locks",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "missing-command",
+      "scenario": "mantle.launch/authored/missing-command",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.Emit/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.Emit",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 11,
+      "purpose": "os-argument-bytes-and-exit",
+      "scenario": "mantle.launch/authored/os-argument-bytes-and-exit",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ReplayRing/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ReplayRing",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "oversize-scrollback-write",
+      "scenario": "mantle.launch/authored/oversize-scrollback-write",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.Signals/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.Signals",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 121,
+      "purpose": "process-group-signals",
+      "scenario": "mantle.launch/authored/process-group-signals",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "proxy-userinfo",
+      "scenario": "mantle.launch/authored/proxy-userinfo",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.Lifecycle/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.Lifecycle",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 263,
+      "purpose": "pty-fifo-lifecycle",
+      "scenario": "mantle.launch/authored/pty-fifo-lifecycle",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "relative-dir",
+      "scenario": "mantle.launch/authored/relative-dir",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ReadSecret/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ReadSecret",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "secret-empty",
+      "scenario": "mantle.launch/authored/secret-empty",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "secret-fd-pair",
+      "scenario": "mantle.launch/authored/secret-fd-pair",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ReadSecret/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ReadSecret",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "secret-non-utf8",
+      "scenario": "mantle.launch/authored/secret-non-utf8",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ReadSecret/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ReadSecret",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "secret-nul",
+      "scenario": "mantle.launch/authored/secret-nul",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ReadSecret/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ReadSecret",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "secret-overflow",
+      "scenario": "mantle.launch/authored/secret-overflow",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ReadSecret/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ReadSecret",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "secret-trailing-whitespace",
+      "scenario": "mantle.launch/authored/secret-trailing-whitespace",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.SlowReader/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.SlowReader",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 4228,
+      "purpose": "slow-reader-bounded-output",
+      "scenario": "mantle.launch/authored/slow-reader-bounded-output",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 1,
+      "purpose": "standard-secret-fd",
+      "scenario": "mantle.launch/authored/standard-secret-fd",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseWindow/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseWindow",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "window-fragmentation",
+      "scenario": "mantle.launch/authored/window-fragmentation",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseWindow/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseWindow",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "window-oversize-discard",
+      "scenario": "mantle.launch/authored/window-oversize-discard",
+      "status": "passed"
+    }
+  ],
+  "started_at": 1790937870329,
+  "summary": {
+    "completed_at": 1790937879592,
+    "conformance_status": "passed",
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 34,
+      "skipped": 0,
+      "total": 34,
+      "unsupported": 0
+    },
+    "coverage": {
+      "counts": {
+        "authored": 23,
+        "generated": 11,
+        "outside": 77,
+        "refused": 0
+      },
+      "knowledge": "complete_inventory",
+      "refused": [],
+      "selection": {
+        "filter": {
+          "kind": "all"
+        },
+        "origins": "generated_and_authored",
+        "scope": {
+          "component": "mantle-launch",
+          "kind": "component"
+        }
+      }
+    },
+    "execution_status": "passed",
+    "format": "ess-conformance-report/2",
+    "implementation": "mantle-native 0.1.0",
+    "outcomes": {
+      "error": [],
+      "failed": [],
+      "passed": [
+        "mantle.launch.Emit/outcome/returned",
+        "mantle.launch.FileSafety/outcome/returned",
+        "mantle.launch.Lifecycle/outcome/returned",
+        "mantle.launch.ParseArgs/outcome/returned",
+        "mantle.launch.ParseWindow/outcome/returned",
+        "mantle.launch.ReadSecret/outcome/returned",
+        "mantle.launch.ReplayRing/outcome/returned",
+        "mantle.launch.Signals/outcome/returned",
+        "mantle.launch.SlowReader/outcome/returned",
+        "mantle.launch.ValidateScrollback/outcome/accepted",
+        "mantle.launch.ValidateScrollback/outcome/refused",
+        "mantle.launch/authored/argument-byte-preservation",
+        "mantle.launch/authored/argument-defaults",
+        "mantle.launch/authored/attach-no-tty",
+        "mantle.launch/authored/bad-environment-name",
+        "mantle.launch/authored/bounded-scrollback",
+        "mantle.launch/authored/filesystem-links-and-locks",
+        "mantle.launch/authored/missing-command",
+        "mantle.launch/authored/os-argument-bytes-and-exit",
+        "mantle.launch/authored/oversize-scrollback-write",
+        "mantle.launch/authored/process-group-signals",
+        "mantle.launch/authored/proxy-userinfo",
+        "mantle.launch/authored/pty-fifo-lifecycle",
+        "mantle.launch/authored/relative-dir",
+        "mantle.launch/authored/secret-empty",
+        "mantle.launch/authored/secret-fd-pair",
+        "mantle.launch/authored/secret-non-utf8",
+        "mantle.launch/authored/secret-nul",
+        "mantle.launch/authored/secret-overflow",
+        "mantle.launch/authored/secret-trailing-whitespace",
+        "mantle.launch/authored/slow-reader-bounded-output",
+        "mantle.launch/authored/standard-secret-fd",
+        "mantle.launch/authored/window-fragmentation",
+        "mantle.launch/authored/window-oversize-discard"
+      ],
+      "skipped": [],
+      "unsupported": []
+    },
+    "policy": "complete-selection/1",
+    "producer_profile": "rust-scenario-status/1",
+    "spec_digest": "8336f2747da565d5095d1469d79302729d8f9583382a012cdef92b09840e9ece",
+    "specification": "mantle/v1",
+    "suite": {
+      "digest": "sha256:8a8c36d0c37959d0abb525fdee406b77f4dc550086c3e03d2d89d9e14415ff1e",
+      "digest_profile": "sha256-json-bytes/1",
+      "version": "ess-conformance/29"
+    }
+  }
+}

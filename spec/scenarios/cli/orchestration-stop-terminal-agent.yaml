@@ -1,0 +1,33 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "stop-terminal-agent",
+  "summary": "Production application boundary: stop-terminal-agent",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Stop",
+      "input": {
+        "state": "RUNNING",
+        "exec": "terminal",
+        "workspace": "present",
+        "destroy": "success",
+        "readback": [],
+        "fail": "none",
+        "has_exec": true,
+        "has_workspace": true
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "state": "STOPPED",
+        "calls": [
+          "get-exec",
+          "retire",
+          "get-workspace",
+          "destroy"
+        ]
+      }
+    }
+  ]
+}

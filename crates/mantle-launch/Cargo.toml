@@ -10,6 +10,17 @@ publish.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 libc = "0.2"
+sha2 = "0.10"
+
+[[bin]]
+name = "mantle-launch-probe"
+path = "tests/support/probe.rs"
+test = false
+
+[dev-dependencies]
+mantle-conformance = { path = "../mantle-conformance" }
+serde_json.workspace = true
+tempfile = "3"
 
 [lints]
 workspace = true

@@ -1,0 +1,30 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "start-refused-rev-parse",
+  "summary": "Production application boundary: start-refused-rev-parse",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Start",
+      "input": {
+        "manifest": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\n",
+        "fail": "rev-parse",
+        "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "attach": true
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": false,
+        "state": "FAILED_MATERIALIZATION",
+        "calls": [
+          "create",
+          "isolated:/usr/bin/mkdir -p /workspace/.mantle/home /workspace/.mantle/cargo",
+          "network:/usr/bin/git -c http.proxy=http://127.0.0.1:3128 clone --no-tags --branch main -- https://example.com/r.git /workspace/r",
+          "isolated:/usr/bin/git -C /workspace/r rev-parse HEAD"
+        ],
+        "agent_exec": null
+      }
+    }
+  ]
+}

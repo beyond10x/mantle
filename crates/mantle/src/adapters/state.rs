@@ -187,8 +187,8 @@ impl Store {
         Ok(())
     }
 
-    pub fn put_source(&self, session: &str, source: &SourceRecord) -> Result<()> {
-        self.connection.execute(
+    pub fn put_source(&self, session: &str, source: &SourceRecord) -> Result<usize> {
+        let affected = self.connection.execute(
             "INSERT INTO sources(session_id, name, repository, declared_ref, commit_id, mount)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             params![
@@ -200,7 +200,7 @@ impl Store {
                 source.mount
             ],
         )?;
-        Ok(())
+        Ok(affected)
     }
 
     pub fn sources(&self, session: &str) -> Result<Vec<SourceRecord>> {
@@ -378,3 +378,7 @@ mod tests {
 #[cfg(test)]
 #[path = "conformance.rs"]
 mod conformance;
+
+#[cfg(test)]
+#[path = "orchestration.rs"]
+mod orchestration;

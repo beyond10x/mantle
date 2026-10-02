@@ -1,0 +1,25 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "zero-port",
+  "summary": "zero-port",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBnaXRodWIuY29tOjAgSFRUUC8xLjENCg0K",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 400,
+        "forwarded": "",
+        "dialled": [],
+        "resolved_names": []
+      }
+    }
+  ]
+}

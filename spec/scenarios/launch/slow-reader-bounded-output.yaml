@@ -1,0 +1,19 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "slow-reader-bounded-output",
+  "summary": "slow-reader-bounded-output",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.SlowReader",
+      "input": {},
+      "outcome": "returned",
+      "response": {
+        "exit": 0,
+        "retained_bytes": 262144,
+        "tail_is_output": true
+      }
+    }
+  ]
+}

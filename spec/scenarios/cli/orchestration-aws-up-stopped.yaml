@@ -1,0 +1,31 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "aws-up-stopped",
+  "summary": "Production application boundary: aws-up-stopped",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Worker",
+      "input": {
+        "provider": "aws",
+        "action": "up",
+        "initial": "stopped",
+        "fail": "none",
+        "new_profile": false,
+        "idle_stop": false
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "calls": [
+          "find",
+          "start",
+          "wait-running-600"
+        ],
+        "instance": "instance-1",
+        "volume": "volume-1"
+      }
+    }
+  ]
+}

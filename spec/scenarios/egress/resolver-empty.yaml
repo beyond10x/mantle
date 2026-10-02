@@ -1,0 +1,27 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "resolver-empty",
+  "summary": "resolver-empty",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBnaXRodWIuY29tOjQ0MyBIVFRQLzEuMQ0KDQo=",
+        "resolver": "empty",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 502,
+        "forwarded": "",
+        "dialled": [],
+        "resolved_names": [
+          "github.com."
+        ]
+      }
+    }
+  ]
+}

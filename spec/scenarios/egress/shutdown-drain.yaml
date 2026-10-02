@@ -1,0 +1,18 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "shutdown-drain",
+  "summary": "shutdown-drain",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.CheckDrain",
+      "outcome": "returned",
+      "response": {
+        "first_status": 200,
+        "stopped_accepting": true,
+        "connection_closed": true
+      }
+    }
+  ]
+}

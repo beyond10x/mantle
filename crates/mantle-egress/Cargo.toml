@@ -13,3 +13,8 @@ tokio.workspace = true
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+mantle-conformance = { path = "../mantle-conformance" }
+serde_json.workspace = true
+anyhow.workspace = true

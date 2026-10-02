@@ -1,0 +1,24 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "os-argument-bytes-and-exit",
+  "summary": "os-argument-bytes-and-exit",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.Emit",
+      "input": {
+        "argv": [
+          "Qf9C"
+        ],
+        "exit": 7
+      },
+      "outcome": "returned",
+      "response": {
+        "exit": 7,
+        "output": "Qf9C",
+        "credential_in_diagnostic": false
+      }
+    }
+  ]
+}

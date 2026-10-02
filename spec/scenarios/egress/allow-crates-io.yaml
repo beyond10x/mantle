@@ -1,0 +1,20 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "allow-crates-io",
+  "summary": "allow-crates-io",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.CheckDefaultDestination",
+      "input": {
+        "host": "crates.io",
+        "port": 443
+      },
+      "outcome": "allowed",
+      "response": {
+        "allowed": true
+      }
+    }
+  ]
+}

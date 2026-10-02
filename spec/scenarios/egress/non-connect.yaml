@@ -1,0 +1,25 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "non-connect",
+  "summary": "non-connect",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "R0VUIGh0dHA6Ly9naXRodWIuY29tLyBIVFRQLzEuMQ0KDQo=",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 405,
+        "forwarded": "",
+        "dialled": [],
+        "resolved_names": []
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:public-repository-and-site
 kind: story
-status: active
+status: implemented
 title: Publish Mantle with common Gates and a standalone documentation site
 relations:
 - decomposes: epic:vertical-slice
@@ -24,10 +24,11 @@ scope:
   path: crates/mantle-docs/
 - confidence: cited
   path: website/
-revision: 6
+revision: 10
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T08:52:30Z", actor: "human:timo", revision: 3}
 - {from: "proposed", to: "active", at: "2026-10-02T08:52:30Z", actor: "human:timo", revision: 4}
+- {from: "active", to: "implemented", at: "2026-10-02T09:27:31Z", actor: "human:timo", revision: 9, decided_on: {"recorded":{"test_result":1,"approval":1}}}
 ---
 ## Outcome
 
@@ -52,24 +53,27 @@ Use protected local policy and bot credentials only through the established tool
 
 ## Progress
 
-Public repository created through the bot App: https://github.com/beyond10x/mantle (id 1401410271).
-App-only branch authority is active (ruleset 24355562). Common Gates local hooks are installed;
-protected policy enrollment is prepared in its managed tree. The historical baseline audit has
-two personal-path findings in existing immutable session review records; no exceptions were added.
+Public repository https://github.com/beyond10x/mantle is enrolled in common Gates, with coordinated
+hooks, published private policy enrollment, App-only branch/tag authority, exact bot identity
+rules, required main checks and enabled secret scanning/push protection. No policy exceptions were
+added. The approved website and initial specification were published, and source commit
+2e6b1162a78855bfc7a28fc899e8300fcc229deb passed repository/common checks and live documentation
+verification. The operator authorized gh only for installing the one policy secret; subsequent
+writes use the bot App route.
 
-The documentation source, Rust builder, repository CI, shared-Gates caller and immutable Website
-project-site caller are ready locally. `task check` passed with exit 0, including 57 local ESS
-scenarios and site generation. Desktop and mobile previews rendered successfully.
-
-The operator asked to see the page before publication. Publication is paused at that review:
-no source commits or website have been pushed. Local preview: http://127.0.0.1:4178/mantle/.
-Next owner: operator reviews the page; agent resumes publication after that feedback.
-
-Remote common CI setup is separately blocked: the bot App GET of the repository Actions secrets
-public-key endpoint returned HTTP 403. Installing B10X_GATES_POLICY requires the App's Actions
-secrets permission; do not use a personal account or another client to bypass the refusal.
+Story close-specification-boundaries delivers the requested follow-up: complete native ESS
+coverage and updated public coverage facts. The website remains a standalone /mantle/ project
+site, using the same immutable publication boundary as ESS.
 
 ## Review
 
 The operator reviewed the desktop/mobile site preview and explicitly approved it: “looks good,
 approved”. Publication of the approved page and the source resumes under the original request.
+
+## Verification
+
+Repository Gate run 36988877900 passed at commit 2e6b1162a78855bfc7a28fc899e8300fcc229deb.
+Shared Gates run 36988878648 and documentation validation 36988877958 passed at that same commit.
+Documentation deployment 36988921559 passed. The live /mantle/ index is byte-identical to the
+approved website/index.html, and /.well-known/b10x-docs.json under /mantle/ names the exact commit.
+Required main checks are now Gate and common / Security and privacy, both bound to GitHub Actions.

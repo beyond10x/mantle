@@ -1,0 +1,31 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "kubevirt-down-always",
+  "summary": "Production application boundary: kubevirt-down-always",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Worker",
+      "input": {
+        "provider": "kubevirt",
+        "action": "down",
+        "initial": "Always",
+        "fail": "none",
+        "new_profile": false,
+        "idle_stop": false
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "calls": [
+          "find",
+          "strategy-Halted",
+          "wait-Stopped-600"
+        ],
+        "instance": null,
+        "volume": null
+      }
+    }
+  ]
+}

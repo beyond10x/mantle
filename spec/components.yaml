@@ -2,9 +2,21 @@ components:
   - component: mantle-cli
     summary: Local session record operations; AWS, KubeVirt and Substrate are external adapters.
     owns:
-      domains: [mantle.session, mantle.manifest]
+      domains: [mantle.session, mantle.manifest, mantle.orchestration]
     accepts:
       commands:
+        - mantle.orchestration.Observe
+        - mantle.orchestration.Request
+        - mantle.orchestration.Start
+        - mantle.orchestration.Stop
+        - mantle.orchestration.Worker
+        - mantle.orchestration.WorkerRecords
+        - mantle.manifest.Parse
+        - mantle.session.PutSource
+        - mantle.session.ReadSources
+        - mantle.manifest.ValidateMemory
+        - mantle.manifest.ValidatePids
+        - mantle.manifest.ValidateRetention
         - mantle.session.InsertSession
         - mantle.session.Materialized
         - mantle.session.MaterializationFailed
@@ -18,7 +30,9 @@ components:
     owns:
       domains: [mantle.egress]
     accepts:
-      commands: [mantle.egress.CheckDefaultDestination]
+      commands: [mantle.egress.CheckDefaultDestination, mantle.egress.Exchange, mantle.egress.ClassifyAddress, mantle.egress.CheckBudgets, mantle.egress.CheckDrain]
   - component: mantle-launch
     owns:
       domains: [mantle.launch]
+    accepts:
+      commands: [mantle.launch.ValidateScrollback, mantle.launch.ParseArgs, mantle.launch.ReadSecret, mantle.launch.ParseWindow, mantle.launch.ReplayRing, mantle.launch.Emit, mantle.launch.Lifecycle, mantle.launch.Signals, mantle.launch.SlowReader, mantle.launch.FileSafety]

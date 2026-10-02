@@ -1,0 +1,37 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.manifest",
+  "scenario": "lower-resource-bounds",
+  "summary": "Manifest boundary: lower-resource-bounds",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.manifest.Parse",
+      "input": {
+        "text": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\nresources: {cpu: 1, memory: 512MiB, pids: 1, storage: 0}\nlifecycle: {retainFor: 1s}\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "resolved": {
+          "name": "s1",
+          "repositories": [
+            {
+              "name": "r",
+              "repository": "https://example.com/r.git",
+              "reference": "main",
+              "mount": "r"
+            }
+          ],
+          "agent_cwd": "/workspace/r",
+          "cpu": 1,
+          "memory_bytes": 536870912,
+          "pids": 1,
+          "storage_bytes": 0,
+          "retain_for_secs": 1,
+          "digest": "sha256:2d77dd5c3fa9cf2e44706cd42129991037d2cfd1678317cfbd8fc0397e52bb54"
+        },
+        "diagnostic": null
+      }
+    }
+  ]
+}

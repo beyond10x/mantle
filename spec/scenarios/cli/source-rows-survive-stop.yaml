@@ -1,0 +1,75 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.session",
+  "scenario": "source-rows-survive-stop",
+  "summary": "source-rows-survive-stop",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.session.InsertSession",
+      "input": {
+        "session_id": "a",
+        "name": "a",
+        "worker": "w",
+        "manifest_digest": "digest",
+        "requested_json": "{}",
+        "created_at": "2026-10-02T00:00:00Z"
+      },
+      "outcome": "recorded"
+    },
+    {
+      "at": "2026-10-02T00:00:01Z",
+      "command": "mantle.session.PutSource",
+      "input": {
+        "key": {
+          "session_id": "a",
+          "mount": "r"
+        },
+        "name": "repo-r",
+        "repository": "https://example.com/r.git",
+        "declared_ref": "main",
+        "commit": "one"
+      },
+      "outcome": "returned",
+      "response": {
+        "affected": 1
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:02Z",
+      "command": "mantle.session.BeginStop",
+      "input": {
+        "session_id": "a"
+      },
+      "outcome": "moved"
+    },
+    {
+      "at": "2026-10-02T00:00:03Z",
+      "command": "mantle.session.FinishStop",
+      "input": {
+        "session_id": "a"
+      },
+      "outcome": "moved"
+    },
+    {
+      "at": "2026-10-02T00:00:04Z",
+      "command": "mantle.session.ReadSources",
+      "input": {
+        "session_id": "a"
+      },
+      "outcome": "returned",
+      "response": {
+        "rows": [
+          {
+            "session_id": "a",
+            "mount": "r",
+            "name": "repo-r",
+            "repository": "https://example.com/r.git",
+            "declared_ref": "main",
+            "commit": "one"
+          }
+        ]
+      }
+    }
+  ]
+}

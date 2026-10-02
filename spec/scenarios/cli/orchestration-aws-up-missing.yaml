@@ -1,0 +1,34 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "aws-up-missing",
+  "summary": "Production application boundary: aws-up-missing",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Worker",
+      "input": {
+        "provider": "aws",
+        "action": "up",
+        "initial": "missing",
+        "fail": "none",
+        "new_profile": false,
+        "idle_stop": false
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "calls": [
+          "find",
+          "profile",
+          "group",
+          "image",
+          "launch",
+          "wait-running-600"
+        ],
+        "instance": "instance-1",
+        "volume": "volume-1"
+      }
+    }
+  ]
+}

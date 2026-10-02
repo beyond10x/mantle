@@ -4,7 +4,7 @@ use std::path::Path;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
-use b10x_substrate_sdk::{Client, ExecUsage, ExecutionPolicy, Machine, ReadOnlyRoot};
+use b10x_substrate_sdk::{Client, ExecUsage, ExecutionPolicy, Machine};
 
 /// The aperture the daemon declares to the worker's egress gateway.
 pub const APERTURE: &str = "egress";
@@ -66,13 +66,6 @@ pub fn missing_facts(machine: &Machine) -> Vec<String> {
 
 pub fn quota_served(machine: &Machine) -> bool {
     machine.facts.workspace_storage_quota.is_some()
-}
-
-pub fn toolchain_root() -> ReadOnlyRoot {
-    ReadOnlyRoot {
-        host_path: TOOLCHAIN_ROOT.to_owned(),
-        mount: TOOLCHAIN_ROOT.to_owned(),
-    }
 }
 
 pub fn policy(timeout: Duration, memory_bytes: u64, processes: u32) -> Result<ExecutionPolicy> {

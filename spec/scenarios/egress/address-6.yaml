@@ -1,0 +1,19 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "address-6",
+  "summary": "address-6",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.ClassifyAddress",
+      "input": {
+        "address": "100.127.255.255"
+      },
+      "outcome": "returned",
+      "response": {
+        "refusal": "cgnat"
+      }
+    }
+  ]
+}

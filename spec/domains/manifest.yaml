@@ -75,14 +75,48 @@ types:
       - {name: storage_bytes, type: 'Optional<Integer>'}
       - {name: retain_for_secs, type: Integer}
       - {name: digest, type: String}
-    # Bounds are read from resolve(): cpu is clamped to >=1; retain is in seconds here.
-    invariants:
-      - cpu >= 1
-      - memory_bytes >= 536870912
-      - pids >= 1
-      - pids <= 4096
-      - retain_for_secs > 0
-      - retain_for_secs <= 86400
-# UNMAPPED[manifest-resolution]: YAML strict decoding, unsigned integer width, binary size/duration
-# parsing, default application, SHA-256 of original bytes, unique mounts and cwd/ref path rules
-# remain in manifest.rs:164-417. Types alone do not assert that this parsing behavior conforms.
+    # Bounds are the executable ValidateMemory/Pids/Retention contracts below. Parse clamps
+    # CPU to at least one; authored Parse scenarios hold the default and zero-input behavior.
+# Parse executes manifest.rs; authored scenarios assert strict decoding, integer widths,
+# resource defaults/bounds, original-byte digest, unique mounts and cwd/ref path rules.
+commands:
+  - name: mantle.manifest.ValidateMemory
+    input: [{name: bytes, type: Integer, example: 536870912}]
+    outcomes:
+      - name: accepted
+        when: bytes >= 536870912
+        accepts: nothing
+      - name: refused
+        error: mantle.manifest.InvalidResource
+  - name: mantle.manifest.ValidatePids
+    input: [{name: pids, type: Integer, example: 4096}]
+    outcomes:
+      - name: accepted
+        when: {all: [pids >= 1, pids <= 4096]}
+        accepts: nothing
+      - name: refused
+        error: mantle.manifest.InvalidResource
+  - name: mantle.manifest.ValidateRetention
+    input: [{name: seconds, type: Integer, example: 28800}]
+    outcomes:
+      - name: accepted
+        when: {all: [seconds > 0, seconds <= 86400]}
+        accepts: nothing
+      - name: refused
+        error: mantle.manifest.InvalidResource
+  - name: mantle.manifest.Parse
+    # Decode original UTF-8 YAML, validate the served subset, return resolved values or a diagnostic.
+    # The digest hashes original bytes, before defaults or normalization.
+    input:
+      - name: text
+        type: String
+        example: 'apiVersion: mantle.beyond10x.dev/v1alpha1'
+    response:
+      - {name: resolved, type: 'Optional<mantle.manifest.Resolved>'}
+      - {name: diagnostic, type: 'Optional<String>'}
+    outcomes:
+      - name: returned
+        returns: true
+errors:
+  - name: mantle.manifest.InvalidResource
+    fields: []

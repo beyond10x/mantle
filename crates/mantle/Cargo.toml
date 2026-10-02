@@ -35,3 +35,5 @@ workspace = true
 
 [dev-dependencies]
 mantle-egress = { path = "../mantle-egress" }
+mantle-conformance = { path = "../mantle-conformance" }
+tokio = { workspace = true, features = ["test-util"] }

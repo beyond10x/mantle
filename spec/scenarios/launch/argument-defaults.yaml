@@ -1,0 +1,41 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.launch",
+  "scenario": "argument-defaults",
+  "summary": "argument-defaults",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.launch.ParseArgs",
+      "input": {
+        "argv": [
+          "c2VydmU=",
+          "LS1kaXI=",
+          "L3Nlc3Npb24=",
+          "LS1jd2Q=",
+          "L3dvcmtzcGFjZQ==",
+          "LS0=",
+          "L2FnZW50"
+        ]
+      },
+      "outcome": "returned",
+      "response": {
+        "accepted": true,
+        "serve": {
+          "dir": "L3Nlc3Npb24=",
+          "cwd": "L3dvcmtzcGFjZQ==",
+          "secret_fd": null,
+          "secret_env": null,
+          "proxy": null,
+          "scrollback_bytes": 262144,
+          "mkdirs": [],
+          "command": [
+            "L2FnZW50"
+          ]
+        },
+        "attach": null,
+        "diagnostic": null
+      }
+    }
+  ]
+}

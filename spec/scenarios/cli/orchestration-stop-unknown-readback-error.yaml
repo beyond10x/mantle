@@ -1,0 +1,38 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "stop-unknown-readback-error",
+  "summary": "Production application boundary: stop-unknown-readback-error",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Stop",
+      "input": {
+        "state": "RUNNING",
+        "exec": "running",
+        "workspace": "present",
+        "destroy": "unknown",
+        "readback": [
+          "error"
+        ],
+        "fail": "none",
+        "has_exec": true,
+        "has_workspace": true
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": false,
+        "state": "STOPPING",
+        "calls": [
+          "get-exec",
+          "signal",
+          "wait",
+          "retire",
+          "get-workspace",
+          "destroy",
+          "get-workspace"
+        ]
+      }
+    }
+  ]
+}

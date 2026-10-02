@@ -1,0 +1,30 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "connect-opaque-bytes",
+  "summary": "connect-opaque-bytes",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBnaXRodWIuY29tOjQ0MyBIVFRQLzEuMQ0KDQoA/wENCg==",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 200,
+        "body": "AP8BDQo=",
+        "forwarded": "AP8BDQo=",
+        "dialled": [
+          "93.184.216.34:443"
+        ],
+        "resolved_names": [
+          "github.com."
+        ]
+      }
+    }
+  ]
+}
