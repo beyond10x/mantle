@@ -75,6 +75,40 @@ fn add_status_flags(fd: BorrowedFd<'_>, flags: libc::c_int) -> io::Result<()> {
     Ok(())
 }
 
+/// Temporary nonblocking status, including inherited open file descriptions. Snapshot every
+/// descriptor before changing any: stdin and stdout may be aliases of the same terminal.
+pub struct Nonblocking(Vec<(OwnedFd, libc::c_int)>);
+
+#[allow(unsafe_code)]
+pub fn nonblocking(fds: &[BorrowedFd<'_>]) -> io::Result<Nonblocking> {
+    let mut saved = Vec::with_capacity(fds.len());
+    for fd in fds {
+        let owned = fd.try_clone_to_owned()?;
+        // SAFETY: the owned descriptor is live and F_GETFL only observes its flags.
+        let flags = check(unsafe { libc::fcntl(owned.as_raw_fd(), libc::F_GETFL) })?;
+        saved.push((owned, flags));
+    }
+    let guard = Nonblocking(saved);
+    for (fd, flags) in &guard.0 {
+        // SAFETY: the guard owns the descriptor and restores its original flags on every exit,
+        // including a failure while configuring a later descriptor.
+        check(unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_SETFL, flags | libc::O_NONBLOCK) })?;
+    }
+    Ok(guard)
+}
+
+impl Drop for Nonblocking {
+    #[allow(unsafe_code)]
+    fn drop(&mut self) {
+        for (fd, flags) in &self.0 {
+            // SAFETY: descriptors stay owned and open until restoration completes.
+            unsafe {
+                libc::fcntl(fd.as_raw_fd(), libc::F_SETFL, *flags);
+            }
+        }
+    }
+}
+
 #[allow(unsafe_code)]
 pub fn set_window(fd: BorrowedFd<'_>, window: Window) -> io::Result<()> {
     let size = winsize(window);

@@ -159,3 +159,17 @@ SQLite/WAL and text-log placement with conflicting ordinary settings and isolate
 Its SQLite canary fixture and persistent positive control exercise the scanner while WAL is live;
 they do not claim to exercise real token refresh. Managed policy and authenticated lifecycle
 acceptance remain with the parent Codex integration story and supported Substrate capture binding.
+
+AB01–AB04 (`attach-backpressure-cancellation`) hold real attachment clients to a 1500ms
+handled-cancellation deadline under unread terminal output and independently paused agent input.
+The output producer is finite; the drained-output control must also exit. Blocking/nonblocking
+PTY and aliased stdin/stdout fixtures compare original termios and file-status flags after exit.
+Every case reattaches to the same surviving server/agent and requests a fresh response. A separate
+24 KiB burst and 128 KiB bidirectional transfer use 4096-byte pipes and bounded draining to exercise
+partial progress without invoking the server's intentional overflow/redraw behavior.
+
+The client holds one 16 KiB pending buffer per direction, polls writes only while bytes are pending,
+and stops reading a direction until its pending bytes are written. Both inherited descriptors are
+snapshotted before either is made nonblocking, so alias restoration preserves the original flags.
+Signal and resize handling run between bounded operations. These synthetic launcher observations
+do not establish authenticated Claude/Codex conversation continuity.

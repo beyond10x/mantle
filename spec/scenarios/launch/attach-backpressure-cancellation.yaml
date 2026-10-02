@@ -1,0 +1,19 @@
+type: ess-scenario/4
+domain: mantle.launch
+scenario: attach-backpressure-cancellation
+summary: AB01–AB04 bounded cancellation, PTY/descriptor restoration and exact partial-write relay.
+timeline:
+  - at: '2026-10-02T00:00:00Z'
+    command: mantle.launch.AttachBackpressure
+    input: {}
+    outcome: returned
+    response:
+      output_cancellable: [true, true, true]
+      input_cancellable: [true, true]
+      terminal_restored: [true, true, true]
+      flags_restored: [true, true, true, true, true, true, true, true]
+      same_agent_survived: true
+      replacement_usable: true
+      ordered: true
+      short_write_capacity: 4096
+      roundtrip_bytes: 131072

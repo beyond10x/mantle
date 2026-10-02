@@ -12,8 +12,8 @@
       "skipped_ceiling": 0
     },
     "mantle-launch": {
-      "answered_floor": 47,
-      "total_floor": 47,
+      "answered_floor": 49,
+      "total_floor": 49,
       "skipped_ceiling": 0
     }
   },
@@ -84,6 +84,7 @@
     "mantle.egress/authored/shutdown-drain",
     "mantle.egress/authored/suffix-is-not-allowed",
     "mantle.egress/authored/zero-port",
+    "mantle.launch.AttachBackpressure/outcome/returned",
     "mantle.launch.Emit/outcome/returned",
     "mantle.launch.FileSafety/outcome/returned",
     "mantle.launch.Lifecycle/outcome/returned",
@@ -103,6 +104,7 @@
     "mantle.launch.VolatileReplayPreflight/outcome/returned",
     "mantle.launch/authored/argument-byte-preservation",
     "mantle.launch/authored/argument-defaults",
+    "mantle.launch/authored/attach-backpressure-cancellation",
     "mantle.launch/authored/attach-no-tty",
     "mantle.launch/authored/bad-environment-name",
     "mantle.launch/authored/bounded-scrollback",

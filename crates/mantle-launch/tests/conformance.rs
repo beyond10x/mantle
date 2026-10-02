@@ -312,6 +312,7 @@ impl Boundary for Launcher {
         Ok(Reply::returned(match command {
             "mantle.launch.ParseArgs" => parse_args(input)?,
             "mantle.launch.PrivatePaths" => private_paths()?,
+            "mantle.launch.AttachBackpressure" => attach_backpressure()?,
             "mantle.launch.ReadSecret" => {
                 match secret::read_secret(bytes(&input["bytes"])?.as_slice()) {
                     Ok(value) => {
@@ -1347,5 +1348,567 @@ fn adversary_private_paths_accept_tmpfs_and_preserve_auth_metadata() -> Result<(
         assert!(!home.join("absent").exists());
     }
     assert_eq!(fs::read(auth)?, b"adversary-metadata-only-canary");
+    Ok(())
+}
+
+const ATTACH_DEADLINE: Duration = Duration::from_millis(1500);
+
+#[allow(unsafe_code)]
+fn descriptor_flags(file: &File) -> Result<i32> {
+    // SAFETY: the file keeps the descriptor alive; F_GETFL only observes flags.
+    let flags = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) };
+    ensure!(flags != -1, "F_GETFL: {}", std::io::Error::last_os_error());
+    Ok(flags)
+}
+#[allow(unsafe_code)]
+fn nonblocking_fixture(file: &File) -> Result<()> {
+    let flags = descriptor_flags(file)?;
+    // SAFETY: this fixture owns the open file description.
+    ensure!(
+        unsafe { libc::fcntl(file.as_raw_fd(), libc::F_SETFL, flags | libc::O_NONBLOCK) } != -1,
+        "F_SETFL"
+    );
+    Ok(())
+}
+#[allow(unsafe_code)]
+fn small_pipe() -> Result<(File, File)> {
+    use std::os::fd::FromRawFd;
+    let mut fds = [-1; 2];
+    // SAFETY: the array is writable; successful pipe2 returns two new owned descriptors.
+    ensure!(
+        unsafe { libc::pipe2(fds.as_mut_ptr(), libc::O_CLOEXEC) } == 0,
+        "pipe2"
+    );
+    let (read, write) = unsafe { (File::from_raw_fd(fds[0]), File::from_raw_fd(fds[1])) };
+    // SAFETY: F_SETPIPE_SZ changes capacity only on this fixture-owned pipe.
+    ensure!(
+        unsafe { libc::fcntl(write.as_raw_fd(), libc::F_SETPIPE_SZ, 4096) } == 4096,
+        "small pipe capacity"
+    );
+    Ok((read, write))
+}
+#[allow(unsafe_code)]
+fn terminal_state(file: &File) -> Result<Vec<u64>> {
+    // SAFETY: tcgetattr initializes a live termios; speed accessors read that initialized value.
+    let mut value: libc::termios = unsafe { std::mem::zeroed() };
+    ensure!(
+        unsafe { libc::tcgetattr(file.as_raw_fd(), &mut value) } == 0,
+        "tcgetattr"
+    );
+    let mut fields = vec![
+        u64::from(value.c_iflag),
+        u64::from(value.c_oflag),
+        u64::from(value.c_cflag),
+        u64::from(value.c_lflag),
+        u64::from(value.c_line),
+    ];
+    fields.extend(value.c_cc.iter().map(|v| u64::from(*v)));
+    fields.push(u64::from(unsafe { libc::cfgetispeed(&value) }));
+    fields.push(u64::from(unsafe { libc::cfgetospeed(&value) }));
+    Ok(fields)
+}
+struct CancellationClient {
+    process: Process,
+    input: File,
+    output: File,
+    originals: Vec<(File, i32)>,
+    terminal: Option<(File, Vec<u64>)>,
+}
+impl CancellationClient {
+    fn new(root: &Path, mode: &str) -> Result<Self> {
+        let (stdin, input, stdout, output, terminal) = if mode.starts_with("pty") {
+            let (master, slave) = mantle_launch::sys::openpty(ctl::Window {
+                cols: 100,
+                rows: 30,
+            })?;
+            let master = File::from(master);
+            let slave = File::from(slave);
+            let saved = terminal_state(&slave)?;
+            let (stdout, output) = if mode == "pty-aliased" {
+                (slave.try_clone()?, master.try_clone()?)
+            } else {
+                let (read, write) = small_pipe()?;
+                (write, read)
+            };
+            let terminal = Some((slave.try_clone()?, saved));
+            (slave, master, stdout, output, terminal)
+        } else {
+            let (stdin, input) = small_pipe()?;
+            let (output, stdout) = small_pipe()?;
+            (stdin, input, stdout, output, None)
+        };
+        nonblocking_fixture(&input)?;
+        nonblocking_fixture(&output)?;
+        if mode == "pty-nonblocking" {
+            nonblocking_fixture(&stdin)?;
+            nonblocking_fixture(&stdout)?;
+        }
+        let originals = vec![
+            (stdin.try_clone()?, descriptor_flags(&stdin)?),
+            (stdout.try_clone()?, descriptor_flags(&stdout)?),
+        ];
+        let mut command = Command::new(LAUNCHER);
+        command
+            .env_clear()
+            .args(["attach", "--dir"])
+            .arg(root.join("session"));
+        if terminal.is_none() {
+            command.arg("--no-tty");
+        }
+        let process = Process(
+            command
+                .stdin(stdin)
+                .stdout(stdout)
+                .stderr(Stdio::null())
+                .spawn()?,
+        );
+        Ok(Self {
+            process,
+            input,
+            output,
+            originals,
+            terminal,
+        })
+    }
+    fn restored(&self) -> Result<(bool, bool)> {
+        let flags = self
+            .originals
+            .iter()
+            .map(|(file, flags)| Ok(descriptor_flags(file)? == *flags))
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .all(|v| v);
+        let terminal = match &self.terminal {
+            Some((file, saved)) => terminal_state(file)? == *saved,
+            None => true,
+        };
+        Ok((flags, terminal))
+    }
+    #[allow(unsafe_code)]
+    fn cancel(&mut self, signal: i32) -> Result<bool> {
+        if self.process.0.try_wait()?.is_some() {
+            return Ok(false);
+        }
+        // SAFETY: the child is owned and unreaped; its PID cannot be reused.
+        ensure!(
+            unsafe { libc::kill(self.process.0.id() as libc::pid_t, signal) } == 0,
+            "signal client"
+        );
+        let deadline = Instant::now() + ATTACH_DEADLINE;
+        while Instant::now() < deadline {
+            if let Some(exit) = self.process.0.try_wait()? {
+                return Ok(exit.success());
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        stop_client(&mut self.process)?;
+        Ok(false)
+    }
+}
+fn bounded_read(file: &mut File, bytes: &mut Vec<u8>, limit: usize) -> Result<()> {
+    let mut fds = [mantle_launch::sys::pollfd(Some(file.as_fd()), libc::POLLIN)];
+    mantle_launch::sys::poll(&mut fds, Duration::from_millis(5))?;
+    if fds[0].revents == 0 {
+        return Ok(());
+    }
+    let mut chunk = [0; 257];
+    match file.read(&mut chunk) {
+        Ok(n) => {
+            ensure!(bytes.len() + n <= limit, "fixture read bound");
+            bytes.extend_from_slice(&chunk[..n]);
+        }
+        Err(e)
+            if matches!(
+                e.kind(),
+                std::io::ErrorKind::WouldBlock | std::io::ErrorKind::Interrupted
+            ) => {}
+        Err(e) => return Err(e.into()),
+    }
+    Ok(())
+}
+fn observe_marker(file: &mut File, wanted: &[u8]) -> Result<()> {
+    let until = Instant::now() + Duration::from_secs(5);
+    let mut bytes = Vec::new();
+    while !bytes.windows(wanted.len()).any(|w| w == wanted) {
+        ensure!(
+            Instant::now() < until,
+            "fixture marker deadline for {:?}; {} bytes observed",
+            String::from_utf8_lossy(wanted),
+            bytes.len()
+        );
+        bounded_read(file, &mut bytes, 64 * 1024)?;
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    Ok(())
+}
+fn replacement(root: &Path) -> Result<bool> {
+    let mut next = CancellationClient::new(root, "pipe")?;
+    // Establish the FIFO connection before sending input. Its output may be replay, but the
+    // response below can only be produced after this new client relays a fresh command.
+    let until = Instant::now() + Duration::from_secs(5);
+    loop {
+        ensure!(Instant::now() < until, "replacement connection deadline");
+        let mut byte = [0];
+        match next.output.read(&mut byte) {
+            Ok(1) => break,
+            _ => {
+                ensure!(
+                    next.process.0.try_wait()?.is_none(),
+                    "replacement attach exited"
+                );
+                std::thread::sleep(Duration::from_millis(10));
+            }
+        }
+    }
+    next.input.write_all(b"reattach!\n")?;
+    observe_marker(&mut next.output, b"replacement-usable")?;
+    next.cancel(libc::SIGTERM)
+}
+fn finite_output_cancellation(
+    mode: &str,
+    signal: i32,
+    drain: bool,
+) -> Result<(bool, bool, bool, bool, bool)> {
+    let mut fixture = ReplayFixture::new(true)?;
+    let mut client = CancellationClient::new(fixture.dir.path(), mode)?;
+    observe_marker(&mut client.output, b"ready")?;
+    let pid = fixture.pid()?;
+    fixture.input(b"flood\n")?;
+    let until = Instant::now() + Duration::from_secs(5);
+    let mut discarded = 0;
+    while !fixture.dir.path().join("emitted").exists() {
+        ensure!(Instant::now() < until, "finite output fixture deadline");
+        if drain {
+            let mut buf = [0; 4096];
+            match client.output.read(&mut buf) {
+                Ok(n) => {
+                    discarded += n;
+                    ensure!(discarded <= 3 * 1024 * 1024, "drain bound");
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {}
+                Err(e) => return Err(e.into()),
+            }
+        }
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    // The producer is finite and finished. Only unread destination capacity can now stall
+    // the established client; no continuously runnable producer is needed for the failure.
+    if drain {
+        let mut empty_since = Instant::now();
+        while empty_since.elapsed() < Duration::from_millis(100) {
+            ensure!(Instant::now() < until, "drained control deadline");
+            let mut buf = [0; 4096];
+            match client.output.read(&mut buf) {
+                Ok(n) if n != 0 => {
+                    discarded += n;
+                    ensure!(discarded <= 3 * 1024 * 1024, "drain bound");
+                    empty_since = Instant::now();
+                }
+                Ok(_) => {}
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {}
+                Err(e) => return Err(e.into()),
+            }
+            std::thread::sleep(Duration::from_millis(2));
+        }
+    } else {
+        std::thread::sleep(Duration::from_millis(100));
+    }
+    let cancelled = client.cancel(signal)?;
+    eprintln!("AB output mode={mode} signal={signal} drained={drain} cancelled={cancelled}");
+    let (flags, terminal) = client.restored()?;
+    let survived = fixture.server.0.try_wait()?.is_none() && fixture.pid()? == pid;
+    drop(client);
+    let usable = replacement(fixture.dir.path())?;
+    terminate(&fixture.server.0);
+    wait(&mut fixture.server.0)?;
+    Ok((cancelled, flags, terminal, survived, usable))
+}
+fn paused_input_cancellation(signal: i32) -> Result<(bool, bool, bool, bool)> {
+    let dir = scratch()?;
+    let mut command = serve(dir.path());
+    command
+        .args(["--volatile-replay", "--scrollback-bytes", "1024", "--"])
+        .arg(PROBE)
+        .args(["pause-input", "--pid-file"])
+        .arg(dir.path().join("pid"))
+        .arg("--paused-file")
+        .arg(dir.path().join("paused"))
+        .arg("--resume-file")
+        .arg(dir.path().join("resume"));
+    let mut server = Process(command.spawn()?);
+    ready(dir.path(), &mut server)?;
+    let mut client = CancellationClient::new(dir.path(), "pipe")?;
+    observe_marker(&mut client.output, b"ready")?;
+    ensure!(
+        dir.path().join("paused").exists(),
+        "consumer not independently paused"
+    );
+    let pid = fs::read(dir.path().join("pid"))?;
+    let bytes = vec![b'x'; 512 * 1024];
+    let mut sent = 0;
+    let deadline = Instant::now() + Duration::from_secs(5);
+    let mut last_progress = Instant::now();
+    while last_progress.elapsed() < Duration::from_millis(250) {
+        ensure!(
+            Instant::now() < deadline && sent < bytes.len(),
+            "input did not reach backpressure"
+        );
+        match client.input.write(&bytes[sent..]) {
+            Ok(n) => {
+                sent += n;
+                last_progress = Instant::now();
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {}
+            Err(e) => return Err(e.into()),
+        }
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    ensure!(sent > 64 * 1024, "server input queue was not filled");
+    let cancelled = client.cancel(signal)?;
+    let flags = client.restored()?.0;
+    eprintln!("AB paused input signal={signal} sent={sent} cancelled={cancelled}");
+    let survived = server.0.try_wait()?.is_none() && fs::read(dir.path().join("pid"))? == pid;
+    drop(client);
+    fs::write(dir.path().join("resume"), b"consume")?;
+    let usable = replacement(dir.path())?;
+    terminate(&server.0);
+    wait(&mut server.0)?;
+    Ok((cancelled, flags, survived, usable))
+}
+fn ordered_partial_relay() -> Result<bool> {
+    let dir = scratch()?;
+    let mut command = serve(dir.path());
+    command
+        .args(["--volatile-replay", "--scrollback-bytes", "1024", "--"])
+        .arg(PROBE)
+        .args(["roundtrip", "--done-file"])
+        .arg(dir.path().join("burst"));
+    let mut server = Process(command.spawn()?);
+    ready(dir.path(), &mut server)?;
+    let mut client = CancellationClient::new(dir.path(), "pipe")?;
+    observe_marker(&mut client.output, b"ready")?;
+    client.input.write_all(b"!")?;
+    let deadline = Instant::now() + Duration::from_secs(5);
+    while !dir.path().join("burst").exists() {
+        ensure!(Instant::now() < deadline, "burst fixture deadline");
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    std::thread::sleep(Duration::from_millis(100));
+    let expected: Vec<u8> = (0..24 * 1024).map(|i| b'A' + (i % 23) as u8).collect();
+    let mut burst = Vec::new();
+    while burst.len() < expected.len() {
+        ensure!(Instant::now() < deadline, "burst relay deadline");
+        bounded_read(&mut client.output, &mut burst, expected.len())?;
+    }
+    ensure!(burst == expected, "ordered burst changed");
+    let payload: Vec<u8> = (0..128 * 1024).map(|i| (i % 251) as u8).collect();
+    let mut sent = 0;
+    let mut returned = Vec::new();
+    let deadline = Instant::now() + Duration::from_secs(10);
+    while returned.len() < payload.len() {
+        ensure!(Instant::now() < deadline, "bidirectional relay deadline");
+        // Bound outstanding bytes so this observes client partial writes, not intentional
+        // server overflow/redraw semantics already covered by separate scenarios.
+        let end = payload.len().min(returned.len() + 8192);
+        if sent < end {
+            match client.input.write(&payload[sent..end]) {
+                Ok(n) => sent += n,
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {}
+                Err(e) => return Err(e.into()),
+            }
+        }
+        bounded_read(&mut client.output, &mut returned, payload.len())?;
+    }
+    let ordered = returned == payload;
+    ensure!(client.cancel(libc::SIGTERM)?, "normal client cancellation");
+    terminate(&server.0);
+    wait(&mut server.0)?;
+    Ok(ordered)
+}
+fn attach_backpressure() -> Result<Value> {
+    let mut output_cancellable = Vec::new();
+    let mut input_cancellable = Vec::new();
+    let mut terminal_restored = Vec::new();
+    let mut flags_restored = Vec::new();
+    let mut survived = true;
+    let mut usable = true;
+    for (signal, drain) in [
+        (libc::SIGTERM, false),
+        (libc::SIGHUP, false),
+        (libc::SIGTERM, true),
+    ] {
+        let (cancelled, flags, _, alive, replaced) =
+            finite_output_cancellation("pipe", signal, drain)?;
+        output_cancellable.push(cancelled);
+        flags_restored.push(flags);
+        survived &= alive;
+        usable &= replaced;
+    }
+    for signal in [libc::SIGTERM, libc::SIGHUP] {
+        let (cancelled, flags, alive, replaced) = paused_input_cancellation(signal)?;
+        input_cancellable.push(cancelled);
+        flags_restored.push(flags);
+        survived &= alive;
+        usable &= replaced;
+    }
+    for (mode, signal) in [
+        ("pty-blocking", libc::SIGTERM),
+        ("pty-nonblocking", libc::SIGHUP),
+        ("pty-aliased", libc::SIGTERM),
+    ] {
+        let (cancelled, flags, terminal, alive, replaced) =
+            finite_output_cancellation(mode, signal, false)?;
+        terminal_restored.push(cancelled && terminal);
+        flags_restored.push(flags);
+        survived &= alive;
+        usable &= replaced;
+    }
+    let ordered = ordered_partial_relay()?;
+    Ok(
+        json!({"output_cancellable":output_cancellable,"input_cancellable":input_cancellable,
+        "terminal_restored":terminal_restored,"flags_restored":flags_restored,
+        "same_agent_survived":survived,"replacement_usable":usable,"ordered":ordered,
+        "short_write_capacity":4096,"roundtrip_bytes":131072}),
+    )
+}
+#[test]
+fn attach_cancellation_under_finite_output_and_input_backpressure() -> Result<()> {
+    let observed = attach_backpressure()?;
+    assert_eq!(observed["output_cancellable"], json!([true, true, true]));
+    assert_eq!(observed["input_cancellable"], json!([true, true]));
+    assert_eq!(observed["terminal_restored"], json!([true, true, true]));
+    assert_eq!(observed["flags_restored"], json!(vec![true; 8]));
+    assert_eq!(observed["same_agent_survived"], true);
+    assert_eq!(observed["replacement_usable"], true);
+    assert_eq!(observed["ordered"], true);
+    Ok(())
+}
+
+#[test]
+#[allow(unsafe_code)]
+fn adversary_stalled_aliased_terminal_services_resize_then_sigint() -> Result<()> {
+    use std::os::unix::fs::OpenOptionsExt;
+    let mut fixture = ReplayFixture::new(true)?;
+    let mut client = CancellationClient::new(fixture.dir.path(), "pty-aliased")?;
+    observe_marker(&mut client.output, b"ready")?;
+    let pid = fixture.pid()?;
+    fixture.input(b"flood\n")?;
+    let deadline = Instant::now() + Duration::from_secs(5);
+    while !fixture.dir.path().join("emitted").exists() {
+        ensure!(Instant::now() < deadline, "finite producer did not finish");
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    std::thread::sleep(Duration::from_millis(100));
+    let expected = ctl::Window {
+        cols: 137,
+        rows: 43,
+    };
+    let terminal = &client.terminal.as_ref().context("PTY fixture")?.0;
+    mantle_launch::sys::set_window(terminal.as_fd(), expected)?;
+    // SAFETY: the unreaped child belongs to this fixture and cannot have a reused PID.
+    ensure!(
+        unsafe { libc::kill(client.process.0.id() as libc::pid_t, libc::SIGWINCH) } == 0,
+        "resize signal"
+    );
+    // Inspect only our synthetic agent's PTY metadata; no agent input/output is read here.
+    let agent_terminal = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NONBLOCK | libc::O_NOCTTY)
+        .open(format!("/proc/{pid}/fd/0"))?;
+    let deadline = Instant::now() + ATTACH_DEADLINE;
+    loop {
+        let actual = mantle_launch::sys::get_window(agent_terminal.as_fd())?;
+        if actual.cols == expected.cols && actual.rows == expected.rows {
+            break;
+        }
+        ensure!(
+            Instant::now() < deadline,
+            "stalled client did not forward resize"
+        );
+        ensure!(
+            client.process.0.try_wait()?.is_none(),
+            "client exited before cancellation"
+        );
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    assert!(
+        client.cancel(libc::SIGINT)?,
+        "handled SIGINT missed deadline"
+    );
+    assert_eq!(client.restored()?, (true, true));
+    assert!(fixture.server.0.try_wait()?.is_none());
+    assert_eq!(fixture.pid()?, pid);
+    drop(agent_terminal);
+    drop(client);
+    assert!(
+        replacement(fixture.dir.path())?,
+        "replacement client was unusable"
+    );
+    terminate(&fixture.server.0);
+    assert!(wait(&mut fixture.server.0)?.success());
+    Ok(())
+}
+
+#[test]
+fn adversary_closed_stdout_restores_pty_and_flags_and_releases_client_lock() -> Result<()> {
+    let mut fixture = ReplayFixture::new(true)?;
+    let mut client = CancellationClient::new(fixture.dir.path(), "pty-blocking")?;
+    observe_marker(&mut client.output, b"ready")?;
+    let pid = fixture.pid()?;
+    // Losing the reader exercises the relay's EPIPE return rather than a handled signal.
+    drop(std::mem::replace(
+        &mut client.output,
+        File::open("/dev/null")?,
+    ));
+    fixture.input(b"emit\n")?;
+    let deadline = Instant::now() + ATTACH_DEADLINE;
+    loop {
+        if let Some(status) = client.process.0.try_wait()? {
+            assert!(
+                status.success(),
+                "stdout failure killed attach without cleanup: {status}"
+            );
+            break;
+        }
+        ensure!(
+            Instant::now() < deadline,
+            "closed stdout did not end attach"
+        );
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    assert_eq!(client.restored()?, (true, true));
+    assert!(fixture.server.0.try_wait()?.is_none());
+    assert_eq!(fixture.pid()?, pid);
+    drop(client);
+    assert!(replacement(fixture.dir.path())?);
+    terminate(&fixture.server.0);
+    assert!(wait(&mut fixture.server.0)?.success());
+    Ok(())
+}
+
+#[test]
+fn adversary_nonblocking_setup_failure_restores_earlier_aliased_descriptors() -> Result<()> {
+    use std::os::unix::fs::OpenOptionsExt;
+    let dir = scratch()?;
+    let path = dir.path().join("metadata-only");
+    fs::write(&path, b"fixture")?;
+    let metadata = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_PATH)
+        .open(path)?;
+    let (_read, write) = small_pipe()?;
+    let alias = write.try_clone()?;
+    let original = descriptor_flags(&write)?;
+    let error = mantle_launch::sys::nonblocking(&[write.as_fd(), alias.as_fd(), metadata.as_fd()])
+        .err()
+        .context("O_PATH unexpectedly accepted F_SETFL")?;
+    assert_eq!(error.raw_os_error(), Some(libc::EBADF));
+    assert_eq!(descriptor_flags(&write)?, original);
+    assert_eq!(descriptor_flags(&alias)?, original);
+    let guard = mantle_launch::sys::nonblocking(&[write.as_fd(), alias.as_fd()])?;
+    assert_ne!(descriptor_flags(&write)? & libc::O_NONBLOCK, 0);
+    drop(guard);
+    assert_eq!(descriptor_flags(&write)?, original);
+    assert_eq!(descriptor_flags(&alias)?, original);
     Ok(())
 }
