@@ -236,3 +236,4 @@ scenarios:
   - scenarios/launch/private-path-initialization.yaml
   - scenarios/cli/codex-start.yaml
   - scenarios/cli/codex-private-runtime.yaml
+  - scenarios/launch/attach-backpressure-cancellation.yaml

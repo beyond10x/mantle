@@ -190,3 +190,18 @@ commands:
       - {name: tail_matches, type: Boolean}
       - {name: mode, type: Integer}
     outcomes: [{name: returned, returns: true}]
+
+  - name: mantle.launch.AttachBackpressure
+    # Real clients; finite producers and independently paused input. Every timeout reaps only
+    # the client before probing the same surviving server with another attachment.
+    response:
+      - {name: output_cancellable, type: 'List<Boolean>'}
+      - {name: input_cancellable, type: 'List<Boolean>'}
+      - {name: terminal_restored, type: 'List<Boolean>'}
+      - {name: flags_restored, type: 'List<Boolean>'}
+      - {name: same_agent_survived, type: Boolean}
+      - {name: replacement_usable, type: Boolean}
+      - {name: ordered, type: Boolean}
+      - {name: short_write_capacity, type: Integer}
+      - {name: roundtrip_bytes, type: Integer}
+    outcomes: [{name: returned, returns: true}]

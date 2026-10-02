@@ -50,7 +50,13 @@ pub fn run(args: &AttachArgs) -> Result<u8> {
     }
     let (mut output, mut input) = connect(&paths)?;
 
-    let mut buf = vec![0u8; RELAY_CHUNK];
+    let _nonblocking =
+        sys::nonblocking(&[stdin.as_fd(), stdout.as_fd(), output.as_fd(), input.as_fd()])
+            .context("cannot make terminal relay nonblocking")?;
+    let mut to_terminal = Pending::new();
+    let mut to_agent = Pending::new();
+    let mut terminal_open = true;
+    let mut server_open = true;
     loop {
         if signals::take_terminate().is_some() {
             break;
@@ -58,28 +64,87 @@ pub fn run(args: &AttachArgs) -> Result<u8> {
         if signals::take_resize() && tty {
             send_window(&mut ctl, stdin.as_fd());
         }
-        let mut fds = [
-            sys::pollfd(Some(stdin.as_fd()), libc::POLLIN),
-            sys::pollfd(Some(output.as_fd()), libc::POLLIN),
-        ];
-        sys::poll(&mut fds, Duration::from_secs(1)).context("poll failed")?;
-        let [from_terminal, from_server] = fds.map(|fd| fd.revents);
-        if from_server != 0 && !relay(&mut output, &mut stdout, &mut buf) {
+        if to_terminal.empty() && (!server_open || (!terminal_open && to_agent.empty())) {
             break;
         }
-        if from_terminal != 0 && !relay(&mut stdin, &mut input, &mut buf) {
+        let mut fds = [
+            sys::pollfd(
+                (terminal_open && to_agent.empty()).then(|| stdin.as_fd()),
+                libc::POLLIN,
+            ),
+            sys::pollfd(
+                (server_open && to_terminal.empty()).then(|| output.as_fd()),
+                libc::POLLIN,
+            ),
+            sys::pollfd(
+                (!to_terminal.empty()).then(|| stdout.as_fd()),
+                libc::POLLOUT,
+            ),
+            sys::pollfd((!to_agent.empty()).then(|| input.as_fd()), libc::POLLOUT),
+        ];
+        sys::poll(&mut fds, Duration::from_secs(1)).context("poll failed")?;
+        let [
+            from_terminal,
+            from_server,
+            terminal_writable,
+            agent_writable,
+        ] = fds.map(|fd| fd.revents);
+        // At most one bounded operation per descriptor before observing signals again. A
+        // partial write retains its exact suffix; full queues stop polling their source.
+        if terminal_writable != 0 && !to_terminal.flush(&mut stdout) {
             break;
+        }
+        if agent_writable != 0 && !to_agent.flush(&mut input) {
+            break;
+        }
+        if from_server != 0 {
+            server_open = to_terminal.read(&mut output);
+        }
+        if from_terminal != 0 {
+            terminal_open = to_agent.read(&mut stdin);
         }
     }
     Ok(0)
 }
 
-/// Copies one read from `from` to `to`; false when either side has ended.
-fn relay(from: &mut File, to: &mut File, buf: &mut [u8]) -> bool {
-    match from.read(buf) {
-        Ok(0) => false,
-        Ok(n) => to.write_all(&buf[..n]).is_ok(),
-        Err(err) => matches!(err.kind(), ErrorKind::Interrupted | ErrorKind::WouldBlock),
+/// One direction holds at most one read, with no allocation or growth while backpressured.
+struct Pending {
+    bytes: [u8; RELAY_CHUNK],
+    start: usize,
+    end: usize,
+}
+impl Pending {
+    fn new() -> Self {
+        Self {
+            bytes: [0; RELAY_CHUNK],
+            start: 0,
+            end: 0,
+        }
+    }
+    fn empty(&self) -> bool {
+        self.start == self.end
+    }
+    fn read(&mut self, from: &mut File) -> bool {
+        debug_assert!(self.empty());
+        match from.read(&mut self.bytes) {
+            Ok(0) => false,
+            Ok(n) => {
+                self.start = 0;
+                self.end = n;
+                true
+            }
+            Err(err) => matches!(err.kind(), ErrorKind::Interrupted | ErrorKind::WouldBlock),
+        }
+    }
+    fn flush(&mut self, to: &mut File) -> bool {
+        match to.write(&self.bytes[self.start..self.end]) {
+            Ok(0) => false,
+            Ok(n) => {
+                self.start += n;
+                true
+            }
+            Err(err) => matches!(err.kind(), ErrorKind::Interrupted | ErrorKind::WouldBlock),
+        }
     }
 }
 

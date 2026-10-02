@@ -31,6 +31,18 @@ enum Mode {
         child: bool,
     },
     Sleep,
+    PauseInput {
+        #[arg(long)]
+        pid_file: std::path::PathBuf,
+        #[arg(long)]
+        paused_file: std::path::PathBuf,
+        #[arg(long)]
+        resume_file: std::path::PathBuf,
+    },
+    Roundtrip {
+        #[arg(long)]
+        done_file: std::path::PathBuf,
+    },
     Flood,
     /// Controlled output stays in the PTY; marker files contain only process/progress facts.
     Replay {
@@ -66,6 +78,85 @@ fn window() -> anyhow::Result<()> {
 fn main() -> anyhow::Result<()> {
     match Args::parse().command {
         Mode::Mark { path } => std::fs::write(path, b"dispatched")?,
+        Mode::PauseInput {
+            pid_file,
+            paused_file,
+            resume_file,
+        } => {
+            on_resize();
+            let input = std::io::stdin();
+            let _raw = mantle_launch::sys::raw_mode(input.as_fd())?;
+            std::fs::write(pid_file, std::process::id().to_string())?;
+            std::fs::write(paused_file, b"not-consuming")?;
+            println!("ready");
+            std::io::stdout().flush()?;
+            let deadline = std::time::Instant::now() + Duration::from_secs(45);
+            while !resume_file.exists() && !TERMINATE.load(Ordering::Relaxed) {
+                anyhow::ensure!(
+                    std::time::Instant::now() < deadline,
+                    "pause fixture deadline"
+                );
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            let mut input = input.lock();
+            let mut tail = Vec::new();
+            let mut received = 0;
+            while !TERMINATE.load(Ordering::Relaxed) {
+                anyhow::ensure!(
+                    std::time::Instant::now() < deadline,
+                    "input fixture deadline"
+                );
+                let mut poll = [mantle_launch::sys::pollfd(
+                    Some(input.as_fd()),
+                    libc::POLLIN,
+                )];
+                mantle_launch::sys::poll(&mut poll, Duration::from_millis(20))?;
+                if poll[0].revents == 0 {
+                    continue;
+                }
+                let mut buf = [0; 4096];
+                let n = input.read(&mut buf)?;
+                if n == 0 {
+                    break;
+                }
+                received += n;
+                anyhow::ensure!(received <= 1024 * 1024, "input fixture byte bound");
+                tail.extend_from_slice(&buf[..n]);
+                if tail.windows(10).any(|w| w == b"reattach!\n") {
+                    println!("replacement-usable");
+                    std::io::stdout().flush()?;
+                }
+                if tail.len() > 16 {
+                    tail.drain(..tail.len() - 16);
+                }
+            }
+        }
+        Mode::Roundtrip { done_file } => {
+            on_resize();
+            let mut input = std::io::stdin();
+            let _raw = mantle_launch::sys::raw_mode(input.as_fd())?;
+            println!("ready");
+            std::io::stdout().flush()?;
+            let mut trigger = [0; 1];
+            input.read_exact(&mut trigger)?;
+            let burst: Vec<u8> = (0..24 * 1024).map(|i| b'A' + (i % 23) as u8).collect();
+            std::io::stdout().write_all(&burst)?;
+            std::io::stdout().flush()?;
+            std::fs::write(done_file, b"burst-emitted")?;
+            let mut remaining = 128 * 1024;
+            while remaining != 0 {
+                let mut bytes = [0; 997];
+                let cap = remaining.min(bytes.len());
+                let n = input.read(&mut bytes[..cap])?;
+                anyhow::ensure!(n != 0, "roundtrip input ended");
+                std::io::stdout().write_all(&bytes[..n])?;
+                remaining -= n;
+            }
+            std::io::stdout().flush()?;
+            while !TERMINATE.load(Ordering::Relaxed) {
+                std::thread::sleep(Duration::from_millis(20));
+            }
+        }
         Mode::Emit { exit, args } => {
             for arg in args {
                 std::io::stdout().write_all(arg.as_bytes())?;
@@ -118,6 +209,7 @@ fn main() -> anyhow::Result<()> {
                 while let Some(end) = line.iter().position(|b| *b == b'\n') {
                     let bytes: Vec<_> = line.drain(..=end).collect();
                     match bytes.as_slice() {
+                        b"reattach!\n" => println!("replacement-usable"),
                         b"emit\n" => println!("launcher-output-canary-7f8433"),
                         b"flood\n" => {
                             flooded = true;
