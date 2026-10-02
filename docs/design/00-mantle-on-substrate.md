@@ -37,6 +37,17 @@ This document supersedes the earlier `rbuild` / local-source-sync design.
 >
 > Exec timeouts and leases are capped at 24 hours (`MAX_LEASE_TTL_MS`), which bounds one agent run.
 
+> **Codex integration update, 2026-10-02.** Manifests now select Claude Code (the default) or
+> pinned Codex 0.153.4 with `agent.kind: codex` and `agent.auth: chatgpt-device`. Both use the
+> existing Substrate terminal transport and capture behavior; non-recording Substrate capture
+> is not a Codex startup prerequisite. Codex device login happens in its terminal, with auth and
+> conversation files in `/workspace/.mantle/home/.codex`. Launcher replay is volatile and runtime
+> diagnostics use verified tmpfs, without an end-to-end non-recording guarantee. The gateway
+> includes `auth.openai.com:443` and `chatgpt.com:443`. See the
+> [usage guide](../../README.md#start-codex) and [qualification evidence](../evidence/codex-compatibility.md)
+> for the implemented path and the authenticated checks still outstanding. Later proposal
+> sections remain design intent unless the implementation evidence says otherwise.
+
 ---
 
 ## 1. Why the design changed
@@ -2508,7 +2519,7 @@ runtime: rust-dev
 agent: claude-code
 ```
 
-could later become:
+can now also be selected as:
 
 ```text
 runtime: rust-dev
