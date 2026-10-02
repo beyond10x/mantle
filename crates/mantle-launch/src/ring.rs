@@ -28,16 +28,18 @@ impl Ring {
         self.bytes.clear();
     }
 
-    /// Appends `data`, dropping the oldest bytes beyond capacity.
-    pub fn push(&mut self, data: &[u8]) {
+    /// Appends `data`, dropping the oldest bytes beyond capacity. Returns how many bytes were
+    /// dropped, counting any of `data` itself that did not fit.
+    pub fn push(&mut self, data: &[u8]) -> usize {
+        let overflow = (self.bytes.len() + data.len()).saturating_sub(self.capacity);
         if data.len() >= self.capacity {
             self.bytes.clear();
             self.bytes.extend(&data[data.len() - self.capacity..]);
-            return;
+            return overflow;
         }
-        let overflow = (self.bytes.len() + data.len()).saturating_sub(self.capacity);
         self.bytes.drain(..overflow);
         self.bytes.extend(data);
+        overflow
     }
 
     /// Appends the contents of another ring, oldest first.
@@ -125,6 +127,16 @@ mod tests {
         let mut small = Ring::new(3);
         small.push_ring(&source);
         assert_eq!(small.to_vec(), b"fgh");
+    }
+
+    #[test]
+    fn push_reports_how_many_bytes_it_dropped() {
+        let mut ring = Ring::new(8);
+        assert_eq!(ring.push(b"abcdef"), 0);
+        assert_eq!(ring.push(b"gh"), 0);
+        assert_eq!(ring.push(b"ij"), 2);
+        assert_eq!(ring.push(b"0123456789"), 10);
+        assert_eq!(ring.to_vec(), b"23456789");
     }
 
     #[test]

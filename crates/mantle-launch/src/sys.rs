@@ -105,6 +105,27 @@ pub fn signal_group(pgid: u32, signal: libc::c_int) -> io::Result<()> {
     check(unsafe { libc::kill(-pgid, signal) }).map(drop)
 }
 
+/// True once the child `pid` has exited, without reaping it. Until it is reaped its pid, and with
+/// it the id of the process group it leads, cannot be given to another process.
+#[allow(unsafe_code)]
+pub fn has_exited(pid: u32) -> io::Result<bool> {
+    // SAFETY: an all-zero siginfo_t is a valid value for waitid(2) to overwrite; the pointer
+    // refers to a live local for the duration of the call.
+    let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+    // SAFETY: as above; P_PID with WNOWAIT only inspects the child, it does not reap it.
+    check(unsafe {
+        libc::waitid(
+            libc::P_PID,
+            pid,
+            &raw mut info,
+            libc::WEXITED | libc::WNOHANG | libc::WNOWAIT,
+        )
+    })?;
+    // SAFETY: with WNOHANG waitid leaves si_pid zero when the child has not changed state, and
+    // sets it to the child's pid when it has; the field is plain data in the live local.
+    Ok(unsafe { info.si_pid() } != 0)
+}
+
 /// Makes the child of `command` a session leader whose controlling terminal is its stdin.
 #[allow(unsafe_code)]
 pub fn controlling_terminal_on_stdin(command: &mut Command) {

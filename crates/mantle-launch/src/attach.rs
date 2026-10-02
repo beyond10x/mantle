@@ -1,10 +1,9 @@
 //! `attach`: relays this process's terminal to a running `serve` through the named pipes.
 //! Killing it (the PTY session closing) leaves the server and the agent running.
 
-use std::fs::{File, OpenOptions};
+use std::fs::File;
 use std::io::{self, ErrorKind, Read, Write};
 use std::os::fd::{AsFd, BorrowedFd};
-use std::os::unix::fs::OpenOptionsExt;
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
@@ -20,17 +19,13 @@ const RELAY_CHUNK: usize = 16 * 1024;
 
 pub fn run(args: &AttachArgs) -> Result<u8> {
     let paths = Paths::new(&args.dir);
-    if !paths.dir.is_dir() {
+    if !session::is_real_dir(&paths.dir) {
         bail!("no session server is running in {}", args.dir.display());
     }
     let Some(_client_lock) = session::try_lock(&paths.client_lock)? else {
         bail!("another terminal is attached");
     };
-    let mut ctl = match OpenOptions::new()
-        .write(true)
-        .custom_flags(libc::O_NONBLOCK)
-        .open(&paths.ctl)
-    {
+    let mut ctl = match session::open_fifo(&paths.ctl, true, libc::O_NONBLOCK) {
         Ok(file) => file,
         Err(err) if matches!(err.raw_os_error(), Some(libc::ENXIO | libc::ENOENT)) => {
             bail!("no session server is running in {}", args.dir.display());
@@ -101,8 +96,8 @@ fn connect(paths: &Paths) -> Result<(File, File)> {
     let input = paths.input.clone();
     let (sender, receiver) = mpsc::channel();
     thread::spawn(move || {
-        let opened = File::open(&output).and_then(|output| {
-            let input = OpenOptions::new().write(true).open(&input)?;
+        let opened = session::open_fifo(&output, false, 0).and_then(|output| {
+            let input = session::open_fifo(&input, true, 0)?;
             Ok((output, input))
         });
         sender.send(opened).ok();

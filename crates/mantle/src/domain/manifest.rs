@@ -239,9 +239,10 @@ fn resolve(manifest: Manifest, text: &str) -> Result<Resolved> {
     let cwd = manifest.agent.cwd;
     if cwd != "/workspace"
         && !cwd.strip_prefix("/workspace/").is_some_and(|rest| {
-            mounts
-                .iter()
-                .any(|mount| rest == mount || rest.starts_with(&format!("{mount}/")))
+            rest.split('/').all(valid_cwd_component)
+                && mounts
+                    .iter()
+                    .any(|mount| rest == mount || rest.starts_with(&format!("{mount}/")))
         })
     {
         bail!("agent.cwd {cwd:?} must be /workspace or lie inside a declared mount");
@@ -305,6 +306,12 @@ fn valid_mount(mount: &str) -> bool {
         && mount
             .bytes()
             .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
+}
+
+/// A prefix check on a path says nothing about where it resolves: `.`, `..` and empty components
+/// are refused so the text is the location.
+fn valid_cwd_component(component: &str) -> bool {
+    !component.is_empty() && component != "." && component != ".."
 }
 
 /// A ref is handed to `git` as one argv element, so the check only has to keep it from being read
@@ -421,6 +428,23 @@ mod tests {
         assert!(parse(&text).is_err());
         let text = minimal("").replace("cwd: /workspace/r", "cwd: /workspace/r/sub");
         assert!(parse(&text).is_ok());
+    }
+
+    #[test]
+    fn cwd_with_dot_dot_or_empty_components_is_refused() {
+        for cwd in [
+            "/workspace/r/../..",
+            "/workspace/r/..",
+            "/workspace/r/./sub",
+            "/workspace/r/.",
+            "/workspace/r//sub",
+            "/workspace/r/",
+            "/workspace/r/sub/../../../etc",
+        ] {
+            let text = minimal("").replace("cwd: /workspace/r", &format!("cwd: {cwd:?}"));
+            let error = parse(&text).expect_err(cwd);
+            assert!(format!("{error:#}").contains("agent.cwd"), "{error:#}");
+        }
     }
 
     #[test]
