@@ -81,6 +81,7 @@ pub struct Repository {
 pub struct Agent {
     pub kind: String,
     pub cwd: String,
+    pub auth: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -124,11 +125,13 @@ pub struct Lifecycle {
 pub const SERVED_CAPABILITIES: [&str; 3] = ["model.anthropic", "git.github", "rust.crates"];
 
 /// What the slice runs, after every default is applied and every value bounded.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Resolved {
     pub name: String,
     pub repositories: Vec<Repository>,
     pub agent_cwd: String,
+    pub agent_kind: super::session::AgentKind,
+    pub authentication: super::session::AuthenticationMethod,
     pub cpu: u32,
     pub memory_bytes: u64,
     pub pids: u32,
@@ -170,12 +173,8 @@ fn resolve(manifest: Manifest, text: &str) -> Result<Resolved> {
     if !valid_name(&name) {
         bail!("metadata.name {name:?} must be 1-48 characters of a-z, 0-9 and '-'");
     }
-    if manifest.agent.kind != "claude-code" {
-        bail!(
-            "agent.kind {:?} is not served; the slice serves claude-code",
-            manifest.agent.kind
-        );
-    }
+    let (agent_kind, authentication) =
+        super::session::resolve_identity(&manifest.agent.kind, manifest.agent.auth.as_deref())?;
     if let Some(runtime) = &manifest.runtime
         && runtime.profile != "rust-dev"
     {
@@ -275,6 +274,8 @@ fn resolve(manifest: Manifest, text: &str) -> Result<Resolved> {
         name,
         repositories,
         agent_cwd: cwd,
+        agent_kind,
+        authentication,
         cpu,
         memory_bytes,
         pids,

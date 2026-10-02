@@ -1,0 +1,17 @@
+type: ess-scenario/4
+domain: mantle.launch
+scenario: private-path-initialization
+summary: Private paths preserve auth files and reject unsafe dispatch paths.
+timeline:
+  - at: '2026-10-02T00:00:00Z'
+    command: mantle.launch.PrivatePaths
+    input: {}
+    outcome: returned
+    response:
+      initialized: true
+      repeated_inode: true
+      auth_bytes_preserved: true
+      shared_mode_unchanged: true
+      target_mode: 448
+      refused_before_dispatch: [true, true, true, true, true, true, true, true, true]
+      targets_preserved: true

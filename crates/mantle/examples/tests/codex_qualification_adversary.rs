@@ -1,5 +1,12 @@
 use super::*;
 
+fn private_parent() -> tempfile::TempDir {
+    match std::env::var_os("MANTLE_TEST_SCRATCH") {
+        Some(parent) => tempfile::tempdir_in(parent).unwrap(),
+        None => tempfile::tempdir().unwrap(),
+    }
+}
+
 // This child process isolates the potentially blocking open from the test runner.
 // The input contains no credentials and the parent always kills/reaps a stuck child.
 #[test]
@@ -9,8 +16,8 @@ fn non_regular_binary_input_is_refused_without_waiting_for_a_fifo_writer() {
         assert!(verify_digest(Path::new(&path), &"0".repeat(64)).is_err());
         return;
     }
-    let parent = PathBuf::from(std::env::var_os("TMPDIR").expect("private test TMPDIR"));
-    let scratch = Scratch::new(&parent).unwrap();
+    let parent = private_parent();
+    let scratch = Scratch::new(parent.path()).unwrap();
     let fifo = scratch.0.join("candidate-codex");
     assert!(
         Command::new("/usr/bin/mkfifo")
@@ -57,8 +64,8 @@ fn binary_symlink_is_validated_against_its_current_opened_object() {
         assert_eq!(error.to_string(), "binary is not a regular file");
         return;
     }
-    let parent = PathBuf::from(std::env::var_os("TMPDIR").expect("private test TMPDIR"));
-    let scratch = Scratch::new(&parent).unwrap();
+    let parent = private_parent();
+    let scratch = Scratch::new(parent.path()).unwrap();
     let target = scratch.0.join("target");
     let selected = scratch.0.join("selected-codex");
     fs::write(&target, b"abc").unwrap();

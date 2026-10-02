@@ -6,7 +6,7 @@ use mantle_egress::{Allowlist, Destination};
 use serde_json::{Value, json};
 
 use super::{SessionRecord, SourceRecord, Store};
-use crate::domain::session::SessionState;
+use crate::domain::session::{AgentKind, AuthenticationMethod, SessionState, validate_identity};
 
 fn text(value: &Value) -> Result<&str> {
     value.as_str().context("expected text")
@@ -19,6 +19,7 @@ fn row(record: SessionRecord) -> Value {
         "workspace": record.workspace, "agent_exec": record.agent_exec,
         "requested_json": record.requested_json, "created_at": record.created_at,
         "failure": record.failure,
+        "agent_kind": record.agent_kind, "authentication": record.authentication,
     })
 }
 
@@ -43,6 +44,9 @@ fn query(store: &Store, view: &str) -> Result<Value> {
 }
 
 fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
+    if command == "mantle.session.IdentityMigration" {
+        return Ok(Reply::returned(identity_migration()?));
+    }
     if command.starts_with("mantle.orchestration.") {
         return super::orchestration::execute(command, input);
     }
@@ -156,6 +160,16 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
     }
     let id = text(&input["session_id"])?;
     if command == "mantle.session.InsertSession" {
+        let agent_kind: AgentKind = serde_json::from_value(input["agent_kind"].clone())?;
+        let authentication: AuthenticationMethod =
+            serde_json::from_value(input["authentication"].clone())?;
+        if validate_identity(&agent_kind, &authentication).is_err() {
+            return Ok(Reply {
+                outcome: "invalid-identity".into(),
+                error: Some("mantle.session.InvalidIdentity".into()),
+                ..Reply::default()
+            });
+        }
         let result = store.insert_session(&SessionRecord {
             id: id.into(),
             name: text(&input["name"])?.into(),
@@ -167,6 +181,8 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
             requested_json: text(&input["requested_json"])?.into(),
             created_at: text(&input["created_at"])?.into(),
             failure: None,
+            agent_kind,
+            authentication,
         });
         if let Err(error) = result {
             ensure!(
@@ -248,7 +264,8 @@ fn manifest(command: &str, input: &Value) -> Result<Reply> {
                     "name": r.name, "repository": r.repository, "reference": r.reference, "mount": r.mount
                 })).collect::<Vec<_>>(), "agent_cwd": r.agent_cwd, "cpu": r.cpu,
                 "memory_bytes": r.memory_bytes, "pids": r.pids, "storage_bytes": r.storage_bytes,
-                "retain_for_secs": r.retain_for.as_secs(), "digest": r.digest
+                "retain_for_secs": r.retain_for.as_secs(), "digest": r.digest,
+                "agent_kind": r.agent_kind, "authentication": r.authentication
             }}),
             Err(e) => json!({"resolved": null, "diagnostic": format!("{e:#}")}),
         }));
@@ -302,6 +319,8 @@ impl Boundary for CliBoundary {
             requested_json: "{}".into(),
             created_at: "2026-10-02T00:00:00Z".into(),
             failure: None,
+            agent_kind: AgentKind::V0,
+            authentication: AuthenticationMethod::V1,
         })
     }
     fn execute(&mut self, command: &str, input: &Value) -> Result<Reply> {
@@ -314,4 +333,99 @@ impl Boundary for CliBoundary {
 #[test]
 fn ess_generated_local_conformance() -> Result<()> {
     mantle_conformance::run::<CliBoundary>("mantle-cli", 213)
+}
+
+fn identity_migration() -> Result<Value> {
+    fn legacy_payload(connection: &rusqlite::Connection) -> Result<Vec<Vec<Option<String>>>> {
+        let mut rows = Vec::new();
+        for sql in [
+            "SELECT id,name,worker,state,manifest_digest,workspace,agent_exec,requested_json,created_at,failure FROM sessions WHERE id IN ('live','stopped') ORDER BY id",
+            "SELECT session_id,name,repository,declared_ref,commit_id,mount FROM sources ORDER BY session_id,mount",
+            "SELECT name,instance,region,data_volume FROM workers ORDER BY name",
+        ] {
+            let mut statement = connection.prepare(sql)?;
+            let columns = statement.column_count();
+            rows.extend(
+                statement
+                    .query_map([], |r| {
+                        (0..columns)
+                            .map(|i| r.get(i))
+                            .collect::<rusqlite::Result<Vec<Option<String>>>>()
+                    })?
+                    .collect::<rusqlite::Result<Vec<_>>>()?,
+            );
+        }
+        Ok(rows)
+    }
+    let temp = tempfile::tempdir()?;
+    let path = temp.path().join("legacy.db");
+    let legacy = rusqlite::Connection::open(&path)?;
+    legacy.execute_batch(super::SCHEMA)?;
+    legacy.execute_batch("INSERT INTO sessions VALUES ('live','legacy','w','RUNNING','digest','ws','exec','{}','time',NULL); INSERT INTO sessions VALUES ('stopped','old','w','STOPPED','other',NULL,NULL,'{}','old-time','old failure'); INSERT INTO sources VALUES ('live','r','https://example.com/r.git','main','commit','r');")?;
+    legacy.execute_batch("INSERT INTO workers VALUES ('w','instance','region','volume');")?;
+    let original = legacy_payload(&legacy)?;
+    drop(legacy);
+    let store = Store::open(&path)?;
+    let before = store.session_by_id("live")?.context("migrated row")?;
+    let old = store.session_by_id("stopped")?.context("stopped row")?;
+    let legacy_preserved = original == legacy_payload(&store.connection)?
+        && before.agent_kind == AgentKind::V0
+        && before.authentication == AuthenticationMethod::V1
+        && before.state == SessionState::Running
+        && before.workspace.as_deref() == Some("ws")
+        && before.agent_exec.as_deref() == Some("exec")
+        && before.manifest_digest == "digest"
+        && old.state == SessionState::Stopped
+        && old.failure.as_deref() == Some("old failure")
+        && store.sources("live")?.len() == 1;
+    let mut codex = before.clone();
+    codex.id = "codex".into();
+    codex.name = "codex".into();
+    codex.agent_kind = AgentKind::V1;
+    codex.authentication = AuthenticationMethod::V0;
+    store.insert_session(&codex)?;
+    let mut invalid = codex.clone();
+    invalid.id = "invalid".into();
+    invalid.name = "invalid".into();
+    invalid.authentication = AuthenticationMethod::V1;
+    let bad_pair_refused = store.insert_session(&invalid).is_err();
+    drop(store);
+    let store = Store::open(&path)?;
+    let legacy_preserved = legacy_preserved && original == legacy_payload(&store.connection)?;
+    let stored = store.session_by_id("codex")?.context("Codex row")?;
+    let codex_preserved = stored.agent_kind == codex.agent_kind
+        && stored.authentication == codex.authentication
+        && store.live_sessions()?.len() == 2;
+    let indexes_preserved = store.connection.query_row(
+        "SELECT count(*) FROM sqlite_master WHERE type='index' AND name='sessions_live_name'",
+        [],
+        |r| r.get::<_, i64>(0),
+    )? == 1
+        && store
+            .insert_session(&SessionRecord {
+                id: "duplicate".into(),
+                ..before
+            })
+            .is_err();
+    store.connection.execute(
+        "UPDATE sessions SET agent_kind='unknown' WHERE id='codex'",
+        [],
+    )?;
+    let unknown_refused = store.session_by_id("codex").is_err() && Store::open(&path).is_err();
+    store.connection.execute(
+        "UPDATE sessions SET agent_kind='codex', authentication='unknown' WHERE id='codex'",
+        [],
+    )?;
+    let unknown_refused =
+        unknown_refused && store.live_sessions().is_err() && Store::open(&path).is_err();
+    store.connection.execute(
+        "UPDATE sessions SET agent_kind='codex', authentication='claude-oauth' WHERE id='codex'",
+        [],
+    )?;
+    let bad_pair_refused =
+        bad_pair_refused && store.live_sessions().is_err() && Store::open(&path).is_err();
+    Ok(
+        json!({"legacy_preserved":legacy_preserved,"codex_preserved":codex_preserved,
+        "indexes_preserved":indexes_preserved,"unknown_refused":unknown_refused,"bad_pair_refused":bad_pair_refused}),
+    )
 }

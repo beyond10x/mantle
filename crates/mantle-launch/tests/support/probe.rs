@@ -16,6 +16,10 @@ struct Args {
 }
 #[derive(Subcommand)]
 enum Mode {
+    Mark {
+        #[arg(long)]
+        path: std::path::PathBuf,
+    },
     Emit {
         #[arg(long, default_value_t = 0)]
         exit: u8,
@@ -61,6 +65,7 @@ fn window() -> anyhow::Result<()> {
 }
 fn main() -> anyhow::Result<()> {
     match Args::parse().command {
+        Mode::Mark { path } => std::fs::write(path, b"dispatched")?,
         Mode::Emit { exit, args } => {
             for arg in args {
                 std::io::stdout().write_all(arg.as_bytes())?;

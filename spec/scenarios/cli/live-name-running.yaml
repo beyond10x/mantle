@@ -13,7 +13,9 @@
         "worker": "w",
         "manifest_digest": "digest",
         "requested_json": "{}",
-        "created_at": "2026-10-02T00:00:00Z"
+        "created_at": "2026-10-02T00:00:00Z",
+        "agent_kind": "ClaudeCode",
+        "authentication": "ClaudeOauth"
       },
       "outcome": "recorded"
     },
@@ -42,7 +44,9 @@
         "worker": "w",
         "manifest_digest": "digest",
         "requested_json": "{}",
-        "created_at": "2026-10-02T00:00:00Z"
+        "created_at": "2026-10-02T00:00:00Z",
+        "agent_kind": "ClaudeCode",
+        "authentication": "ClaudeOauth"
       },
       "outcome": "conflict",
       "error": {

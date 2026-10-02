@@ -51,6 +51,18 @@ pub struct ServeArgs {
     #[arg(long = "mkdir", value_name = "DIR", value_parser = absolute_path)]
     pub mkdirs: Vec<PathBuf>,
 
+    /// Create/check this private directory without following any path component.
+    #[arg(long = "private-dir", value_name = "DIR", value_parser = absolute_path)]
+    pub private_dirs: Vec<PathBuf>,
+
+    /// Create/check an owner-only directory and require an observed tmpfs filesystem.
+    #[arg(long = "volatile-dir", value_name = "DIR", value_parser = absolute_path)]
+    pub volatile_dirs: Vec<PathBuf>,
+
+    /// Permit an absent file or an owned regular, singly-linked 0600 file; never read it.
+    #[arg(long = "check-private-file", value_name = "FILE", value_parser = absolute_path)]
+    pub check_private_files: Vec<PathBuf>,
+
     /// Agent output kept for replay to a terminal that attaches later.
     #[arg(long, value_name = "BYTES", default_value_t = DEFAULT_SCROLLBACK_BYTES,
           value_parser = clap::value_parser!(u32).range(1024..=64 * 1024 * 1024))]

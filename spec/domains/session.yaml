@@ -2,10 +2,7 @@ domain: mantle.session
 summary: Local records and decisions over explicit worker observations; a recorded Running state never asserts a live process.
 
 types:
-  # Proposed Codex parity vocabulary, not fields persisted by the current contract.
-  # story:codex-interactive-start adds resolved agent/authentication fields together
-  # with the SQLite migration, commands, views and implementation conformance cases.
-  # Legacy records will resolve to ClaudeCode/ClaudeOauth at that migration boundary.
+  # Persisted identities. The SQLite migration resolves legacy rows to Claude values.
   - name: mantle.session.AgentKind
     kind: enum
     variants: [ClaudeCode, Codex]
@@ -55,6 +52,8 @@ entities:
       - {name: requested_json, type: String}
       - {name: created_at, type: String}
       - {name: failure, type: 'Optional<String>'}
+      - {name: agent_kind, type: mantle.session.AgentKind}
+      - {name: authentication, type: mantle.session.AuthenticationMethod}
     relations:
       # Worker records survive session stop; no foreign-key or existence check is enforced.
       - {name: worker_record, kind: references, target: mantle.session.Worker, cardinality: one, via: worker}
@@ -82,6 +81,8 @@ entities:
     lifecycle: {initial: Recorded, states: [Recorded], terminal: [Recorded]}
 
 errors:
+  - name: mantle.session.InvalidIdentity
+    fields: []
   - name: mantle.session.WorkerNotReady
     fields: []
   - name: mantle.session.InstallationRefused
@@ -96,6 +97,15 @@ errors:
 # These are internal store operations invoked by app/session.rs, not new public CLI verbs.
 # Events denote local writes only; Mantle has no event bus and publishes none of them.
 commands:
+  - name: mantle.session.IdentityMigration
+    # Real legacy SQLite initialization, reopen and malformed row tests.
+    response:
+      - {name: legacy_preserved, type: Boolean}
+      - {name: codex_preserved, type: Boolean}
+      - {name: indexes_preserved, type: Boolean}
+      - {name: unknown_refused, type: Boolean}
+      - {name: bad_pair_refused, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
   # Function boundaries over composite-key rows. PutSource returns SQLite's affected-row
   # count; Sources observes persisted rows. There is no synthetic source entity identifier.
   - name: mantle.session.PutSource
@@ -166,6 +176,8 @@ commands:
       - {name: manifest_digest, type: String}
       - {name: requested_json, type: String}
       - {name: created_at, type: String}
+      - {name: agent_kind, type: mantle.session.AgentKind}
+      - {name: authentication, type: mantle.session.AuthenticationMethod}
     outcomes:
       - name: recorded
         creates: mantle.session.Session
@@ -179,12 +191,20 @@ commands:
           workspace: {cleared: true}
           agent_exec: {cleared: true}
           failure: {cleared: true}
+          agent_kind: input.agent_kind
+          authentication: input.authentication
         emits: [mantle.session.SessionRecorded]
         payload:
           mantle.session.SessionRecorded: {session_id: input.session_id}
       - name: conflict
         external: SQLite rejects an existing id or an existing name whose state is not Stopped.
         error: mantle.session.RecordConflict
+      - name: invalid-identity
+        when:
+          any:
+            - {all: [agent_kind == ClaudeCode, authentication == ChatgptDevice]}
+            - {all: [agent_kind == Codex, authentication == ClaudeOauth]}
+        error: mantle.session.InvalidIdentity
     # Authored live-name scenarios exercise the partial index in all seven states,
     # including reuse after Stopped and refusal while each other record remains live.
     # Input id is minted by app/session.rs:85; Store receives it, so it is not generated here.
@@ -346,6 +366,8 @@ views:
       - {name: requested_json, type: 'String'}
       - {name: created_at, type: 'String'}
       - {name: failure, type: 'Optional<String>'}
+      - {name: agent_kind, type: mantle.session.AgentKind}
+      - {name: authentication, type: mantle.session.AuthenticationMethod}
   # state.rs:219,243: session_by_id is internal; live_sessions is the CLI read model.
   - name: mantle.session.LiveSessions
     source: mantle.session.Session
@@ -362,3 +384,5 @@ views:
       - {name: requested_json, type: 'String'}
       - {name: created_at, type: 'String'}
       - {name: failure, type: 'Optional<String>'}
+      - {name: agent_kind, type: mantle.session.AgentKind}
+      - {name: authentication, type: mantle.session.AuthenticationMethod}

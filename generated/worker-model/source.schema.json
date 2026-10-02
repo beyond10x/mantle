@@ -37,12 +37,32 @@
       "type": "string",
       "x-ess-kind": "enum",
       "x-ess-name": "mantle.session.AgentInstallationOutcome"
+    },
+    "mantle.session.AgentKind": {
+      "enum": [
+        "ClaudeCode",
+        "Codex"
+      ],
+      "title": "AgentKind",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "mantle.session.AgentKind"
+    },
+    "mantle.session.AuthenticationMethod": {
+      "enum": [
+        "ClaudeOauth",
+        "ChatgptDevice"
+      ],
+      "title": "AuthenticationMethod",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "mantle.session.AuthenticationMethod"
     }
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-ess-provenance": {
-    "contract_digest": "slice-sha256/2:56aab6ba125583c0c6be3eeee9810eac6eb0aaffb7e676a2b72816bd94fbc3ed",
-    "source_digest": "3a08777de0d97b8f4b6127d959d931d021cd3fbac3a529f3522372ec4169c4ea",
+    "contract_digest": "slice-sha256/2:a75255e82037660d65588ad00ec716984f426db2c0e032e194a75f58467e005f",
+    "source_digest": "45700f1d2dc4e3c23ba9a26824b43bef5e98d2623981472ab852f3b57951dcac",
     "specification_version": "v1",
     "system": "mantle"
   }

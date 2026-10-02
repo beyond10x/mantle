@@ -1,0 +1,158 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "codex-private-runtime",
+  "summary": "Fixed Codex private home, tmpfs diagnostics, ChatGPT identity and non-recording requirement",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.orchestration.Request",
+      "input": {
+        "kind": "agent",
+        "manifest": "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: s1}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: codex, auth: chatgpt-device, cwd: /workspace/r}\n",
+        "argv": [
+          "/usr/bin/printf",
+          "a b",
+          "$HOME"
+        ],
+        "cpu": 7
+      },
+      "outcome": "returned",
+      "response": {
+        "root": "/opt/mantle",
+        "secret_slot": null,
+        "secret_fd": null,
+        "aperture": "egress",
+        "argv": [
+          "/opt/mantle/bin/mantle-launch",
+          "serve",
+          "--dir",
+          "/workspace/.mantle/agent",
+          "--volatile-replay",
+          "--cwd",
+          "/workspace/r",
+          "--private-dir",
+          "/workspace/.mantle",
+          "--private-dir",
+          "/workspace/.mantle/home",
+          "--private-dir",
+          "/workspace/.mantle/home/.codex",
+          "--volatile-dir",
+          "/tmp/mantle-codex/sqlite",
+          "--volatile-dir",
+          "/tmp/mantle-codex/log",
+          "--check-private-file",
+          "/workspace/.mantle/home/.codex/auth.json",
+          "--check-private-file",
+          "/workspace/.mantle/home/.codex/config.toml",
+          "--check-private-file",
+          "/workspace/.mantle/home/.codex/environments.toml",
+          "--mkdir",
+          "/workspace/.mantle/cargo",
+          "--proxy",
+          "http://127.0.0.1:3128",
+          "--",
+          "/opt/mantle/bin/codex",
+          "--strict-config",
+          "--sandbox",
+          "danger-full-access",
+          "--ask-for-approval",
+          "on-request",
+          "-c",
+          "forced_login_method=\"chatgpt\"",
+          "-c",
+          "cli_auth_credentials_store=\"file\"",
+          "-c",
+          "history.persistence=\"none\"",
+          "-c",
+          "analytics.enabled=false",
+          "-c",
+          "feedback.enabled=false",
+          "-c",
+          "check_for_update_on_startup=false",
+          "-c",
+          "sqlite_home=\"/tmp/mantle-codex/sqlite\"",
+          "-c",
+          "log_dir=\"/tmp/mantle-codex/log\"",
+          "-c",
+          "model_provider=\"openai\"",
+          "-c",
+          "chatgpt_base_url=\"https://chatgpt.com/backend-api/\"",
+          "-c",
+          "openai_base_url=\"https://chatgpt.com/backend-api/codex\""
+        ],
+        "timeout_secs": 28800,
+        "memory_bytes": 17179869184,
+        "processes": 4096,
+        "lease_secs": 28800,
+        "environment": [
+          {
+            "name": "CARGO_BUILD_JOBS",
+            "value": "4"
+          },
+          {
+            "name": "CARGO_HOME",
+            "value": "/workspace/.mantle/cargo"
+          },
+          {
+            "name": "CODEX_HOME",
+            "value": "/workspace/.mantle/home/.codex"
+          },
+          {
+            "name": "CODEX_TUI_RECORD_SESSION",
+            "value": "0"
+          },
+          {
+            "name": "GIT_CONFIG_NOSYSTEM",
+            "value": "1"
+          },
+          {
+            "name": "HOME",
+            "value": "/workspace/.mantle/home"
+          },
+          {
+            "name": "LANG",
+            "value": "C.UTF-8"
+          },
+          {
+            "name": "NODE_EXTRA_CA_CERTS",
+            "value": "/etc/ssl/certs/ca-certificates.crt"
+          },
+          {
+            "name": "PATH",
+            "value": "/opt/mantle/bin:/opt/mantle/cargo/bin:/usr/local/bin:/usr/bin:/bin"
+          },
+          {
+            "name": "RUSTUP_HOME",
+            "value": "/opt/mantle/rustup"
+          },
+          {
+            "name": "RUST_LOG",
+            "value": "off"
+          },
+          {
+            "name": "SHELL",
+            "value": "/bin/bash"
+          },
+          {
+            "name": "SSL_CERT_FILE",
+            "value": "/etc/ssl/certs/ca-certificates.crt"
+          },
+          {
+            "name": "TERM",
+            "value": "xterm-256color"
+          },
+          {
+            "name": "TMPDIR",
+            "value": "/tmp"
+          },
+          {
+            "name": "USER",
+            "value": "dev"
+          }
+        ],
+        "requires_non_recording": true
+      }
+    }
+  ]
+}

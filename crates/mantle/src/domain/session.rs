@@ -8,6 +8,39 @@ use std::str::FromStr;
 
 use anyhow::{Result, bail};
 
+pub use mantle_worker::{AgentKind, AuthenticationMethod};
+
+pub fn agent_name(agent: &AgentKind) -> &'static str {
+    match agent {
+        AgentKind::V0 => "claude-code",
+        AgentKind::V1 => "codex",
+    }
+}
+pub fn auth_name(auth: &AuthenticationMethod) -> &'static str {
+    match auth {
+        AuthenticationMethod::V1 => "claude-oauth",
+        AuthenticationMethod::V0 => "chatgpt-device",
+    }
+}
+pub fn resolve_identity(
+    kind: &str,
+    auth: Option<&str>,
+) -> Result<(AgentKind, AuthenticationMethod)> {
+    let (agent, authentication) = match kind {
+        "claude-code" => (AgentKind::V0, AuthenticationMethod::V1),
+        "codex" => (AgentKind::V1, AuthenticationMethod::V0),
+        _ => bail!("unsupported agent kind"),
+    };
+    if auth.is_some_and(|value| value != auth_name(&authentication)) {
+        bail!("authentication method is incompatible with selected agent");
+    }
+    Ok((agent, authentication))
+}
+pub fn validate_identity(agent: &AgentKind, auth: &AuthenticationMethod) -> Result<()> {
+    resolve_identity(agent_name(agent), Some(auth_name(auth)))?;
+    Ok(())
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SessionState {
     Materializing,

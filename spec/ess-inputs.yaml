@@ -233,3 +233,6 @@ scenarios:
   - scenarios/launch/volatile-replay-preflight.yaml
   - scenarios/launch/volatile-replay-bounds.yaml
   - scenarios/launch/persistent-replay-compatibility.yaml
+  - scenarios/launch/private-path-initialization.yaml
+  - scenarios/cli/codex-start.yaml
+  - scenarios/cli/codex-private-runtime.yaml

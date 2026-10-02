@@ -5,6 +5,8 @@ components:
       domains: [mantle.session, mantle.manifest, mantle.orchestration]
     accepts:
       commands:
+        - mantle.session.IdentityMigration
+        - mantle.orchestration.CodexPreflight
         - mantle.session.AssessSharedBinaryUpgrade
         - mantle.session.AssessWorkerReadiness
         - mantle.session.AssessAgentInstallation
@@ -38,4 +40,4 @@ components:
     owns:
       domains: [mantle.launch]
     accepts:
-      commands: [mantle.launch.ValidateScrollback, mantle.launch.ParseArgs, mantle.launch.ReadSecret, mantle.launch.ParseWindow, mantle.launch.ReplayRing, mantle.launch.Emit, mantle.launch.Lifecycle, mantle.launch.Signals, mantle.launch.SlowReader, mantle.launch.FileSafety, mantle.launch.VolatileReplayLifecycle, mantle.launch.VolatileReplayExitPaths, mantle.launch.VolatileReplayPreflight, mantle.launch.VolatileReplayBounds, mantle.launch.PersistentReplayCompatibility]
+      commands: [mantle.launch.ValidateScrollback, mantle.launch.ParseArgs, mantle.launch.ReadSecret, mantle.launch.ParseWindow, mantle.launch.ReplayRing, mantle.launch.Emit, mantle.launch.Lifecycle, mantle.launch.Signals, mantle.launch.SlowReader, mantle.launch.FileSafety, mantle.launch.VolatileReplayLifecycle, mantle.launch.VolatileReplayExitPaths, mantle.launch.VolatileReplayPreflight, mantle.launch.VolatileReplayBounds, mantle.launch.PersistentReplayCompatibility, mantle.launch.PrivatePaths]

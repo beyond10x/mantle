@@ -18,6 +18,9 @@ timeline:
         proxy: null
         scrollback_bytes: 262144
         volatile_replay: true
+        private_dirs: []
+        volatile_dirs: []
+        check_private_files: []
         mkdirs: []
         command: [L2FnZW50]
   - at: '2026-10-02T00:00:01Z'

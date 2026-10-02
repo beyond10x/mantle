@@ -1,0 +1,74 @@
+type: ess-scenario/4
+domain: mantle.orchestration
+scenario: codex-start
+summary: Codex identity survives migration and unsupported capture refuses before effects.
+timeline:
+  - at: '2026-10-02T00:00:00Z'
+    command: mantle.session.IdentityMigration
+    input: {}
+    outcome: returned
+    response: {legacy_preserved: true, codex_preserved: true, indexes_preserved: true, unknown_refused: true, bad_pair_refused: true}
+  - at: '2026-10-02T00:00:01Z'
+    command: mantle.orchestration.CodexPreflight
+    input: {}
+    outcome: returned
+    response:
+      refused: true
+      diagnostic: 'FAILED_CAPABILITY: Codex requires supported non-recording terminal capture; the pinned Substrate SDK cannot provide it'
+      credential_reads: 0
+      calls: []
+      session_rows: 0
+      attach_requires_non_recording: true
+      request_requires_non_recording: true
+  - at: '2026-10-02T00:00:02Z'
+    command: mantle.manifest.Parse
+    input:
+      text: |
+        apiVersion: mantle.beyond10x.dev/v1alpha1
+        kind: Session
+        metadata: {name: s1}
+        workspace:
+          repositories:
+            - {name: r, repository: https://example.com/r.git, ref: main, mount: r}
+        agent: {kind: codex, cwd: /workspace/r}
+    outcome: returned
+    response:
+      resolved:
+        name: s1
+        repositories: [{name: r, repository: 'https://example.com/r.git', reference: main, mount: r}]
+        agent_cwd: /workspace/r
+        cpu: 4
+        memory_bytes: 17179869184
+        pids: 4096
+        storage_bytes: null
+        retain_for_secs: 28800
+        digest: sha256:dbb6a2bc8b5148c7f8d1109ebd49e115f8b24c53097308d55875979181317e8e
+        agent_kind: Codex
+        authentication: ChatgptDevice
+      diagnostic: null
+  - at: '2026-10-02T00:00:03Z'
+    command: mantle.manifest.Parse
+    input:
+      text: |
+        apiVersion: mantle.beyond10x.dev/v1alpha1
+        kind: Session
+        metadata: {name: s1}
+        workspace:
+          repositories:
+            - {name: r, repository: https://example.com/r.git, ref: main, mount: r}
+        agent: {kind: codex, auth: claude-oauth, cwd: /workspace/r}
+    outcome: returned
+    response: {resolved: null, diagnostic: 'authentication method is incompatible with selected agent'}
+  - at: '2026-10-02T00:00:04Z'
+    command: mantle.manifest.Parse
+    input:
+      text: |
+        apiVersion: mantle.beyond10x.dev/v1alpha1
+        kind: Session
+        metadata: {name: s1}
+        workspace:
+          repositories:
+            - {name: r, repository: https://example.com/r.git, ref: main, mount: r}
+        agent: {kind: claude-code, auth: chatgpt-device, cwd: /workspace/r}
+    outcome: returned
+    response: {resolved: null, diagnostic: 'authentication method is incompatible with selected agent'}

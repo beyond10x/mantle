@@ -11,6 +11,9 @@ types:
       - {name: proxy, type: 'Optional<String>'}
       - {name: cwd, type: Bytes}
       - {name: mkdirs, type: 'List<Bytes>'}
+      - {name: private_dirs, type: 'List<Bytes>'}
+      - {name: volatile_dirs, type: 'List<Bytes>'}
+      - {name: check_private_files, type: 'List<Bytes>'}
       - {name: scrollback_bytes, type: Integer}
       # Proposed launcher-only policy: keep bounded live replay, never write last-output.
       # CLI omission remains false; this does not control Substrate or Codex recording.
@@ -34,6 +37,17 @@ errors:
   - name: mantle.launch.InvalidScrollback
     fields: []
 commands:
+  - name: mantle.launch.PrivatePaths
+    # Actual launcher filesystem checks and process dispatch markers.
+    response:
+      - {name: initialized, type: Boolean}
+      - {name: repeated_inode, type: Boolean}
+      - {name: auth_bytes_preserved, type: Boolean}
+      - {name: shared_mode_unchanged, type: Boolean}
+      - {name: target_mode, type: Integer}
+      - {name: refused_before_dispatch, type: 'List<Boolean>'}
+      - {name: targets_preserved, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
   - name: mantle.launch.ParseArgs
     input: [{name: argv, type: 'List<Bytes>'}]
     response:

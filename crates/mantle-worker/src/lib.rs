@@ -20,6 +20,7 @@ use sha2::{Digest, Sha256};
 pub use mantle_worker_model::{
     MantleSessionAgentInstallationFacts as InstallationFacts,
     MantleSessionAgentInstallationOutcome as InstallationOutcome,
+    MantleSessionAgentKind as AgentKind, MantleSessionAuthenticationMethod as AuthenticationMethod,
 };
 
 pub const VERSION: &str = "0.153.4";
@@ -1782,6 +1783,10 @@ mod tests {
                 "mantle.session.AgentInstallationFacts",
                 "--root",
                 "mantle.session.AgentInstallationOutcome",
+                "--root",
+                "mantle.session.AgentKind",
+                "--root",
+                "mantle.session.AuthenticationMethod",
                 "--target",
                 "rust",
                 "--package",
