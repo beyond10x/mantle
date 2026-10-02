@@ -1,0 +1,10 @@
+type: ess-scenario/4
+domain: mantle.launch
+scenario: volatile-replay-lifecycle
+summary: Live relay, detach, replay and resize without a persisted replay file.
+timeline:
+  - at: '2026-10-02T00:00:00Z'
+    command: mantle.launch.VolatileReplayLifecycle
+    input: {}
+    outcome: returned
+    response: {relayed: true, replayed: true, survived_detach: true, resized: true, last_output_during: false, last_output_after: false, exit: 0, canary_in_diagnostics: false}

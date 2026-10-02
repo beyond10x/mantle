@@ -1,7 +1,7 @@
 use std::ffi::OsString;
 use std::fs::{self, File};
 use std::io::{Read, Write};
-use std::os::fd::AsRawFd;
+use std::os::fd::{AsFd, AsRawFd, OwnedFd};
 use std::os::unix::{
     ffi::{OsStrExt, OsStringExt},
     fs::{FileTypeExt, PermissionsExt},
@@ -40,6 +40,7 @@ fn parse_args(input: &Value) -> Result<Value> {
                 json!({"accepted":true,"diagnostic":null,"attach":null,"serve": {
                     "dir":encoded(a.dir.as_os_str().as_bytes()),"cwd":encoded(a.cwd.as_os_str().as_bytes()),
                     "secret_fd":a.secret_fd,"secret_env":a.secret_env,"proxy":a.proxy,"scrollback_bytes":a.scrollback_bytes,
+                    "volatile_replay":a.volatile_replay,
                     "mkdirs":a.mkdirs.iter().map(|p|encoded(p.as_os_str().as_bytes())).collect::<Vec<_>>(),
                     "command":a.command.iter().map(|v|encoded(v.as_bytes())).collect::<Vec<_>>()
                 }})
@@ -52,8 +53,11 @@ fn parse_args(input: &Value) -> Result<Value> {
     })
 }
 fn scratch() -> Result<tempfile::TempDir> {
-    let base = std::path::PathBuf::from(std::env::var_os("HOME").context("HOME")?)
-        .join(".cache/mantle-conformance");
+    let base = match std::env::var_os("MANTLE_TEST_SCRATCH") {
+        Some(path) => std::path::PathBuf::from(path),
+        None => std::path::PathBuf::from(std::env::var_os("HOME").context("HOME")?)
+            .join(".cache/mantle-conformance"),
+    };
     fs::create_dir_all(&base)?;
     Ok(tempfile::Builder::new()
         .prefix("launch-")
@@ -337,6 +341,11 @@ impl Boundary for Launcher {
             "mantle.launch.Signals" => signals()?,
             "mantle.launch.SlowReader" => slow_reader()?,
             "mantle.launch.FileSafety" => file_safety()?,
+            "mantle.launch.VolatileReplayLifecycle" => volatile_lifecycle()?,
+            "mantle.launch.VolatileReplayExitPaths" => volatile_exit_paths()?,
+            "mantle.launch.VolatileReplayPreflight" => volatile_preflight()?,
+            "mantle.launch.VolatileReplayBounds" => replay_bounds(true)?,
+            "mantle.launch.PersistentReplayCompatibility" => replay_bounds(false)?,
             "mantle.launch.ValidateScrollback" => {
                 let result = cli::Cli::try_parse_from([
                     "mantle-launch",
@@ -465,4 +474,605 @@ fn file_safety() -> Result<Value> {
     "target_mode":fs::metadata(p.join("target"))?.permissions().mode()&0o777,"file_bytes":encoded(&fs::read(p.join("file"))?),
     "directory_mode":fs::metadata(p.join("private"))?.permissions().mode()&0o777,"duplicate_refused":duplicate_refused,"reacquired":reacquired}),
     )
+}
+
+const OUTPUT_CANARY: &[u8] = b"launcher-output-canary-7f8433";
+const OBSERVATION_LIMIT: usize = 64 * 1024;
+
+/// One reader owns each descriptor. Polling bounds every read; no collector thread can outlive
+/// its fixture, and overflow fails the observation instead of allocating unbounded memory.
+struct LimitedOutput {
+    file: File,
+    bytes: Vec<u8>,
+}
+impl LimitedOutput {
+    fn new(fd: impl Into<OwnedFd>) -> Self {
+        Self {
+            file: File::from(fd.into()),
+            bytes: Vec::new(),
+        }
+    }
+    fn read_more(&mut self, until: Instant) -> Result<bool> {
+        loop {
+            ensure!(Instant::now() < until, "output observation deadline");
+            let mut fds = [mantle_launch::sys::pollfd(
+                Some(self.file.as_fd()),
+                libc::POLLIN,
+            )];
+            mantle_launch::sys::poll(&mut fds, Duration::from_millis(20))?;
+            if fds[0].revents == 0 {
+                continue;
+            }
+            let mut buffer = [0; 4096];
+            let n = self.file.read(&mut buffer)?;
+            ensure!(
+                self.bytes.len() + n <= OBSERVATION_LIMIT,
+                "output observation overflow"
+            );
+            self.bytes.extend_from_slice(&buffer[..n]);
+            return Ok(n != 0);
+        }
+    }
+    fn contains(&self, wanted: &[u8]) -> bool {
+        self.bytes.windows(wanted.len()).any(|part| part == wanted)
+    }
+    fn until(&mut self, wanted: &[u8]) -> Result<()> {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while !self.contains(wanted) {
+            ensure!(
+                self.read_more(deadline)?,
+                "output ended before fixture observation"
+            );
+        }
+        Ok(())
+    }
+    fn finish(&mut self) -> Result<()> {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while self.read_more(deadline)? {}
+        Ok(())
+    }
+}
+
+struct ReplayFixture {
+    server: Process,
+    errors: LimitedOutput,
+    dir: tempfile::TempDir,
+}
+impl ReplayFixture {
+    fn new(volatile: bool) -> Result<Self> {
+        let dir = scratch()?;
+        let mut command = replay_command(dir.path(), volatile);
+        let mut server = Process(command.spawn()?);
+        let errors = LimitedOutput::new(server.0.stderr.take().context("stderr")?);
+        ready(dir.path(), &mut server)?;
+        Ok(Self {
+            dir,
+            server,
+            errors,
+        })
+    }
+    fn client(&self) -> Result<(Process, LimitedOutput)> {
+        let mut client = Process(
+            Command::new(LAUNCHER)
+                .env_clear()
+                .args(["attach", "--no-tty", "--dir"])
+                .arg(self.dir.path().join("session"))
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::null())
+                .spawn()?,
+        );
+        let output = LimitedOutput::new(client.0.stdout.take().context("stdout")?);
+        Ok((client, output))
+    }
+    fn input(&self, line: &[u8]) -> Result<()> {
+        let mut input = mantle_launch::session::open_fifo(
+            &self.dir.path().join("session/in"),
+            true,
+            libc::O_NONBLOCK,
+        )?;
+        input.write_all(line)?;
+        Ok(())
+    }
+    fn last_output(&self) -> Result<bool> {
+        entry_present(&self.dir.path().join("session/last-output"))
+    }
+    fn pid(&self) -> Result<u32> {
+        Ok(fs::read_to_string(self.dir.path().join("dispatched"))?.parse()?)
+    }
+}
+fn replay_command(path: &Path, volatile: bool) -> Command {
+    let mut command = serve(path);
+    command.args(["--scrollback-bytes", "1024"]);
+    if volatile {
+        command.arg("--volatile-replay");
+    }
+    command
+        .arg("--")
+        .arg(PROBE)
+        .args(["replay", "--pid-file"])
+        .arg(path.join("dispatched"))
+        .arg("--done-file")
+        .arg(path.join("emitted"));
+    command
+}
+fn entry_present(path: &Path) -> Result<bool> {
+    match fs::symlink_metadata(path) {
+        Ok(_) => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error.into()),
+    }
+}
+fn stop_client(client: &mut Process) -> Result<()> {
+    if client.0.try_wait()?.is_none() {
+        client.0.kill()?;
+    }
+    client.0.wait()?;
+    Ok(())
+}
+fn observed_exit(status: std::process::ExitStatus) -> i32 {
+    use std::os::unix::process::ExitStatusExt;
+    status
+        .code()
+        .unwrap_or_else(|| -status.signal().expect("Unix exit status"))
+}
+
+fn volatile_lifecycle() -> Result<Value> {
+    let mut fixture = ReplayFixture::new(true)?;
+    let (mut first, mut output) = fixture.client()?;
+    output.until(b"ready")?;
+    let pid = fixture.pid()?;
+    fixture.input(b"emit\n")?;
+    output.until(OUTPUT_CANARY)?;
+    let relayed = output.contains(OUTPUT_CANARY);
+    let last_output_during = fixture.last_output()?;
+    stop_client(&mut first)?;
+    output.finish()?;
+    let survived_detach = fixture.server.0.try_wait()?.is_none() && fixture.pid()? == pid;
+    let (mut second, mut replay) = fixture.client()?;
+    replay.until(OUTPUT_CANARY)?;
+    let replayed = replay.contains(OUTPUT_CANARY);
+    let mut ctl = mantle_launch::session::open_fifo(
+        &fixture.dir.path().join("session/ctl"),
+        true,
+        libc::O_NONBLOCK,
+    )?;
+    ctl.write_all(b"120 40\n")?;
+    replay.until(b"window:120x40")?;
+    let resized = replay.contains(b"window:120x40");
+    fixture.input(b"exit\n")?;
+    let exit = observed_exit(wait(&mut fixture.server.0)?);
+    wait(&mut second.0)?;
+    replay.finish()?;
+    fixture.errors.finish()?;
+    Ok(
+        json!({"relayed":relayed,"replayed":replayed,"survived_detach":survived_detach,
+        "resized":resized,"last_output_during":last_output_during,"last_output_after":fixture.last_output()?,
+        "exit":exit,"canary_in_diagnostics":fixture.errors.contains(OUTPUT_CANARY)}),
+    )
+}
+
+/// SIGKILL removes the launcher before it can reap its PTY child. Adopt only during this case
+/// and retain the child's unreaped pid until explicit group kill + waitpid completes.
+struct AdoptedChild {
+    pid: Option<u32>,
+    previous: libc::c_int,
+}
+impl AdoptedChild {
+    #[allow(unsafe_code)]
+    fn begin() -> Result<Self> {
+        let mut previous: libc::c_int = 0;
+        // SAFETY: prctl writes one integer into a live pointer; this process owns this setting.
+        ensure!(
+            unsafe { libc::prctl(libc::PR_GET_CHILD_SUBREAPER, &mut previous) } == 0,
+            "get subreaper"
+        );
+        // SAFETY: the process changes its own child-reaping behavior, restored on drop.
+        ensure!(
+            unsafe { libc::prctl(libc::PR_SET_CHILD_SUBREAPER, 1) } == 0,
+            "set subreaper"
+        );
+        Ok(Self {
+            pid: None,
+            previous,
+        })
+    }
+    #[allow(unsafe_code)]
+    fn reap(&mut self) -> Result<Option<i32>> {
+        let Some(pid) = self.pid else {
+            return Ok(None);
+        };
+        mantle_launch::sys::signal_group(pid, libc::SIGKILL)?;
+        let until = Instant::now() + Duration::from_secs(5);
+        loop {
+            let mut status = 0;
+            // SAFETY: pid belongs to this fixture's now-adopted, unreaped child; status is live.
+            let reaped = unsafe { libc::waitpid(pid as libc::pid_t, &mut status, libc::WNOHANG) };
+            if reaped == pid as libc::pid_t {
+                self.pid = None;
+                // Closing the server PTY may make the fixture exit before SIGKILL reaches
+                // it. Both paths must be reaped; report the status rather than assuming it.
+                use std::os::unix::process::ExitStatusExt;
+                return Ok(Some(observed_exit(std::process::ExitStatus::from_raw(
+                    status,
+                ))));
+            }
+            ensure!(
+                reaped >= 0,
+                "cannot reap adopted fixture child: {}",
+                std::io::Error::last_os_error()
+            );
+            ensure!(Instant::now() < until, "adopted child reap deadline");
+            std::thread::sleep(Duration::from_millis(10));
+        }
+    }
+}
+impl Drop for AdoptedChild {
+    #[allow(unsafe_code)]
+    fn drop(&mut self) {
+        let _ = self.reap();
+        // SAFETY: restoring the process-owned setting observed by begin().
+        unsafe {
+            libc::prctl(libc::PR_SET_CHILD_SUBREAPER, self.previous);
+        }
+    }
+}
+fn volatile_exit_paths() -> Result<Value> {
+    // Both the direct regression test and the native suite run this case. Serialize changes
+    // to the process-wide subreaper setting while leaving ordinary fixtures independent.
+    static CRASH_CASE: Mutex<()> = Mutex::new(());
+    let _crash_case = CRASH_CASE.lock().unwrap();
+    let mut exits = Vec::new();
+    let mut last_outputs = Vec::new();
+    let mut canary_in_diagnostics = false;
+    for action in ["exit", "exit23", "term"] {
+        let mut fixture = ReplayFixture::new(true)?;
+        let (mut client, mut output) = fixture.client()?;
+        output.until(b"ready")?;
+        fixture.input(b"emit\n")?;
+        output.until(OUTPUT_CANARY)?;
+        if action == "term" {
+            terminate(&fixture.server.0);
+        } else {
+            fixture.input(format!("{action}\n").as_bytes())?;
+        }
+        exits.push(observed_exit(wait(&mut fixture.server.0)?));
+        stop_client(&mut client)?;
+        output.finish()?;
+        fixture.errors.finish()?;
+        last_outputs.push(fixture.last_output()?);
+        canary_in_diagnostics |= fixture.errors.contains(OUTPUT_CANARY);
+    }
+    let dir = scratch()?;
+    let mut command = serve(dir.path());
+    command
+        .args(["--volatile-replay", "--"])
+        .arg(dir.path().join("missing-program"));
+    let mut missing = Process(command.spawn()?);
+    let mut errors = LimitedOutput::new(missing.0.stderr.take().context("stderr")?);
+    exits.push(observed_exit(wait(&mut missing.0)?));
+    errors.finish()?;
+    last_outputs.push(entry_present(&dir.path().join("session/last-output"))?);
+    canary_in_diagnostics |= errors.contains(OUTPUT_CANARY);
+
+    let mut adopted = AdoptedChild::begin()?;
+    let mut fixture = ReplayFixture::new(true)?;
+    let (mut client, mut output) = fixture.client()?;
+    output.until(b"ready")?;
+    fixture.input(b"emit\n")?;
+    output.until(OUTPUT_CANARY)?;
+    adopted.pid = Some(fixture.pid()?);
+    fixture.server.0.kill()?;
+    // The direct child remains unreaped until wait; adoption has happened after it exits.
+    exits.push(observed_exit(wait(&mut fixture.server.0)?));
+    let killed_child_exit = adopted.reap()?.context("fixture child was not reaped")?;
+    stop_client(&mut client)?;
+    output.finish()?;
+    fixture.errors.finish()?;
+    last_outputs.push(fixture.last_output()?);
+    canary_in_diagnostics |= fixture.errors.contains(OUTPUT_CANARY);
+    Ok(
+        json!({"exits":exits,"last_outputs":last_outputs,"canary_in_diagnostics":canary_in_diagnostics,
+        "killed_child_reaped":adopted.pid.is_none(),"killed_child_exit":killed_child_exit}),
+    )
+}
+
+fn volatile_preflight() -> Result<Value> {
+    use std::os::unix::fs::{MetadataExt, symlink};
+    let mut refused = Vec::new();
+    let mut dispatched = Vec::new();
+    let mut ready = Vec::new();
+    let mut preserved = Vec::new();
+    let mut locks_left = Vec::new();
+    let mut canary_in_diagnostics = false;
+    for kind in ["regular", "link", "dangling", "directory"] {
+        let dir = scratch()?;
+        let session = dir.path().join("session");
+        fs::create_dir(&session)?;
+        let last = session.join("last-output");
+        let target = dir.path().join("target");
+        match kind {
+            "regular" => fs::write(&last, OUTPUT_CANARY)?,
+            "link" => {
+                fs::write(&target, OUTPUT_CANARY)?;
+                symlink(&target, &last)?;
+            }
+            "dangling" => symlink(&target, &last)?,
+            _ => {
+                fs::create_dir(&last)?;
+                fs::write(last.join("sentinel"), OUTPUT_CANARY)?;
+            }
+        }
+        let before = fs::symlink_metadata(&last)?;
+        let target_before = fs::symlink_metadata(&target).ok();
+        let mut creations = creation_watch(&session)?;
+        let mut child = Process(replay_command(dir.path(), true).spawn()?);
+        let mut errors = LimitedOutput::new(child.0.stderr.take().context("stderr")?);
+        let status = wait(&mut child.0)?;
+        errors.finish()?;
+        refused.push(!status.success());
+        dispatched.push(entry_present(&dir.path().join("dispatched"))?);
+        ready.push(created_entry(&mut creations, b"ctl")? || entry_present(&session.join("ctl"))?);
+        locks_left.push(entry_present(&session.join("server.lock"))?);
+        let after = fs::symlink_metadata(&last)?;
+        let unchanged = before.ino() == after.ino()
+            && before.dev() == after.dev()
+            && before.mode() == after.mode()
+            && match kind {
+                "regular" => fs::read(&last)? == OUTPUT_CANARY,
+                "link" => {
+                    let target_after = fs::symlink_metadata(&target)?;
+                    let original = target_before.as_ref().context("original target")?;
+                    fs::read_link(&last)? == target
+                        && fs::read(&target)? == OUTPUT_CANARY
+                        && original.ino() == target_after.ino()
+                        && original.mode() == target_after.mode()
+                }
+                "dangling" => fs::read_link(&last)? == target && !entry_present(&target)?,
+                _ => fs::read(last.join("sentinel"))? == OUTPUT_CANARY,
+            };
+        preserved.push(unchanged);
+        canary_in_diagnostics |= errors.contains(OUTPUT_CANARY);
+    }
+    Ok(
+        json!({"refused":refused,"dispatched":dispatched,"ready":ready,"preserved":preserved,
+        "locks_left":locks_left,"canary_in_diagnostics":canary_in_diagnostics}),
+    )
+}
+
+#[allow(unsafe_code)]
+fn creation_watch(path: &Path) -> Result<File> {
+    use std::os::fd::FromRawFd;
+    let name = std::ffi::CString::new(path.as_os_str().as_bytes())?;
+    // SAFETY: returns a new descriptor owned below; the C path is terminated and live.
+    let fd = unsafe { libc::inotify_init1(libc::IN_NONBLOCK | libc::IN_CLOEXEC) };
+    ensure!(
+        fd >= 0,
+        "inotify initialization: {}",
+        std::io::Error::last_os_error()
+    );
+    // SAFETY: inotify_init1 succeeded and no other owner exists.
+    let file = unsafe { File::from_raw_fd(fd) };
+    // SAFETY: both descriptor and name remain live for the call.
+    ensure!(
+        unsafe { libc::inotify_add_watch(fd, name.as_ptr(), libc::IN_CREATE | libc::IN_MOVED_TO) }
+            >= 0,
+        "inotify watch: {}",
+        std::io::Error::last_os_error()
+    );
+    Ok(file)
+}
+fn created_entry(watch: &mut File, wanted: &[u8]) -> Result<bool> {
+    let mut found = false;
+    let mut total = 0;
+    loop {
+        let mut bytes = [0; 4096];
+        let n = match watch.read(&mut bytes) {
+            Ok(n) => n,
+            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => return Ok(found),
+            Err(error) => return Err(error.into()),
+        };
+        ensure!(n > 0, "inotify ended");
+        total += n;
+        ensure!(total <= OBSERVATION_LIMIT, "inotify observation overflow");
+        let mut offset = 0;
+        while offset < n {
+            ensure!(offset + 16 <= n, "truncated inotify event");
+            let mask = u32::from_ne_bytes(bytes[offset + 4..offset + 8].try_into()?);
+            ensure!(mask & libc::IN_Q_OVERFLOW == 0, "inotify queue overflow");
+            let length = u32::from_ne_bytes(bytes[offset + 12..offset + 16].try_into()?) as usize;
+            ensure!(offset + 16 + length <= n, "truncated inotify name");
+            let name = &bytes[offset + 16..offset + 16 + length];
+            found |= name.split(|b| *b == 0).next() == Some(wanted);
+            offset += 16 + length;
+        }
+    }
+}
+
+fn replay_bounds(volatile: bool) -> Result<Value> {
+    let mut fixture = ReplayFixture::new(volatile)?;
+    let (mut first, mut initial) = fixture.client()?;
+    initial.until(b"ready")?;
+    stop_client(&mut first)?;
+    initial.finish()?;
+    fixture.input(b"flood\n")?;
+    let until = Instant::now() + Duration::from_secs(5);
+    while !entry_present(&fixture.dir.path().join("emitted"))? {
+        ensure!(Instant::now() < until, "flood completion deadline");
+        ensure!(
+            fixture.server.0.try_wait()?.is_none(),
+            "launcher ended during flood"
+        );
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    // The marker says the child's final write completed. Give the server two 100ms poll
+    // intervals to drain the remaining PTY bytes before measuring a new replay attachment.
+    std::thread::sleep(Duration::from_millis(250));
+    let (mut second, mut output) = fixture.client()?;
+    output.until(OUTPUT_CANARY)?;
+    stop_client(&mut second)?;
+    output.finish()?;
+    let mut expected = vec![b'x'; 1024 - OUTPUT_CANARY.len()];
+    expected.extend_from_slice(OUTPUT_CANARY);
+    if !volatile {
+        terminate(&fixture.server.0);
+        let exit = observed_exit(wait(&mut fixture.server.0)?);
+        fixture.errors.finish()?;
+        let path = fixture.dir.path().join("session/last-output");
+        let bytes = fs::read(&path)?;
+        return Ok(
+            json!({"exit":exit,"retained_bytes":bytes.len(),"tail_matches":bytes == expected,
+            "mode":fs::metadata(path)?.permissions().mode() & 0o777}),
+        );
+    }
+    // Keep an attach stdout unread and flood again. The server must still handle termination.
+    let (mut blocked, _unread) = fixture.client()?;
+    fixture.input(b"flood\n")?;
+    std::thread::sleep(Duration::from_millis(250));
+    let started = Instant::now();
+    terminate(&fixture.server.0);
+    let deadline = started + Duration::from_secs(14);
+    let exit = loop {
+        if let Some(status) = fixture.server.0.try_wait()? {
+            break observed_exit(status);
+        }
+        ensure!(
+            Instant::now() < deadline,
+            "server exceeded termination budget"
+        );
+        std::thread::sleep(Duration::from_millis(10));
+    };
+    let stopped_within_budget = started.elapsed() < Duration::from_secs(14);
+    stop_client(&mut blocked)?;
+    fixture.errors.finish()?;
+    Ok(
+        json!({"replayed_bytes":output.bytes.len(),"tail_matches":output.bytes == expected,
+        "exit":exit,"last_output_after":fixture.last_output()?,"stopped_within_budget":stopped_within_budget,
+        "canary_in_diagnostics":fixture.errors.contains(OUTPUT_CANARY)}),
+    )
+}
+
+#[test]
+fn volatile_runtime_does_not_persist_output_on_exit() -> Result<()> {
+    let observed = volatile_exit_paths()?;
+    assert_eq!(observed["exits"], json!([0, 23, 0, 1, -9]));
+    assert_eq!(
+        observed["last_outputs"],
+        json!([false, false, false, false, false])
+    );
+    assert_eq!(observed["canary_in_diagnostics"], false);
+    assert_eq!(observed["killed_child_reaped"], true);
+    Ok(())
+}
+
+#[test]
+fn adversary_volatile_preflight_preserves_fifo_and_socket_without_readiness() -> Result<()> {
+    use std::os::unix::fs::MetadataExt;
+    use std::os::unix::net::UnixListener;
+    for socket in [false, true] {
+        let dir = scratch()?;
+        let session = dir.path().join("session");
+        fs::create_dir(&session)?;
+        let last = session.join("last-output");
+        let _listener = if socket {
+            Some(UnixListener::bind(&last)?)
+        } else {
+            mantle_launch::session::make_fifo(&last)?;
+            None
+        };
+        let before = fs::symlink_metadata(&last)?;
+        let mut creations = creation_watch(&session)?;
+        let started = Instant::now();
+        let mut child = Process(replay_command(dir.path(), true).spawn()?);
+        let mut errors = LimitedOutput::new(child.0.stderr.take().context("stderr")?);
+        let status = wait(&mut child.0)?;
+        errors.finish()?;
+        assert_eq!(status.code(), Some(1));
+        assert!(started.elapsed() < Duration::from_secs(2));
+        assert!(!entry_present(&dir.path().join("dispatched"))?);
+        assert!(!created_entry(&mut creations, b"ctl")?);
+        assert!(!entry_present(&session.join("server.lock"))?);
+        let after = fs::symlink_metadata(&last)?;
+        assert_eq!(
+            (after.dev(), after.ino(), after.mode()),
+            (before.dev(), before.ino(), before.mode())
+        );
+        assert!(errors.contains(b"existing entry left unchanged"));
+    }
+    Ok(())
+}
+
+#[test]
+fn adversary_persistent_tail_refuses_volatile_reuse_then_clean_retry_runs() -> Result<()> {
+    let mut fixture = ReplayFixture::new(false)?;
+    let (mut client, mut output) = fixture.client()?;
+    output.until(b"ready")?;
+    fixture.input(b"emit\n")?;
+    output.until(OUTPUT_CANARY)?;
+    fixture.input(b"exit\n")?;
+    assert_eq!(wait(&mut fixture.server.0)?.code(), Some(0));
+    stop_client(&mut client)?;
+    output.finish()?;
+    fixture.errors.finish()?;
+    let last = fixture.dir.path().join("session/last-output");
+    let persisted = fs::read(&last)?;
+    assert!(
+        persisted
+            .windows(OUTPUT_CANARY.len())
+            .any(|part| part == OUTPUT_CANARY)
+    );
+    fs::remove_file(fixture.dir.path().join("dispatched"))?;
+    let mut creations = creation_watch(&fixture.dir.path().join("session"))?;
+    let mut refused = Process(replay_command(fixture.dir.path(), true).spawn()?);
+    let mut errors = LimitedOutput::new(refused.0.stderr.take().context("stderr")?);
+    assert_eq!(wait(&mut refused.0)?.code(), Some(1));
+    errors.finish()?;
+    assert_eq!(fs::read(&last)?, persisted);
+    assert!(!errors.contains(OUTPUT_CANARY));
+    assert!(!entry_present(&fixture.dir.path().join("dispatched"))?);
+    assert!(!created_entry(&mut creations, b"ctl")?);
+    // Explicitly remove this test's own prior transcript; the launcher must never do so itself.
+    fs::remove_file(&last)?;
+    fixture.server = Process(replay_command(fixture.dir.path(), true).spawn()?);
+    fixture.errors = LimitedOutput::new(fixture.server.0.stderr.take().context("stderr")?);
+    ready(fixture.dir.path(), &mut fixture.server)?;
+    let (mut client, mut output) = fixture.client()?;
+    output.until(b"ready")?;
+    fixture.input(b"emit\n")?;
+    output.until(OUTPUT_CANARY)?;
+    assert!(!fixture.last_output()?);
+    fixture.input(b"exit\n")?;
+    assert_eq!(wait(&mut fixture.server.0)?.code(), Some(0));
+    stop_client(&mut client)?;
+    output.finish()?;
+    fixture.errors.finish()?;
+    assert!(!fixture.last_output()?);
+    assert!(!fixture.errors.contains(OUTPUT_CANARY));
+    Ok(())
+}
+
+#[test]
+#[allow(unsafe_code)]
+fn adversary_sigint_while_detached_never_persists_replay() -> Result<()> {
+    let mut fixture = ReplayFixture::new(true)?;
+    let (mut client, mut output) = fixture.client()?;
+    output.until(b"ready")?;
+    fixture.input(b"emit\n")?;
+    output.until(OUTPUT_CANARY)?;
+    stop_client(&mut client)?;
+    output.finish()?;
+    assert!(fixture.server.0.try_wait()?.is_none());
+    // SAFETY: this exact server Child is owned and unreaped, so its PID cannot be reused.
+    assert_eq!(
+        unsafe { libc::kill(fixture.server.0.id() as libc::pid_t, libc::SIGINT) },
+        0
+    );
+    assert_eq!(wait(&mut fixture.server.0)?.code(), Some(0));
+    fixture.errors.finish()?;
+    assert!(!fixture.last_output()?);
+    assert!(!fixture.errors.contains(OUTPUT_CANARY));
+    assert!(!entry_present(
+        &fixture.dir.path().join("session/server.lock")
+    )?);
+    Ok(())
 }

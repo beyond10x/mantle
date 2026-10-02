@@ -1,0 +1,10 @@
+type: ess-scenario/4
+domain: mantle.launch
+scenario: volatile-replay-bounds
+summary: Volatile replay retains the bounded newest bytes and termination budget.
+timeline:
+  - at: '2026-10-02T00:00:00Z'
+    command: mantle.launch.VolatileReplayBounds
+    input: {}
+    outcome: returned
+    response: {replayed_bytes: 1024, tail_matches: true, exit: 0, last_output_after: false, stopped_within_budget: true, canary_in_diagnostics: false}

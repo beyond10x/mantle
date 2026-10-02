@@ -1,0 +1,10 @@
+type: ess-scenario/4
+domain: mantle.launch
+scenario: volatile-replay-preflight
+summary: Existing replay entries are preserved and refused before dispatch.
+timeline:
+  - at: '2026-10-02T00:00:00Z'
+    command: mantle.launch.VolatileReplayPreflight
+    input: {}
+    outcome: returned
+    response: {refused: [true, true, true, true], dispatched: [false, false, false, false], ready: [false, false, false, false], preserved: [true, true, true, true], locks_left: [false, false, false, false], canary_in_diagnostics: false}

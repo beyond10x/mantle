@@ -1,0 +1,10 @@
+type: ess-scenario/4
+domain: mantle.launch
+scenario: volatile-replay-exit-paths
+summary: All termination cases exclude the output file and diagnostic canary.
+timeline:
+  - at: '2026-10-02T00:00:00Z'
+    command: mantle.launch.VolatileReplayExitPaths
+    input: {}
+    outcome: returned
+    response: {exits: [0, 23, 0, 1, -9], last_outputs: [false, false, false, false, false], canary_in_diagnostics: false, killed_child_reaped: true}

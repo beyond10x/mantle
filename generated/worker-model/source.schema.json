@@ -42,7 +42,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-ess-provenance": {
     "contract_digest": "slice-sha256/2:56aab6ba125583c0c6be3eeee9810eac6eb0aaffb7e676a2b72816bd94fbc3ed",
-    "source_digest": "8a272638ba1e78a3a382335a397e223d44436d4b3423664c5c1c22ffe8f0f895",
+    "source_digest": "3a08777de0d97b8f4b6127d959d931d021cd3fbac3a529f3522372ec4169c4ea",
     "specification_version": "v1",
     "system": "mantle"
   }
