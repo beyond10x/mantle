@@ -1515,6 +1515,99 @@ impl CancellationClient {
 const ATTACH_READY: &[u8] = b"\x1eMANTLE-ATTACH-READY-1\x1f";
 const ATTACH_ACK: &[u8] = b"\x1eMANTLE-ATTACH-ACK-1\x1f";
 
+#[test]
+fn adversary_readiness_fragmented_ack_and_late_mismatch_preserve_agent() -> Result<()> {
+    let mut fixture = ReplayFixture::new(true)?;
+    let pid = fixture.pid()?;
+    for invalid in [true, false] {
+        let mut client =
+            CancellationClient::with_readiness(fixture.dir.path(), "pty-aliased", true)?;
+        await_readiness(&mut client)?;
+        for byte in &ATTACH_ACK[..ATTACH_ACK.len() - 1] {
+            client.input.write_all(&[*byte])?;
+            let mut premature = Vec::new();
+            bounded_read(&mut client.output, &mut premature, 0)?;
+            ensure!(
+                client.process.0.try_wait()?.is_none(),
+                "partial ACK ended attach"
+            );
+        }
+        if invalid {
+            client.input.write_all(b"X")?;
+            ensure!(
+                !wait(&mut client.process.0)?.success(),
+                "late ACK mismatch accepted"
+            );
+        } else {
+            let mut suffix = vec![*ATTACH_ACK.last().expect("nonempty ACK")];
+            suffix.extend_from_slice(b"reattach!\n");
+            client.input.write_all(&suffix)?;
+            observe_marker(&mut client.output, b"replacement-usable")?;
+            ensure!(
+                client.cancel(libc::SIGTERM)?,
+                "replacement cancellation failed"
+            );
+        }
+        ensure!(
+            client.restored()? == (true, true),
+            "ACK path leaked terminal state"
+        );
+        ensure!(
+            fixture.server.0.try_wait()?.is_none(),
+            "ACK path killed server"
+        );
+        ensure!(fixture.pid()? == pid, "ACK path replaced agent");
+    }
+    Ok(())
+}
+
+#[test]
+#[allow(unsafe_code)]
+fn adversary_readiness_resize_before_ack_reaches_same_agent() -> Result<()> {
+    use std::os::unix::fs::OpenOptionsExt;
+    let mut fixture = ReplayFixture::new(true)?;
+    let mut client = CancellationClient::with_readiness(fixture.dir.path(), "pty-aliased", true)?;
+    await_readiness(&mut client)?;
+    let expected = ctl::Window {
+        cols: 137,
+        rows: 43,
+    };
+    let terminal = &client.terminal.as_ref().context("PTY fixture")?.0;
+    mantle_launch::sys::set_window(terminal.as_fd(), expected)?;
+    // SAFETY: this unreaped child belongs to this fixture.
+    ensure!(
+        unsafe { libc::kill(client.process.0.id() as libc::pid_t, libc::SIGWINCH) } == 0,
+        "signal readiness resize"
+    );
+    let agent_terminal = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NONBLOCK | libc::O_NOCTTY)
+        .open(format!("/proc/{}/fd/0", fixture.pid()?))?;
+    let deadline = Instant::now() + ATTACH_DEADLINE;
+    loop {
+        let observed = mantle_launch::sys::get_window(agent_terminal.as_fd())?;
+        if observed.cols == expected.cols && observed.rows == expected.rows {
+            break;
+        }
+        ensure!(Instant::now() < deadline, "readiness swallowed resize");
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    let mut premature = Vec::new();
+    bounded_read(&mut client.output, &mut premature, 0)?;
+    client.input.write_all(ATTACH_ACK)?;
+    observe_marker(&mut client.output, b"window:137x43")?;
+    ensure!(client.cancel(libc::SIGINT)?, "post-ACK cancellation failed");
+    ensure!(
+        client.restored()? == (true, true),
+        "resize path leaked terminal state"
+    );
+    ensure!(
+        fixture.server.0.try_wait()?.is_none(),
+        "resize killed server"
+    );
+    Ok(())
+}
+
 fn await_readiness(client: &mut CancellationClient) -> Result<()> {
     let deadline = Instant::now() + Duration::from_secs(3);
     let mut bytes = Vec::new();
