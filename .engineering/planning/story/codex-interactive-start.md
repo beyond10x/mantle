@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:codex-interactive-start
 kind: story
-status: draft
+status: active
 title: Start an authenticated Codex conversation in a confined workspace
 relations:
 - decomposes: epic:codex-parity
@@ -72,7 +72,10 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/codex-start.yaml
-revision: 34
+revision: 37
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-02T18:17:04Z", actor: "human:timo", revision: 36}
+- {from: "proposed", to: "active", at: "2026-10-02T18:17:04Z", actor: "human:timo", revision: 37}
 ---
 ## Context
 
@@ -201,3 +204,9 @@ The next substantive step requires either an explicit transport-policy answer or
 ## Current transport and release decision
 
 The operator explicitly removed the Substrate no-recording prerequisite and authorized source release on 2026-10-02. Codex uses the same existing Substrate terminal capture behavior as Claude; no end-to-end no-recording claim applies. This supersedes the earlier gate, pending clarification, SDK activation dependency and the Substrate-capture portion of CS-05. Private auth/home, tmpfs diagnostic placement, volatile launcher replay, credential separation and confinement remain required. story:codex-existing-transport implements the correction; actual operator device authentication and live CS/DP observations remain unproven. Substrate issue112 belongs to another session and no longer blocks this integration.
+
+## Live acceptance after release0.1.0
+
+Release0.1.0 is published atfd205aac9bbe440698c6863365c11fc8caca02d3 after187Rust/336native and exact GitHub Gate/security success. The capture blocker is cleared by explicit operator direction. Current read-only Mantle worker status observes the KubeVirt worker READY, installed Codex0.153.4 with expected binary/archive digests, Substrate0.7.8, and the preserved substrate-work Claude exec Expired with SIGKILL at2026-10-02T14:17:03.863210294Z. That observation is not permission to delete its workspace.
+
+Proceed with bounded disposable live Codex acceptance using the released source, before claiming CS/DP completion. Inspect current worker binaries and sessions, build current static worker binaries, preserve existing workspaces, then select a safe isolated deployment/session. Never print auth files or device codes into evidence; operator device login happens in their own terminal. An asynchronous question asks operator availability for that login. AWS remains paused; only the configured local KubeVirt environment is in scope. Full parent acceptance requires actual model/tool/auth/lifecycle observations, not the already-passing local tests.
