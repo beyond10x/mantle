@@ -56,6 +56,10 @@ pub struct ServeArgs {
           value_parser = clap::value_parser!(u32).range(1024..=64 * 1024 * 1024))]
     pub scrollback_bytes: u32,
 
+    /// Keep replay in memory only; refuse an existing last-output and never write one.
+    #[arg(long)]
+    pub volatile_replay: bool,
+
     /// Agent program and its arguments, after `--`.
     #[arg(last = true, required = true, num_args = 1.., value_name = "PROGRAM")]
     pub command: Vec<OsString>,

@@ -64,7 +64,13 @@ pub fn run(args: &ServeArgs) -> Result<u8> {
     signals::install(&[libc::SIGTERM, libc::SIGINT])?;
     signals::ignore(libc::SIGPIPE)?;
 
-    let result = Pipes::create(&paths).and_then(|pipes| serve(args, &paths, pipes, secret));
+    let result = (|| {
+        if args.volatile_replay {
+            require_absent_output(&paths.dir.join("last-output"))?;
+        }
+        let pipes = Pipes::create(&paths)?;
+        serve(args, &paths, pipes, secret)
+    })();
     for fifo in paths.fifos() {
         if let Err(err) = session::remove_fifo(fifo) {
             eprintln!("mantle-launch: {err:#}");
@@ -73,6 +79,18 @@ pub fn run(args: &ServeArgs) -> Result<u8> {
     fs::remove_file(&paths.server_lock).ok();
     drop(lock);
     result
+}
+
+/// Refuse every existing entry without following links or reading its contents. This runs
+/// under the server lock before readiness is published or the agent can produce output.
+fn require_absent_output(path: &Path) -> Result<()> {
+    match fs::symlink_metadata(path) {
+        Err(error) if error.kind() == ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(error).context("cannot inspect last-output for volatile replay"),
+        Ok(_) => {
+            bail!("volatile replay requires an absent last-output; existing entry left unchanged")
+        }
+    }
 }
 
 /// The server's ends of `in` and `ctl`. It also holds a write end of each, so their read ends
@@ -150,9 +168,11 @@ fn serve(
     eprintln!("mantle-launch: agent exited ({status})");
     // The terminal is gone with the agent, so its last screenful is the only account of why it
     // ended. Kept beside the pipes, owner-only; a failure to write it does not change the exit.
-    let last = paths.dir.join("last-output");
-    if let Err(err) = write_private(&last, &server.scrollback.to_vec()) {
-        eprintln!("mantle-launch: cannot keep the last output: {err}");
+    if !args.volatile_replay {
+        let last = paths.dir.join("last-output");
+        if let Err(err) = write_private(&last, &server.scrollback.to_vec()) {
+            eprintln!("mantle-launch: cannot keep the last output: {err}");
+        }
     }
     Ok(exit_code(status))
 }
@@ -737,6 +757,22 @@ mod tests {
         assert_eq!(fs::read_to_string(&existing).unwrap(), "new");
         let mode = fs::metadata(&existing).unwrap().permissions().mode() & 0o777;
         assert_eq!(mode, 0o600, "mode {mode:o}");
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn volatile_preflight_refuses_metadata_errors_other_than_absence() {
+        let dir = scratch("volatile-inspection");
+        let file = dir.join("file");
+        fs::write(&file, b"unchanged").unwrap();
+        let invalid = file.join("last-output");
+        assert_eq!(
+            fs::symlink_metadata(&invalid).unwrap_err().raw_os_error(),
+            Some(libc::ENOTDIR)
+        );
+        assert!(require_absent_output(&invalid).is_err());
+        assert_eq!(fs::read(&file).unwrap(), b"unchanged");
+        assert!(require_absent_output(&dir.join("absent")).is_ok());
         fs::remove_dir_all(dir).unwrap();
     }
 }

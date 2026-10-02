@@ -1,0 +1,10 @@
+type: ess-scenario/4
+domain: mantle.launch
+scenario: persistent-replay-compatibility
+summary: Default persistence retains the bounded tail with owner-only mode.
+timeline:
+  - at: '2026-10-02T00:00:00Z'
+    command: mantle.launch.PersistentReplayCompatibility
+    input: {}
+    outcome: returned
+    response: {exit: 0, retained_bytes: 1024, tail_matches: true, mode: 384}

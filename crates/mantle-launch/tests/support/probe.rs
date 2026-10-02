@@ -28,6 +28,13 @@ enum Mode {
     },
     Sleep,
     Flood,
+    /// Controlled output stays in the PTY; marker files contain only process/progress facts.
+    Replay {
+        #[arg(long)]
+        pid_file: std::path::PathBuf,
+        #[arg(long)]
+        done_file: std::path::PathBuf,
+    },
 }
 static TERMINATE: AtomicBool = AtomicBool::new(false);
 extern "C" fn terminated(_: libc::c_int) {
@@ -71,6 +78,57 @@ fn main() -> anyhow::Result<()> {
         Mode::Sleep => loop {
             std::thread::sleep(Duration::from_secs(1));
         },
+        Mode::Replay {
+            pid_file,
+            done_file,
+        } => {
+            on_resize();
+            std::fs::write(pid_file, std::process::id().to_string())?;
+            println!("ready");
+            std::io::stdout().flush()?;
+            let mut input = std::io::stdin();
+            let mut line = Vec::new();
+            let mut flooded = false;
+            while !TERMINATE.load(Ordering::Relaxed) {
+                // The flood case deliberately emits no redraw bytes, so its replay can be
+                // compared byte-for-byte rather than mistaking redraw for retained history.
+                if RESIZE.swap(false, Ordering::Relaxed) && !flooded {
+                    window()?;
+                }
+                let mut fds = [mantle_launch::sys::pollfd(
+                    Some(input.as_fd()),
+                    libc::POLLIN,
+                )];
+                mantle_launch::sys::poll(&mut fds, Duration::from_millis(20))?;
+                if fds[0].revents & libc::POLLIN == 0 {
+                    continue;
+                }
+                let mut buffer = [0; 1024];
+                let n = input.read(&mut buffer)?;
+                if n == 0 {
+                    break;
+                }
+                line.extend_from_slice(&buffer[..n]);
+                anyhow::ensure!(line.len() <= 4096, "fixture input exceeded bound");
+                while let Some(end) = line.iter().position(|b| *b == b'\n') {
+                    let bytes: Vec<_> = line.drain(..=end).collect();
+                    match bytes.as_slice() {
+                        b"emit\n" => println!("launcher-output-canary-7f8433"),
+                        b"flood\n" => {
+                            flooded = true;
+                            std::io::stdout().write_all(&vec![b'x'; 2 * 1024 * 1024])?;
+                            std::io::stdout().write_all(b"launcher-output-canary-7f8433")?;
+                            std::io::stdout().flush()?;
+                            std::fs::write(&done_file, b"emitted")?;
+                        }
+                        b"exit\n" => return Ok(()),
+                        b"exit23\n" => std::process::exit(23),
+                        _ => anyhow::bail!("unknown fixture command"),
+                    }
+                    std::io::stdout().flush()?;
+                }
+            }
+        }
         Mode::Agent { child } => {
             on_resize();
             println!("ready");

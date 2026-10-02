@@ -227,3 +227,9 @@ scenarios:
   - scenarios/cli/orchestration-observe-measured-current-absent.yaml
   - scenarios/cli/agent-worker.yaml
   - scenarios/cli/orchestration-observe-common-without-claude.yaml
+  - scenarios/launch/replay-policy-arguments.yaml
+  - scenarios/launch/volatile-replay-lifecycle.yaml
+  - scenarios/launch/volatile-replay-exit-paths.yaml
+  - scenarios/launch/volatile-replay-preflight.yaml
+  - scenarios/launch/volatile-replay-bounds.yaml
+  - scenarios/launch/persistent-replay-compatibility.yaml

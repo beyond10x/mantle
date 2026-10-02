@@ -124,3 +124,55 @@ commands:
       - {name: duplicate_refused, type: 'Boolean'}
       - {name: reacquired, type: 'Boolean'}
     outcomes: [{name: returned, returns: true}]
+
+  - name: mantle.launch.VolatileReplayLifecycle
+    # Real launcher, agent and FIFO clients; collectors are bounded in bytes and time.
+    response:
+      - {name: relayed, type: Boolean}
+      - {name: replayed, type: Boolean}
+      - {name: survived_detach, type: Boolean}
+      - {name: resized, type: Boolean}
+      - {name: last_output_during, type: Boolean}
+      - {name: last_output_after, type: Boolean}
+      - {name: exit, type: Integer}
+      - {name: canary_in_diagnostics, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+
+  - name: mantle.launch.VolatileReplayExitPaths
+    # Ordered cases: clean, nonzero, SIGTERM, missing program, server SIGKILL.
+    response:
+      - {name: exits, type: 'List<Integer>'}
+      - {name: last_outputs, type: 'List<Boolean>'}
+      - {name: canary_in_diagnostics, type: Boolean}
+      - {name: killed_child_reaped, type: Boolean}
+      - {name: killed_child_exit, type: Integer}
+    outcomes: [{name: returned, returns: true}]
+
+  - name: mantle.launch.VolatileReplayPreflight
+    # Ordered entries: regular file, live link, dangling link, directory.
+    response:
+      - {name: refused, type: 'List<Boolean>'}
+      - {name: dispatched, type: 'List<Boolean>'}
+      - {name: ready, type: 'List<Boolean>'}
+      - {name: preserved, type: 'List<Boolean>'}
+      - {name: locks_left, type: 'List<Boolean>'}
+      - {name: canary_in_diagnostics, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+
+  - name: mantle.launch.VolatileReplayBounds
+    response:
+      - {name: replayed_bytes, type: Integer}
+      - {name: tail_matches, type: Boolean}
+      - {name: exit, type: Integer}
+      - {name: last_output_after, type: Boolean}
+      - {name: stopped_within_budget, type: Boolean}
+      - {name: canary_in_diagnostics, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+
+  - name: mantle.launch.PersistentReplayCompatibility
+    response:
+      - {name: exit, type: Integer}
+      - {name: retained_bytes, type: Integer}
+      - {name: tail_matches, type: Boolean}
+      - {name: mode, type: Integer}
+    outcomes: [{name: returned, returns: true}]
