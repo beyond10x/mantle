@@ -54,13 +54,40 @@ pub fn missing_facts(machine: &Machine) -> Vec<String> {
     {
         missing.push(format!("exec.egress_apertures[{APERTURE}]"));
     }
-    if !facts
+    missing
+}
+
+pub fn claude_slot_present(machine: &Machine) -> bool {
+    machine
+        .facts
         .secrets_slots
         .as_ref()
         .is_some_and(|slots| slots.iter().any(|slot| slot == CLAUDE_SLOT))
-    {
+}
+
+/// Capabilities observed from Substrate, without inventing an executable observation.
+pub fn missing_capability_facts(machine: &Machine, claude_selected: bool) -> Vec<String> {
+    let mut missing = missing_facts(machine);
+    if claude_selected && !claude_slot_present(machine) {
         missing.push(format!("secrets.slots[{CLAUDE_SLOT}]"));
     }
+    missing
+}
+
+pub fn selected_claude_missing_facts(machine: &Machine, executable_present: bool) -> Vec<String> {
+    let mut missing = missing_capability_facts(machine, true);
+    if !executable_present {
+        missing.push("agent.executable[claude]".to_owned());
+    }
+    debug_assert_eq!(
+        missing.is_empty(),
+        mantle_worker::worker_ready(
+            missing_facts(machine).is_empty(),
+            true,
+            executable_present,
+            claude_slot_present(machine)
+        )
+    );
     missing
 }
 
@@ -162,5 +189,44 @@ pub fn bytes(value: u64) -> String {
         format!("{:.1} GiB", value / GIB)
     } else {
         format!("{:.0} MiB", value / MIB)
+    }
+}
+
+#[cfg(test)]
+mod worker_tests {
+    use super::*;
+    fn ready_machine() -> Machine {
+        serde_json::from_value(serde_json::json!({
+            "capability_snapshot": "test", "driver_version": "test", "configuration_generation": 1,
+            "probed_at": "2026-10-02T00:00:00Z", "valid_until": null,
+            "guarded_workspace_io": true, "exec_argv_only": true, "exec_no_egress": true,
+            "exec_cgroup_limits": true, "exec_cgroup_kill": true, "events_pull": true, "events_stream": false,
+            "facts": {
+                "operation.ledger-subject-max-rows": 1, "operation.ledger-subject-max-bytes": 1,
+                "operation.ledger-global-max-rows": 1, "operation.ledger-global-max-bytes": 1,
+                "exec.argv-only": true, "exec.no-egress": true,
+                "exec.cgroup-limits": {"cpu": true, "memory": true, "processes": true},
+                "exec.cgroup-kill": true, "sessions.pty": true,
+                "exec.egress-apertures": [{"name": "egress", "destination": "127.0.0.1:3128/tcp"}]
+            }
+        })).unwrap()
+    }
+    #[test]
+    fn common_readiness_and_selected_claude_are_distinct_observations() {
+        let mut machine = ready_machine();
+        assert!(missing_facts(&machine).is_empty());
+        assert_eq!(
+            selected_claude_missing_facts(&machine, true),
+            ["secrets.slots[claude]"]
+        );
+        machine.facts.secrets_slots = Some(vec!["claude".into()]);
+        assert_eq!(
+            selected_claude_missing_facts(&machine, false),
+            ["agent.executable[claude]"]
+        );
+        assert!(selected_claude_missing_facts(&machine, true).is_empty());
+        machine.facts.exec_no_egress = None;
+        assert_eq!(missing_facts(&machine), ["exec.no_egress"]);
+        assert!(!selected_claude_missing_facts(&machine, true).is_empty());
     }
 }

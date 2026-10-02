@@ -261,8 +261,14 @@ pub(super) fn execute(command: &str, input: &Value) -> Result<Reply> {
             .into_iter()
             .map(|(name, value)| json!({"name":name,"value":value}))
             .collect();
+        // Absent selection preserves the original Claude capability contract. This boundary
+        // observes capabilities only; the selected-agent setup separately probes its executable.
+        let claude_selected = match &input["claude_selected"] {
+            Value::Null => true,
+            value => value.as_bool().context("claude_selected must be boolean")?,
+        };
         return Ok(Reply::returned(
-            json!({"missing":crate::adapters::substrate::missing_facts(&machine),"quota_served":crate::adapters::substrate::quota_served(&machine),"usage":rows}),
+            json!({"missing":crate::adapters::substrate::missing_capability_facts(&machine, claude_selected),"quota_served":crate::adapters::substrate::quota_served(&machine),"usage":rows}),
         ));
     }
     if command == "mantle.orchestration.Request" {

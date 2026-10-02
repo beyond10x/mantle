@@ -1,3 +1,4 @@
 .engineering/drafts/
 /target/
 /website/build/
+generated/**/.ess-output/

@@ -50,7 +50,7 @@ tasks:
   build-worker:
     desc: Build the static binaries copied onto a worker
     cmds:
-      - cargo build --locked --release --target x86_64-unknown-linux-musl -p mantle-egress -p mantle-launch
+      - cargo build --locked --release --target x86_64-unknown-linux-musl -p mantle-egress -p mantle-launch -p mantle-worker
 
   spec:
     desc: Validate the ESS specification
@@ -71,7 +71,8 @@ tasks:
   check:
     desc: The gate
     cmds:
-      - cargo fmt --all --check
+      # Default virtual-workspace selection covers every member, preserving ESS-generated dependencies.
+      - cargo fmt --check
       - cargo clippy --workspace --all-targets --locked -- -D warnings
       - cargo test --workspace --locked
       - cargo run --locked -p mantle-conformance -- --root .

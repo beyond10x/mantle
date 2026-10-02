@@ -13,7 +13,7 @@ pub struct Config {
     pub ubuntu_serial: String,
     pub aws: Option<AwsConfig>,
     pub kubevirt: Option<KubevirtConfig>,
-    pub claude: ClaudeConfig,
+    pub claude: Option<ClaudeConfig>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
@@ -72,7 +72,10 @@ const fn default_data_volume() -> i32 {
 
 impl Config {
     pub fn load() -> Result<Self> {
-        let path = config_dir()?.join("config.toml");
+        let path = configured_path(
+            std::env::var_os("MANTLE_CONFIG"),
+            config_dir()?.join("config.toml"),
+        )?;
         let text = std::fs::read_to_string(&path).with_context(|| {
             format!(
                 "reading {} (copy examples/config.toml there and fill it in)",
@@ -116,7 +119,10 @@ impl Config {
     /// The Claude Code OAuth token, from the configured command or file. Never logged; an error
     /// names where the token was looked for, not what was found.
     pub fn claude_token(&self) -> Result<Vec<u8>> {
-        let (bytes, source) = match (&self.claude.token_command, &self.claude.token_file) {
+        let claude = self.claude.as_ref().context(
+            "selected Claude needs a [claude] configuration with token_command or token_file",
+        )?;
+        let (bytes, source) = match (&claude.token_command, &claude.token_file) {
             (Some(argv), _) => {
                 let (program, args) = argv
                     .split_first()
@@ -176,9 +182,20 @@ pub fn config_dir() -> Result<PathBuf> {
 
 /// Owner-private state: the SQLite database, the SSH key, known hosts and forwarded sockets.
 pub fn state_dir() -> Result<PathBuf> {
-    let dir = home()?.join(".local/state/mantle");
+    let dir = configured_path(
+        std::env::var_os("MANTLE_STATE_DIR"),
+        home()?.join(".local/state/mantle"),
+    )?;
     ensure_private_dir(&dir)?;
     Ok(dir)
+}
+
+fn configured_path(override_path: Option<std::ffi::OsString>, default: PathBuf) -> Result<PathBuf> {
+    let path = override_path.map_or(default, PathBuf::from);
+    if !path.is_absolute() {
+        bail!("Mantle configuration and state paths must be absolute");
+    }
+    Ok(path)
 }
 
 pub fn ensure_private_dir(dir: &Path) -> Result<()> {
@@ -186,4 +203,33 @@ pub fn ensure_private_dir(dir: &Path) -> Result<()> {
     std::fs::create_dir_all(dir).with_context(|| format!("creating {}", dir.display()))?;
     std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o700))
         .with_context(|| format!("restricting {}", dir.display()))
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn common_worker_configuration_needs_no_claude_credentials() {
+        let config: Config = toml::from_str("provider = 'kubevirt'\nubuntu_serial = '20260926'\n[kubevirt]\ncontext = 'test'\nnamespace = 'mantle'\ncpu = 4\nmemory_gib = 8\nroot_disk_gib = 20\ndata_disk_gib = 20\n").expect("credential-independent configuration");
+        assert!(
+            config.claude_token().is_err(),
+            "selected Claude still requires credentials"
+        );
+    }
+
+    #[test]
+    fn explicit_path_selection_is_absolute_and_preserves_defaults() {
+        let default = PathBuf::from("/private/default");
+        assert_eq!(configured_path(None, default.clone()).unwrap(), default);
+        assert_eq!(
+            configured_path(Some("/private/isolated".into()), default.clone()).unwrap(),
+            PathBuf::from("/private/isolated")
+        );
+        assert!(configured_path(Some("relative".into()), default).is_err());
+    }
+
+    #[test]
+    fn legacy_claude_table_remains_parseable() {
+        let config: Config = toml::from_str(include_str!("../../../examples/config.toml")).unwrap();
+        assert!(config.claude.unwrap().token_command.is_some());
+    }
 }

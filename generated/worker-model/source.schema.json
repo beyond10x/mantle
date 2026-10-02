@@ -1,0 +1,49 @@
+{
+  "$defs": {
+    "mantle.session.AgentInstallationFacts": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "type": "string"
+        },
+        "binary_sha256": {
+          "type": "string"
+        },
+        "compressed_sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "architecture",
+        "compressed_sha256",
+        "binary_sha256"
+      ],
+      "title": "AgentInstallationFacts",
+      "type": "object",
+      "x-ess-kind": "struct",
+      "x-ess-name": "mantle.session.AgentInstallationFacts"
+    },
+    "mantle.session.AgentInstallationOutcome": {
+      "enum": [
+        "AlreadyCurrent",
+        "Installed",
+        "Refused"
+      ],
+      "title": "AgentInstallationOutcome",
+      "type": "string",
+      "x-ess-kind": "enum",
+      "x-ess-name": "mantle.session.AgentInstallationOutcome"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-ess-provenance": {
+    "contract_digest": "slice-sha256/2:56aab6ba125583c0c6be3eeee9810eac6eb0aaffb7e676a2b72816bd94fbc3ed",
+    "source_digest": "8a272638ba1e78a3a382335a397e223d44436d4b3423664c5c1c22ffe8f0f895",
+    "specification_version": "v1",
+    "system": "mantle"
+  }
+}

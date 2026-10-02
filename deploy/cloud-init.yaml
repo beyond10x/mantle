@@ -3,6 +3,8 @@
 # the release image layer holding the daemon), SUBSTRATE_IMAGE_MANIFEST, SUBSTRATE_VERSION, RUST_CHANNEL
 # and CLAUDE_CODE_VERSION
 # are replaced inline. SUBSTRATE_SERVICE, EGRESS_SERVICE and
+# Codex is installed after this common bootstrap by the same verified mantle-worker
+# transaction for both fresh and existing workers; bootstrap.json never claims that pin installed.
 # BWRAP_APPARMOR each occupy a line of their own; replace that whole line with the file's lines,
 # every non-empty line indented by exactly six spaces.
 
@@ -122,8 +124,6 @@ runcmd:
   - '[ "$daemon_version" = "substrate-daemon {{SUBSTRATE_VERSION}}" ]'
   - rustc_version=$(PATH=/opt/mantle/cargo/bin:/usr/bin:/bin RUSTUP_HOME=/opt/mantle/rustup /opt/mantle/cargo/bin/rustc --version)
   - systemctl daemon-reload
-  - systemctl enable substrate.service
-  - systemctl start substrate.service
   - |-
     jq -n --arg substrate_image "ghcr.io/{{SUBSTRATE_IMAGE_REPOSITORY}}@sha256:{{SUBSTRATE_IMAGE_MANIFEST}}" --arg substrate_layer "$substrate_layer" --arg substrate_daemon "$daemon_version" --arg rustc "$rustc_version" --arg claude_code "$claude_version" --arg kernel "$kernel_target" '{substrate_image: $substrate_image, substrate_layer: $substrate_layer, substrate_daemon: $substrate_daemon, rustc: $rustc, claude_code: $claude_code, kernel: $kernel}' > /var/lib/mantle/bootstrap.json.partial
   - chmod 0644 /var/lib/mantle/bootstrap.json.partial

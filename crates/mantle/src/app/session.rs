@@ -75,7 +75,16 @@ pub async fn start(
     let worker = worker(store)?;
     let connected = connect(config, &worker).await?;
     let machine = connected.client.machine();
-    let missing = sub::missing_facts(&machine);
+    let executable = connected
+        .ssh
+        .bounded(
+            "test -x /opt/mantle/bin/claude",
+            None,
+            Duration::from_secs(15),
+        )?
+        .status
+        .success();
+    let missing = sub::selected_claude_missing_facts(&machine, executable);
     if !missing.is_empty() {
         bail!("FAILED_CAPABILITY: the worker lacks {}", missing.join(", "));
     }

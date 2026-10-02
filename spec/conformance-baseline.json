@@ -2,8 +2,8 @@
   "format": "mantle-conformance-baseline/1",
   "components": {
     "mantle-cli": {
-      "answered_floor": 204,
-      "total_floor": 204,
+      "answered_floor": 213,
+      "total_floor": 213,
       "skipped_ceiling": 0
     },
     "mantle-egress": {
@@ -211,6 +211,7 @@
     "mantle.orchestration/authored/kubevirt-up-missing",
     "mantle.orchestration/authored/observe-all-facts-absent",
     "mantle.orchestration/authored/observe-all-required-facts",
+    "mantle.orchestration/authored/observe-common-without-claude",
     "mantle.orchestration/authored/observe-measured",
     "mantle.orchestration/authored/observe-measured-current-absent",
     "mantle.orchestration/authored/observe-missing-cgroup-memory",
@@ -259,6 +260,13 @@
     "mantle.session.AgentStartFailed/outcome/moved",
     "mantle.session.AgentStarted/outcome/missing",
     "mantle.session.AgentStarted/outcome/moved",
+    "mantle.session.AssessAgentInstallation/outcome/already-current",
+    "mantle.session.AssessAgentInstallation/outcome/installed",
+    "mantle.session.AssessAgentInstallation/outcome/refused",
+    "mantle.session.AssessSharedBinaryUpgrade/outcome/applicable",
+    "mantle.session.AssessSharedBinaryUpgrade/outcome/deferred",
+    "mantle.session.AssessWorkerReadiness/outcome/missing",
+    "mantle.session.AssessWorkerReadiness/outcome/ready",
     "mantle.session.BeginStop/outcome/missing",
     "mantle.session.BeginStop/outcome/moved",
     "mantle.session.FinishStop/outcome/missing",
@@ -313,6 +321,7 @@
     "mantle.session.SetAgentExec/outcome/recorded",
     "mantle.session.SetWorkspace/outcome/missing",
     "mantle.session.SetWorkspace/outcome/recorded",
+    "mantle.session/authored/aw-01-through-aw-05-worker-decisions",
     "mantle.session/authored/live-name-failedagentstart",
     "mantle.session/authored/live-name-failedmaterialization",
     "mantle.session/authored/live-name-materializing",

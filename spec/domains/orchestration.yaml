@@ -362,6 +362,11 @@
           "name": "usage_json",
           "type": "Optional<String>",
           "example": "{\"status\":\"pending\",\"observed_at\":\"2026-10-02T00:00:00Z\"}"
+        },
+        {
+          "name": "claude_selected",
+          "type": "Optional<Boolean>",
+          "example": true
         }
       ],
       "response": [

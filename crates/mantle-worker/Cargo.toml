@@ -1,0 +1,22 @@
+[package]
+name = "mantle-worker"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+serde_json.workspace = true
+mantle-worker-model = { path = "../../generated/worker-model" }
+sha2 = "0.10"
+signal-hook = "0.3"
+nix = { version = "0.30", features = ["fs", "process", "signal", "user"] }
+ureq = { version = "=3.4.2", default-features = false, features = ["rustls"] }
+zstd = { version = "=0.13.3", default-features = false }
+tempfile = "3"
+
+[lints]
+workspace = true

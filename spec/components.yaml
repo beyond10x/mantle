@@ -5,6 +5,9 @@ components:
       domains: [mantle.session, mantle.manifest, mantle.orchestration]
     accepts:
       commands:
+        - mantle.session.AssessSharedBinaryUpgrade
+        - mantle.session.AssessWorkerReadiness
+        - mantle.session.AssessAgentInstallation
         - mantle.orchestration.Observe
         - mantle.orchestration.Request
         - mantle.orchestration.Start

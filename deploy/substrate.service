@@ -1,7 +1,7 @@
 [Unit]
 Description=Substrate execution daemon
 RequiresMountsFor=/var/lib/substrate /var/lib/mantle/secrets
-ConditionFileNotEmpty=/var/lib/mantle/secrets/claude
+{{CLAUDE_CONDITION}}
 
 [Service]
 Type=exec
@@ -19,7 +19,7 @@ ExecStart=/usr/local/bin/substrate-daemon \
     --deployment mantle-worker \
     --allow-uid 1000 \
     --cgroup-root /sys/fs/cgroup/system.slice/substrate.service \
-    --secret-slot claude=/var/lib/mantle/secrets/claude \
+{{CLAUDE_SLOT}}
     --egress-aperture egress=127.0.0.1:3128/tcp \
     --ca-bundle /etc/ssl/certs/ca-certificates.crt
 ExecStartPost=+/bin/sh -c 'until [ "$$(stat -c %%a /run/substrate/substrate.sock 2>/dev/null)" = 600 ]; do sleep 0.2; done; exec /usr/bin/setfacl -m u:1000:rw /run/substrate/substrate.sock'

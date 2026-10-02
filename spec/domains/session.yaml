@@ -1,5 +1,5 @@
 domain: mantle.session
-summary: Local records of intent; a recorded Running state never asserts a live process.
+summary: Local records and decisions over explicit worker observations; a recorded Running state never asserts a live process.
 
 types:
   # Proposed Codex parity vocabulary, not fields persisted by the current contract.
@@ -82,6 +82,10 @@ entities:
     lifecycle: {initial: Recorded, states: [Recorded], terminal: [Recorded]}
 
 errors:
+  - name: mantle.session.WorkerNotReady
+    fields: []
+  - name: mantle.session.InstallationRefused
+    fields: []
   - name: mantle.session.InvalidTransition
     fields: []
   - name: mantle.session.RecordVanished
@@ -109,6 +113,51 @@ commands:
     input: [{name: session_id, type: String}]
     response: [{name: rows, type: 'List<mantle.session.SourceResolution>'}]
     outcomes: [{name: returned, returns: true}]
+  - name: mantle.session.AssessSharedBinaryUpgrade
+    input:
+      - {name: shared_service_active, type: Boolean}
+      - {name: installed, type: Boolean}
+      - {name: artifact_changed, type: Boolean}
+    outcomes:
+      - name: deferred
+        when: {all: [shared_service_active == true, installed == true, artifact_changed == true]}
+        accepts: nothing
+      - name: applicable
+        accepts: nothing
+  # Pure decisions over observations, never WorkerRecord-derived liveness.
+  - name: mantle.session.AssessWorkerReadiness
+    input:
+      - {name: common_ready, type: Boolean}
+      - {name: claude_selected, type: Boolean}
+      - {name: executable_present, type: Boolean}
+      - {name: claude_slot_present, type: Boolean}
+    outcomes:
+      - name: ready
+        when:
+          all:
+            - common_ready == true
+            - any:
+                - claude_selected == false
+                - all: [executable_present == true, claude_slot_present == true]
+        accepts: nothing
+      - name: missing
+        error: mantle.session.WorkerNotReady
+  - name: mantle.session.AssessAgentInstallation
+    input:
+      - {name: architecture, type: String}
+      - {name: current_verified, type: Boolean}
+      - {name: archive_verified, type: Boolean}
+      - {name: binary_verified, type: Boolean}
+      - {name: version_verified, type: Boolean}
+    outcomes:
+      - name: already-current
+        when: {all: [architecture == x86_64, current_verified == true]}
+        accepts: nothing
+      - name: installed
+        when: {all: [architecture == x86_64, current_verified == false, archive_verified == true, binary_verified == true, version_verified == true]}
+        accepts: nothing
+      - name: refused
+        error: mantle.session.InstallationRefused
   - name: mantle.session.InsertSession
     input:
       - {name: session_id, type: String}
