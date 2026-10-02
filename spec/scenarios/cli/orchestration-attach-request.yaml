@@ -26,6 +26,7 @@
         "argv": [
           "/opt/mantle/bin/mantle-launch",
           "attach",
+          "--wait-ready",
           "--dir",
           "/workspace/.mantle/agent"
         ],

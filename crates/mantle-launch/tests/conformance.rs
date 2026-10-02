@@ -1416,6 +1416,9 @@ struct CancellationClient {
 }
 impl CancellationClient {
     fn new(root: &Path, mode: &str) -> Result<Self> {
+        Self::with_readiness(root, mode, false)
+    }
+    fn with_readiness(root: &Path, mode: &str, readiness: bool) -> Result<Self> {
         let (stdin, input, stdout, output, terminal) = if mode.starts_with("pty") {
             let (master, slave) = mantle_launch::sys::openpty(ctl::Window {
                 cols: 100,
@@ -1454,6 +1457,9 @@ impl CancellationClient {
             .arg(root.join("session"));
         if terminal.is_none() {
             command.arg("--no-tty");
+        }
+        if readiness {
+            command.arg("--wait-ready");
         }
         let process = Process(
             command
@@ -1504,6 +1510,197 @@ impl CancellationClient {
         stop_client(&mut self.process)?;
         Ok(false)
     }
+}
+
+const ATTACH_READY: &[u8] = b"\x1eMANTLE-ATTACH-READY-1\x1f";
+const ATTACH_ACK: &[u8] = b"\x1eMANTLE-ATTACH-ACK-1\x1f";
+
+#[test]
+fn adversary_readiness_fragmented_ack_and_late_mismatch_preserve_agent() -> Result<()> {
+    let mut fixture = ReplayFixture::new(true)?;
+    let pid = fixture.pid()?;
+    for invalid in [true, false] {
+        let mut client =
+            CancellationClient::with_readiness(fixture.dir.path(), "pty-aliased", true)?;
+        await_readiness(&mut client)?;
+        for byte in &ATTACH_ACK[..ATTACH_ACK.len() - 1] {
+            client.input.write_all(&[*byte])?;
+            let mut premature = Vec::new();
+            bounded_read(&mut client.output, &mut premature, 0)?;
+            ensure!(
+                client.process.0.try_wait()?.is_none(),
+                "partial ACK ended attach"
+            );
+        }
+        if invalid {
+            client.input.write_all(b"X")?;
+            ensure!(
+                !wait(&mut client.process.0)?.success(),
+                "late ACK mismatch accepted"
+            );
+        } else {
+            let mut suffix = vec![*ATTACH_ACK.last().expect("nonempty ACK")];
+            suffix.extend_from_slice(b"reattach!\n");
+            client.input.write_all(&suffix)?;
+            observe_marker(&mut client.output, b"replacement-usable")?;
+            ensure!(
+                client.cancel(libc::SIGTERM)?,
+                "replacement cancellation failed"
+            );
+        }
+        ensure!(
+            client.restored()? == (true, true),
+            "ACK path leaked terminal state"
+        );
+        ensure!(
+            fixture.server.0.try_wait()?.is_none(),
+            "ACK path killed server"
+        );
+        ensure!(fixture.pid()? == pid, "ACK path replaced agent");
+    }
+    Ok(())
+}
+
+#[test]
+#[allow(unsafe_code)]
+fn adversary_readiness_resize_before_ack_reaches_same_agent() -> Result<()> {
+    use std::os::unix::fs::OpenOptionsExt;
+    let mut fixture = ReplayFixture::new(true)?;
+    let mut client = CancellationClient::with_readiness(fixture.dir.path(), "pty-aliased", true)?;
+    await_readiness(&mut client)?;
+    let expected = ctl::Window {
+        cols: 137,
+        rows: 43,
+    };
+    let terminal = &client.terminal.as_ref().context("PTY fixture")?.0;
+    mantle_launch::sys::set_window(terminal.as_fd(), expected)?;
+    // SAFETY: this unreaped child belongs to this fixture.
+    ensure!(
+        unsafe { libc::kill(client.process.0.id() as libc::pid_t, libc::SIGWINCH) } == 0,
+        "signal readiness resize"
+    );
+    let agent_terminal = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NONBLOCK | libc::O_NOCTTY)
+        .open(format!("/proc/{}/fd/0", fixture.pid()?))?;
+    let deadline = Instant::now() + ATTACH_DEADLINE;
+    loop {
+        let observed = mantle_launch::sys::get_window(agent_terminal.as_fd())?;
+        if observed.cols == expected.cols && observed.rows == expected.rows {
+            break;
+        }
+        ensure!(Instant::now() < deadline, "readiness swallowed resize");
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    let mut premature = Vec::new();
+    bounded_read(&mut client.output, &mut premature, 0)?;
+    client.input.write_all(ATTACH_ACK)?;
+    observe_marker(&mut client.output, b"window:137x43")?;
+    ensure!(client.cancel(libc::SIGINT)?, "post-ACK cancellation failed");
+    ensure!(
+        client.restored()? == (true, true),
+        "resize path leaked terminal state"
+    );
+    ensure!(
+        fixture.server.0.try_wait()?.is_none(),
+        "resize killed server"
+    );
+    Ok(())
+}
+
+fn await_readiness(client: &mut CancellationClient) -> Result<()> {
+    let deadline = Instant::now() + Duration::from_secs(3);
+    let mut bytes = Vec::new();
+    while bytes.len() < ATTACH_READY.len() {
+        ensure!(Instant::now() < deadline, "readiness marker missing");
+        ensure!(
+            client.process.0.try_wait()?.is_none(),
+            "attach ended before readiness"
+        );
+        bounded_read(&mut client.output, &mut bytes, ATTACH_READY.len())?;
+    }
+    ensure!(bytes == ATTACH_READY, "readiness marker changed");
+    let until = Instant::now() + Duration::from_millis(200);
+    while Instant::now() < until {
+        bounded_read(&mut client.output, &mut bytes, ATTACH_READY.len())?;
+    }
+    Ok(())
+}
+
+#[test]
+fn attach_readiness_holds_replay_and_preserves_first_keyboard_bytes() -> Result<()> {
+    let dir = scratch()?;
+    let mut command = serve(dir.path());
+    command
+        .args(["--volatile-replay", "--"])
+        .arg(PROBE)
+        .args(["roundtrip", "--done-file"])
+        .arg(dir.path().join("burst"));
+    let mut server = Process(command.spawn()?);
+    ready(dir.path(), &mut server)?;
+    let mut client = CancellationClient::with_readiness(dir.path(), "pty-aliased", true)?;
+    await_readiness(&mut client)?;
+    // The trigger immediately follows ACK in one write, so over-reading ACK loses it.
+    let mut input = ATTACH_ACK.to_vec();
+    input.extend_from_slice(b"!first-keyboard\x03\x1b[A\n");
+    client.input.write_all(&input)?;
+    let expected: Vec<u8> = b"ready\n"
+        .iter()
+        .copied()
+        .chain((0..24 * 1024).map(|i| b'A' + (i % 23) as u8))
+        .chain(b"first-keyboard\x03\x1b[A\n".iter().copied())
+        .collect();
+    let mut actual = Vec::new();
+    let until = Instant::now() + Duration::from_secs(5);
+    while actual.len() < expected.len() {
+        ensure!(
+            Instant::now() < until,
+            "first keyboard byte lost: got {} expected {}, suffix {:?}",
+            actual.len(),
+            expected.len(),
+            &actual[actual.len().saturating_sub(32)..]
+        );
+        bounded_read(&mut client.output, &mut actual, expected.len())?;
+    }
+    ensure!(actual == expected, "handshake leaked or replay changed");
+    ensure!(client.cancel(libc::SIGTERM)?, "cancel failed");
+    ensure!(
+        client.restored()? == (true, true),
+        "terminal restoration failed"
+    );
+    ensure!(server.0.try_wait()?.is_none(), "agent stopped");
+    Ok(())
+}
+
+#[test]
+fn attach_readiness_missing_invalid_and_signalled_peers_are_bounded() -> Result<()> {
+    let fixture = ReplayFixture::new(true)?;
+    for action in [0, 1, libc::SIGINT, libc::SIGTERM, libc::SIGHUP] {
+        let mut client =
+            CancellationClient::with_readiness(fixture.dir.path(), "pty-aliased", true)?;
+        await_readiness(&mut client)?;
+        if action == 1 {
+            client.input.write_all(b"invalid")?;
+        }
+        if action > 1 {
+            ensure!(client.cancel(action)?, "readiness signal not serviced");
+        } else {
+            let deadline = Instant::now() + Duration::from_secs(12);
+            loop {
+                if let Some(exit) = client.process.0.try_wait()? {
+                    ensure!(!exit.success(), "missing/invalid readiness accepted");
+                    break;
+                }
+                ensure!(Instant::now() < deadline, "readiness wait unbounded");
+                std::thread::sleep(Duration::from_millis(10));
+            }
+        }
+        ensure!(
+            client.restored()? == (true, true),
+            "readiness failure left terminal altered"
+        );
+    }
+    Ok(())
 }
 fn bounded_read(file: &mut File, bytes: &mut Vec<u8>, limit: usize) -> Result<()> {
     let mut fds = [mantle_launch::sys::pollfd(Some(file.as_fd()), libc::POLLIN)];

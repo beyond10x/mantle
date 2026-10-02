@@ -24,7 +24,7 @@ timeline:
         - attach
       state: RUNNING
       agent_exec: exec-1
-      attach_argv: [/opt/mantle/bin/mantle-launch, attach, --dir, /workspace/.mantle/agent]
+      attach_argv: [/opt/mantle/bin/mantle-launch, attach, --wait-ready, --dir, /workspace/.mantle/agent]
       attach_has_secret: false
       request_has_secret: false
   - at: '2026-10-02T00:00:02Z'
