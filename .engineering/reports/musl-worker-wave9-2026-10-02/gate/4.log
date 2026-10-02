@@ -1,0 +1,4 @@
+   Compiling mantle-conformance v0.1.1 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-conformance)
+    Finished `dev` profile [unoptimized] target(s) in 1.43s
+     Running `/dev/shm/mantle-wave4-target-integration/debug/mantle-conformance --root .`
+Complete ESS inventory: 336 passed; 0 failed, skipped, unsupported, outside or refused

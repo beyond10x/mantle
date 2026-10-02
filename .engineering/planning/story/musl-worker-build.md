@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:musl-worker-build
 kind: story
-status: active
+status: implemented
 title: Build the released worker binaries on musl
 relations:
 - decomposes: story:codex-interactive-start
@@ -15,10 +15,11 @@ scope:
   path: Cargo.toml
 - confidence: cited
   path: crates/mantle-launch/src/session.rs
-revision: 7
+revision: 8
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T18:19:32Z", actor: "human:timo", revision: 6}
 - {from: "proposed", to: "active", at: "2026-10-02T18:19:32Z", actor: "human:timo", revision: 7}
+- {from: "active", to: "implemented", at: "2026-10-02T18:32:56Z", actor: "human:timo", revision: 8, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}}
 ---
 ## Acceptance
 

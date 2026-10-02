@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T18:32:56Z",
+  "actor": "human:timo",
+  "artifact": "story:musl-worker-build",
+  "kind": "story",
+  "revision": 7,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Repository gate and actual static musl worker build, eight steps exit0 at6560122",
+    "reference": ".engineering/reports/musl-worker-wave9-2026-10-02/closure.md"
+  }
+}

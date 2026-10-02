@@ -1,0 +1,4 @@
+   Compiling mantle-launch v0.1.1 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-launch)
+   Compiling mantle-worker v0.1.1 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-worker)
+   Compiling mantle-egress v0.1.1 (~/.local/state/worktree/trees/b10x/mantle/mantle-codex-interactive-plan/crates/mantle-egress)
+    Finished `release` profile [optimized] target(s) in 8.00s
