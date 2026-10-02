@@ -3,7 +3,7 @@ use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
 #[test]
-fn codex_refuses_capture_before_claude_credentials_or_session_insertion() {
+fn codex_reaches_worker_boundary_without_claude_credentials_or_session_insertion() {
     let dir = tempfile::tempdir().unwrap();
     let config = dir.path().join("config.toml");
     fs::write(&config, "provider = 'kubevirt'\nubuntu_serial = '20260926'\n[kubevirt]\ncontext = 'not-contacted'\nnamespace = 'not-contacted'\ncpu = 4\nmemory_gib = 8\nroot_disk_gib = 20\ndata_disk_gib = 20\n").unwrap();
@@ -34,7 +34,7 @@ fn codex_refuses_capture_before_claude_credentials_or_session_insertion() {
     let stderr = String::from_utf8(output.stderr).unwrap();
     assert!(!output.status.success());
     assert!(
-        stderr.contains("Codex requires supported non-recording terminal capture"),
+        stderr.contains("no worker recorded; run `mantle worker up` first"),
         "{stderr}"
     );
     assert!(!stderr.contains("[claude]"), "{stderr}");
@@ -43,7 +43,7 @@ fn codex_refuses_capture_before_claude_credentials_or_session_insertion() {
         .query_row("SELECT count(*) FROM sessions", [], |row| row.get(0))
         .unwrap();
     assert_eq!(rows, 0);
-    // A stored Codex session cannot fall back to the recorded Claude attach route, even
+    // A stored Codex session reaches worker lookup using its saved identity, even
     // after the manifest has changed and no worker/Claude configuration exists.
     db.execute_batch("INSERT INTO sessions(id,name,worker,state,manifest_digest,workspace,agent_exec,requested_json,created_at,failure,agent_kind,authentication) VALUES ('stored','stored-codex','missing','RUNNING','digest','ws','exec','{}','time',NULL,'codex','chatgpt-device');").unwrap();
     fs::write(
@@ -76,7 +76,7 @@ fn codex_refuses_capture_before_claude_credentials_or_session_insertion() {
     assert!(
         String::from_utf8(output.stderr)
             .unwrap()
-            .contains("Codex requires supported non-recording terminal capture")
+            .contains("no worker recorded; run `mantle worker up` first")
     );
     let observed: (i64, String, String) = db
         .query_row(
@@ -260,7 +260,7 @@ fn adversary_codex_never_invokes_configured_claude_credential_command() {
     assert!(
         String::from_utf8(output.stderr)
             .unwrap()
-            .contains("Codex requires supported non-recording terminal capture")
+            .contains("no worker recorded; run `mantle worker up` first")
     );
     assert!(!marker.exists());
     fs::write(

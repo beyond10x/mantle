@@ -162,13 +162,12 @@ generated identities. The third runs the launcher over real path/symlink/hardlin
 including refusal on ordinary disk, and checks child dispatch/readiness and preserved auth bytes.
 Existing default Claude and launcher snapshots gain only their new explicit fields.
 
-The public CLI test also checks stored Codex attachment after the manifest changes: unsupported
-capture refuses before worker access and leaves stored exec/workspace unchanged. The bounded
+The public CLI test also checks stored Codex attachment after the manifest changes: worker lookup refuses when no worker is configured and leaves stored exec/workspace unchanged. The bounded
 `codex_qualification runtime-sinks` example separately verifies the pinned binary's actual tmpfs
 SQLite/WAL and text-log placement with conflicting ordinary settings and isolated synthetic homes.
 Its SQLite canary fixture and persistent positive control exercise the scanner while WAL is live;
 they do not claim to exercise real token refresh. Managed policy and authenticated lifecycle
-acceptance remain with the parent Codex integration story and supported Substrate capture binding.
+acceptance remain with the parent Codex integration story.
 
 AB01–AB04 (`attach-backpressure-cancellation`) hold real attachment clients to a 1500ms
 handled-cancellation deadline under unread terminal output and independently paused agent input.

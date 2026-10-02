@@ -352,33 +352,36 @@ fn codex_preflight() -> Result<Reply> {
     let resolved = manifest::parse(include_str!("../../../../examples/codex.yaml"))?;
     let store = Store::in_memory()?;
     let reads = std::cell::Cell::new(0);
-    let result = session::selected_credentials(&resolved, || {
+    let credentials = session::selected_credentials(&resolved, || {
         reads.set(reads.get() + 1);
         Ok(b"synthetic-claude-token".to_vec())
     });
-    let plane = Plane::new(&json!({}));
+    let plane = Plane::new(&json!({"commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}));
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;
-    // This is the real start flow with its admission check, not a fake successful provider.
-    let started = runtime.block_on(session::start_recorded(
-        &store, "blocked", &resolved, &&plane, true,
-    ));
-    let rows = store.live_sessions()?.len();
-    let mut persisted = record(SessionState::Running);
+    let mut persisted = record(SessionState::Materializing);
     persisted.agent_kind = resolved.agent_kind.clone();
     persisted.authentication = resolved.authentication.clone();
     store.insert_session(&persisted)?;
+    let started = runtime.block_on(session::start_recorded(
+        &store,
+        &persisted.id,
+        &resolved,
+        &&plane,
+        true,
+    ));
     let stored = store
         .live_session(&persisted.name)?
         .context("stored selection")?;
-    let attach = session::attach_request(&stored.agent_kind);
-    let request = session::agent_request(&resolved);
-    Ok(Reply::returned(
-        json!({"refused":result.is_err() && started.is_err(),
-        "diagnostic":result.unwrap_err().to_string(),"credential_reads":reads.get(),
-        "calls":plane.calls.borrow().clone(),"session_rows":rows,
-        "attach_requires_non_recording":attach.requires_non_recording,
-        "request_requires_non_recording":request.requires_non_recording}),
-    ))
+    let attach = serde_json::to_value(session::attach_request(&stored.agent_kind))?;
+    let request = serde_json::to_value(session::agent_request(&resolved))?;
+    Ok(Reply::returned(json!({
+        "started": credentials.is_ok_and(|value| value.is_none()) && started.is_ok(),
+        "credential_reads":reads.get(), "calls":plane.calls.borrow().clone(),
+        "state":stored.state.to_string(), "agent_exec":stored.agent_exec,
+        "attach_argv":attach["argv"],
+        "attach_has_secret":!attach["secret_slot"].is_null() || !attach["secret_fd"].is_null(),
+        "request_has_secret":!request["secret_slot"].is_null() || !request["secret_fd"].is_null()
+    })))
 }

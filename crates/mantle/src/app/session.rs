@@ -187,7 +187,6 @@ pub(crate) async fn start_recorded(
     attach: bool,
 ) -> Result<()> {
     validate_identity(&resolved.agent_kind, &resolved.authentication)?;
-    sub::require_capture_binding(resolved.agent_kind == AgentKind::V1)?;
     let workspace = port.create(id, resolved).await?;
     store.set_workspace(id, port.workspace_id(&workspace))?;
     println!("Workspace      {}", port.workspace_id(&workspace));
@@ -234,13 +233,12 @@ pub(crate) async fn start_recorded(
 }
 
 /// Selection is checked before calling the credential source, connecting to a provider or
-/// inserting a session. No mutable availability flag can bypass this production adapter.
+/// inserting a session. Codex does not read or install Claude credentials.
 pub(crate) fn selected_credentials(
     resolved: &Resolved,
     read_claude: impl FnOnce() -> Result<Vec<u8>>,
 ) -> Result<Option<Vec<u8>>> {
     validate_identity(&resolved.agent_kind, &resolved.authentication)?;
-    sub::require_capture_binding(resolved.agent_kind == AgentKind::V1)?;
     match resolved.agent_kind {
         AgentKind::V0 => read_claude().map(Some),
         AgentKind::V1 => Ok(None),
@@ -439,7 +437,6 @@ async fn attach_workspace(workspace: &Workspace, name: &str, agent: &AgentKind) 
 
 pub async fn attach(config: &Config, store: &Store, name: &str) -> Result<()> {
     let record = live(store, name)?;
-    sub::require_capture_binding(record.agent_kind == AgentKind::V1)?;
     let connected = connect(config, &worker(store)?).await?;
     let workspace = connected
         .client
@@ -787,7 +784,6 @@ fn not_found(error: &b10x_substrate_sdk::SdkError) -> bool {
 /// The exact command request Mantle passes to the pinned SDK. No credential value belongs here.
 #[derive(serde::Serialize)]
 pub(crate) struct RunRequest {
-    pub(crate) requires_non_recording: bool,
     argv: Vec<String>,
     environment: std::collections::BTreeMap<String, String>,
     aperture: Option<String>,
@@ -801,7 +797,6 @@ pub(crate) struct RunRequest {
 }
 impl RunRequest {
     fn command(&self, workspace: &Workspace) -> Result<b10x_substrate_sdk::CommandBuilder> {
-        sub::require_capture_binding(self.requires_non_recording)?;
         let (program, args) = self.argv.split_first().context("empty argv")?;
         let mut command = workspace
             .command(program.as_str())
@@ -833,7 +828,6 @@ impl RunRequest {
         Ok(command)
     }
     fn pty(&self, workspace: &Workspace) -> Result<b10x_substrate_sdk::PipeSessionBuilder> {
-        sub::require_capture_binding(self.requires_non_recording)?;
         let (program, args) = self.argv.split_first().context("empty argv")?;
         let mut command = workspace
             .pty_session(program.as_str(), terminal::local_window())
@@ -858,7 +852,6 @@ impl RunRequest {
 }
 pub(crate) fn agent_request(resolved: &Resolved) -> RunRequest {
     let mut request = RunRequest {
-        requires_non_recording: resolved.agent_kind == AgentKind::V1,
         argv: [
             "/opt/mantle/bin/mantle-launch",
             "serve",
@@ -915,7 +908,6 @@ pub(crate) fn agent_request(resolved: &Resolved) -> RunRequest {
 }
 pub(crate) fn exec_request(program: &str, args: &[String], cpu: u32) -> RunRequest {
     RunRequest {
-        requires_non_recording: false,
         argv: std::iter::once(program.to_owned())
             .chain(args.iter().cloned())
             .collect(),
@@ -933,9 +925,8 @@ pub(crate) fn exec_request(program: &str, args: &[String], cpu: u32) -> RunReque
         lease_secs: None,
     }
 }
-pub(crate) fn attach_request(agent: &AgentKind) -> RunRequest {
+pub(crate) fn attach_request(_agent: &AgentKind) -> RunRequest {
     RunRequest {
-        requires_non_recording: *agent == AgentKind::V1,
         argv: vec![
             "/opt/mantle/bin/mantle-launch".into(),
             "attach".into(),
@@ -1020,4 +1011,266 @@ fn codex_argv(cwd: &str) -> Vec<String> {
         argv.push(setting.into());
     }
     argv
+}
+
+#[cfg(test)]
+mod codex_transport_tests {
+    use super::*;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+    #[tokio::test]
+    async fn codex_start_and_attach_construct_real_sdk_builders() {
+        let dir = tempfile::tempdir().unwrap();
+        let socket = dir.path().join("sdk.sock");
+        let listener = tokio::net::UnixListener::bind(&socket).unwrap();
+        let server = tokio::spawn(async move {
+            for (path, result) in [
+                (
+                    "/v1/machine",
+                    json!({
+                        "snapshot":format!("sha256:{}", "7".repeat(64)), "driver":"host",
+                        "driver_version":"fixture", "config_generation":1,
+                        "probed_at":"2026-10-02T00:00:00Z", "facts": {
+                            "operation.ledger-subject-max-rows":1000,
+                            "operation.ledger-subject-max-bytes":1048576,
+                            "operation.ledger-global-max-rows":10000,
+                            "operation.ledger-global-max-bytes":10485760
+                        }
+                    }),
+                ),
+                (
+                    "/v1/workspaces/ws-fixture",
+                    json!({
+                        "id":"ws-fixture", "kind":"workspace", "labels":{},
+                        "observed_at":"2026-10-02T00:00:00Z", "state":"ready"
+                    }),
+                ),
+            ] {
+                let (mut stream, _) = listener.accept().await.unwrap();
+                let mut request = Vec::new();
+                loop {
+                    let byte = stream.read_u8().await.unwrap();
+                    request.push(byte);
+                    if request.ends_with(b"\r\n\r\n") {
+                        break;
+                    }
+                    assert!(request.len() < 8192);
+                }
+                assert!(
+                    String::from_utf8(request)
+                        .unwrap()
+                        .starts_with(&format!("GET {path} HTTP/1.1"))
+                );
+                let body =
+                    json!({"api_version":"v1","request_id":"fixture","result":result}).to_string();
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nx-b10x-contract: {}\r\nx-b10x-contract-bundle-sha256: {}\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}",
+                    b10x_substrate_sdk::CONTRACT,
+                    b10x_substrate_sdk::CONTRACT_SHA256,
+                    body.len(),
+                    body
+                );
+                stream.write_all(response.as_bytes()).await.unwrap();
+            }
+        });
+        tokio::time::timeout(Duration::from_secs(5), async {
+            let client = Client::builder()
+                .unix_socket(socket)
+                .connect()
+                .await
+                .unwrap();
+            let workspace = client.get_workspace("ws-fixture").await.unwrap();
+            let resolved =
+                manifest::parse(include_str!("../../../../examples/codex.yaml")).unwrap();
+            let start = agent_request(&resolved);
+            let attach = attach_request(&AgentKind::V1);
+            let start_result = start.command(&workspace);
+            let attach_result = attach.pty(&workspace);
+            assert!(
+                start_result.is_ok(),
+                "Codex start builder refused: {:?}",
+                start_result.err()
+            );
+            assert!(
+                attach_result.is_ok(),
+                "Codex attach builder refused: {:?}",
+                attach_result.err()
+            );
+            assert!(start.secret_slot.is_none() && start.secret_fd.is_none());
+            assert!(attach.secret_slot.is_none() && attach.secret_fd.is_none());
+            assert_eq!(
+                start.environment["CODEX_HOME"],
+                "/workspace/.mantle/home/.codex"
+            );
+            assert_eq!(start.aperture.as_deref(), Some(sub::APERTURE));
+            assert_eq!(start.memory_bytes, resolved.memory_bytes);
+            assert_eq!(start.processes, resolved.pids);
+            server.await.unwrap();
+        })
+        .await
+        .unwrap();
+    }
+}
+
+#[cfg(test)]
+mod adversary_activation_wire {
+    use super::*;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+    #[tokio::test]
+    async fn adversary_codex_dispatches_confined_secretless_command_and_pty() {
+        let dir = tempfile::tempdir().unwrap();
+        let socket = dir.path().join("wire.sock");
+        let listener = tokio::net::UnixListener::bind(&socket).unwrap();
+        let server = tokio::spawn(async move {
+            let mut posts = Vec::new();
+            for index in 0..4 {
+                let (mut stream, _) = listener.accept().await.unwrap();
+                let mut header = Vec::new();
+                while !header.ends_with(b"\r\n\r\n") {
+                    header.push(stream.read_u8().await.unwrap());
+                    assert!(header.len() < 16384);
+                }
+                let header = String::from_utf8(header).unwrap();
+                let length = header
+                    .lines()
+                    .find_map(|line| {
+                        let (key, value) = line.split_once(':')?;
+                        key.eq_ignore_ascii_case("content-length")
+                            .then(|| value.trim().parse::<usize>().unwrap())
+                    })
+                    .unwrap_or(0);
+                assert!(length < 65536);
+                let mut body = vec![0; length];
+                stream.read_exact(&mut body).await.unwrap();
+                let result = match index {
+                    0 => {
+                        assert!(header.starts_with("GET /v1/machine HTTP/1.1"));
+                        json!({"snapshot":format!("sha256:{}", "7".repeat(64)),
+                            "driver":"host", "driver_version":"fixture", "config_generation":1,
+                            "probed_at":"2026-10-02T00:00:00Z", "facts": {
+                                "operation.ledger-subject-max-rows":1000,
+                                "operation.ledger-subject-max-bytes":1048576,
+                                "operation.ledger-global-max-rows":10000,
+                                "operation.ledger-global-max-bytes":10485760}})
+                    }
+                    1 => {
+                        assert!(header.starts_with("GET /v1/workspaces/ws-fixture HTTP/1.1"));
+                        json!({"id":"ws-fixture", "kind":"workspace", "labels":{},
+                            "observed_at":"2026-10-02T00:00:00Z", "state":"ready"})
+                    }
+                    _ => {
+                        let path = if index == 2 {
+                            "/v1/execs"
+                        } else {
+                            "/v1/sessions"
+                        };
+                        assert!(header.starts_with(&format!("POST {path} HTTP/1.1")));
+                        posts.push(serde_json::from_slice::<serde_json::Value>(&body).unwrap());
+                        // Intentionally no executable response: this fixture observes dispatch only.
+                        json!({})
+                    }
+                };
+                let body = json!({"api_version":"v1", "request_id":"fixture", "result":result})
+                    .to_string();
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nx-b10x-contract: {}\r\nx-b10x-contract-bundle-sha256: {}\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}",
+                    b10x_substrate_sdk::CONTRACT,
+                    b10x_substrate_sdk::CONTRACT_SHA256,
+                    body.len(),
+                    body
+                );
+                stream.write_all(response.as_bytes()).await.unwrap();
+            }
+            posts
+        });
+        tokio::time::timeout(Duration::from_secs(5), async {
+            let client = Client::builder()
+                .unix_socket(socket)
+                .connect()
+                .await
+                .unwrap();
+            let workspace = client.get_workspace("ws-fixture").await.unwrap();
+            let resolved =
+                manifest::parse(include_str!("../../../../examples/codex.yaml")).unwrap();
+            let result = agent_request(&resolved)
+                .command(&workspace)
+                .unwrap()
+                .start()
+                .await;
+            assert!(matches!(
+                result,
+                Err(b10x_substrate_sdk::SdkError::Protocol(_))
+            ));
+            let result = attach_request(&AgentKind::V1)
+                .pty(&workspace)
+                .unwrap()
+                .input_limit_bytes(b10x_substrate_sdk::MAX_SESSION_INPUT_BYTES)
+                .frame_limit_bytes(b10x_substrate_sdk::MAX_SESSION_FRAME_BYTES)
+                .queued_frames(b10x_substrate_sdk::MAX_SESSION_QUEUED_FRAMES)
+                .start()
+                .await;
+            assert!(matches!(
+                result,
+                Err(b10x_substrate_sdk::SdkError::Protocol(_))
+            ));
+            let posts = server.await.unwrap();
+            assert_eq!(posts.len(), 2);
+            let start = &posts[0]["input"];
+            let attach = &posts[1]["input"]["exec"];
+            for request in [start, attach] {
+                assert_eq!(request["workspace"], "ws-fixture");
+                assert_eq!(request["sandbox"]["require"], true);
+                assert_eq!(request["sandbox"]["profile"], "workspace");
+                assert!(request.get("secret_slots").is_none());
+                assert_eq!(request["env"]["allow"], json!([]));
+                assert_eq!(
+                    request["read_only_roots"],
+                    json!([{"host_path":"/opt/mantle", "mount":"/opt/mantle"}])
+                );
+                assert!(request["limits"]["output_bytes"].as_u64().unwrap() > 0);
+                assert!(request["limits"]["memory_bytes"].as_u64().unwrap() > 0);
+                assert!(request["limits"]["processes"].as_u64().unwrap() > 0);
+                assert!(request["lease_ttl_ms"].as_u64().unwrap() > 0);
+                assert!(
+                    request["env"]["set"]
+                        .get("CLAUDE_CODE_OAUTH_TOKEN")
+                        .is_none()
+                );
+            }
+            assert_eq!(start["sandbox"]["network"], "aperture");
+            assert_eq!(start["sandbox"]["aperture"], "egress");
+            assert_eq!(start["limits"]["memory_bytes"], resolved.memory_bytes);
+            assert_eq!(start["limits"]["processes"], resolved.pids);
+            assert_eq!(
+                start["env"]["set"]["CODEX_HOME"],
+                "/workspace/.mantle/home/.codex"
+            );
+            assert_eq!(start["env"]["set"]["RUST_LOG"], "off");
+            assert_eq!(start["env"]["set"]["CODEX_TUI_RECORD_SESSION"], "0");
+            let argv = start["argv"].as_array().unwrap();
+            assert!(argv.iter().any(|v| v == "/opt/mantle/bin/codex"));
+            assert!(
+                !argv
+                    .iter()
+                    .any(|v| v == "--secret-fd" || v == "--secret-env")
+            );
+            assert_eq!(attach["sandbox"]["network"], "none");
+            assert_eq!(
+                attach["argv"],
+                json!([
+                    "/opt/mantle/bin/mantle-launch",
+                    "attach",
+                    "--dir",
+                    "/workspace/.mantle/agent"
+                ])
+            );
+            assert_eq!(posts[1]["input"]["mode"], "pty");
+            assert!(posts[1]["input"]["input_limit_bytes"].as_u64().unwrap() > 0);
+            assert!(posts[1]["input"]["frame_limit_bytes"].as_u64().unwrap() > 0);
+            assert!(posts[1]["input"]["queued_frames"].as_u64().unwrap() > 0);
+        })
+        .await
+        .unwrap();
+    }
 }

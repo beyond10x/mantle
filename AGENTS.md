@@ -17,9 +17,9 @@ confined by Substrate. Design: `docs/design/00-mantle-on-substrate.md`.
 - No secret value in argv, logs, state or error messages. The Claude credential reaches a sandbox
   only through the Substrate secret slot `claude`.
 - Codex's intended auth file and conversation rollouts may persist only in its private workspace
-  home, `/workspace/.mantle/home/.codex`; they are not Mantle state-database fields. Terminal replay
-  stays volatile and SQLite/text diagnostics belong on launcher-verified tmpfs. Codex dispatch
-  remains refused until the pinned Substrate SDK can bind supported non-recording capture.
+  home, `/workspace/.mantle/home/.codex`; they are not Mantle state-database fields. Mantle launcher replay
+  stays volatile and SQLite/text diagnostics belong on launcher-verified tmpfs. Codex uses the
+  same supported Substrate terminal transport as Claude; Substrate may record terminal output.
 
 ## Commands
 

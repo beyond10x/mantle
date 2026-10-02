@@ -2,7 +2,7 @@
   "type": "ess-scenario/4",
   "domain": "mantle.orchestration",
   "scenario": "codex-private-runtime",
-  "summary": "Fixed Codex private home, tmpfs diagnostics, ChatGPT identity and non-recording requirement",
+  "summary": "Fixed Codex private home, tmpfs diagnostics, ChatGPT identity and existing terminal transport",
   "timeline": [
     {
       "at": "2026-10-02T00:00:00Z",
@@ -150,8 +150,7 @@
             "name": "USER",
             "value": "dev"
           }
-        ],
-        "requires_non_recording": true
+        ]
       }
     }
   ]
