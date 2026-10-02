@@ -17,16 +17,6 @@ pub const TOOLCHAIN_ROOT: &str = "/opt/mantle";
 /// Where `mantle-launch serve` keeps the agent's pipes; `attach` finds it there.
 pub const AGENT_DIR: &str = "/workspace/.mantle/agent";
 
-pub const NON_RECORDING_UNAVAILABLE: &str = "FAILED_CAPABILITY: Codex requires supported non-recording terminal capture; the pinned Substrate SDK cannot provide it";
-
-/// An internal requirement, not an invented Machine fact. Replace this adapter only when
-/// an actual supported SDK binding can enforce and observe the requested capture policy.
-pub fn require_capture_binding(non_recording: bool) -> Result<()> {
-    if non_recording {
-        anyhow::bail!(NON_RECORDING_UNAVAILABLE);
-    }
-    Ok(())
-}
 /// The aperture listens on sandbox loopback at the destination port it was declared with.
 pub const PROXY: &str = "http://127.0.0.1:3128";
 

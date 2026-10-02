@@ -1,7 +1,7 @@
 type: ess-scenario/4
 domain: mantle.orchestration
 scenario: codex-start
-summary: Codex identity survives migration and unsupported capture refuses before effects.
+summary: Codex identity survives migration and starts and attaches through the existing transport.
 timeline:
   - at: '2026-10-02T00:00:00Z'
     command: mantle.session.IdentityMigration
@@ -13,13 +13,20 @@ timeline:
     input: {}
     outcome: returned
     response:
-      refused: true
-      diagnostic: 'FAILED_CAPABILITY: Codex requires supported non-recording terminal capture; the pinned Substrate SDK cannot provide it'
+      started: true
       credential_reads: 0
-      calls: []
-      session_rows: 0
-      attach_requires_non_recording: true
-      request_requires_non_recording: true
+      calls:
+        - create
+        - "isolated:/usr/bin/mkdir -p /workspace/.mantle/home /workspace/.mantle/cargo"
+        - "network:/usr/bin/git -c http.proxy=http://127.0.0.1:3128 clone --no-tags --branch main -- https://github.com/beyond10x/substrate.git /workspace/substrate"
+        - "isolated:/usr/bin/git -C /workspace/substrate rev-parse HEAD"
+        - agent
+        - attach
+      state: RUNNING
+      agent_exec: exec-1
+      attach_argv: [/opt/mantle/bin/mantle-launch, attach, --dir, /workspace/.mantle/agent]
+      attach_has_secret: false
+      request_has_secret: false
   - at: '2026-10-02T00:00:02Z'
     command: mantle.manifest.Parse
     input:

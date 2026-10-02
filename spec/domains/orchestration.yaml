@@ -61,13 +61,14 @@
     {
       "name": "mantle.orchestration.CodexPreflight",
       "response": [
-        {"name":"refused","type":"Boolean"},
-        {"name":"diagnostic","type":"String"},
+        {"name":"started","type":"Boolean"},
         {"name":"credential_reads","type":"Integer"},
         {"name":"calls","type":"List<String>"},
-        {"name":"session_rows","type":"Integer"},
-        {"name":"attach_requires_non_recording","type":"Boolean"},
-        {"name":"request_requires_non_recording","type":"Boolean"}
+        {"name":"state","type":"String"},
+        {"name":"agent_exec","type":"Optional<String>"},
+        {"name":"attach_argv","type":"List<String>"},
+        {"name":"attach_has_secret","type":"Boolean"},
+        {"name":"request_has_secret","type":"Boolean"}
       ],
       "outcomes":[{"name":"returned","returns":true}]
     },
@@ -355,10 +356,6 @@
           "name": "lease_secs",
           "type": "Optional<Integer>"
         },
-        {
-          "name": "requires_non_recording",
-          "type": "Boolean"
-        }
       ],
       "outcomes": [
         {
