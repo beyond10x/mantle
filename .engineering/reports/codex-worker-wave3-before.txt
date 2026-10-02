@@ -1,0 +1,17 @@
+Fri Oct  2 10:17:12 UTC 2026
+MainPID=1588
+ExecMainStartTimestamp=Fri 2026-10-02 01:33:06 UTC
+Id=substrate.service
+ActiveState=active
+ActiveEnterTimestampMonotonic=21349055
+
+MainPID=7692
+ExecMainStartTimestamp=Fri 2026-10-02 06:16:54 UTC
+Id=mantle-egress.service
+ActiveState=active
+ActiveEnterTimestampMonotonic=17048157212
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda1        19G  5.0G   14G  27% /
+/dev/vdb         38G  841M   38G   3% /var/lib/substrate
+b95ad15bea0454396fe7fb6941ed5bd6c2f9b3f2383b7af040ba18eb2e9af8d4  /opt/mantle/bin/mantle-egress
+4a66681c6a3f539f0f9d053d4dda1af770ddda704820b4246df8fac4d83931c2  /opt/mantle/bin/mantle-launch

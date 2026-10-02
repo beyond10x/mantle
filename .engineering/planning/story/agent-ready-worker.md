@@ -8,16 +8,18 @@ relations:
 - decomposes: epic:codex-parity
 scope:
 - confidence: cited
+  path: .gitignore
+- confidence: cited
   path: Cargo.lock
 - confidence: cited
   path: Cargo.toml
 - confidence: cited
   path: Taskfile.yml
-- confidence: inferred
+- confidence: cited
   path: crates/mantle-worker/Cargo.toml
-- confidence: inferred
+- confidence: cited
   path: crates/mantle-worker/src/lib.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle-worker/src/main.rs
 - confidence: cited
   path: crates/mantle/Cargo.toml
@@ -41,17 +43,15 @@ scope:
   path: deploy/substrate.service
 - confidence: cited
   path: examples/config.toml
-- confidence: inferred
-  path: generated/worker-model/.ess-output/state.json
-- confidence: inferred
+- confidence: cited
   path: generated/worker-model/Cargo.toml
-- confidence: inferred
+- confidence: cited
   path: generated/worker-model/source.schema.json
-- confidence: inferred
+- confidence: cited
   path: generated/worker-model/types-report.json
-- confidence: inferred
+- confidence: cited
   path: generated/worker-model/types.rs
-- confidence: inferred
+- confidence: cited
   path: spec/README.md
 - confidence: cited
   path: spec/components.yaml
@@ -59,9 +59,9 @@ scope:
   path: spec/domains/session.yaml
 - confidence: cited
   path: spec/ess-inputs.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/agent-worker.yaml
-revision: 25
+revision: 41
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T10:13:54Z", actor: "human:timo", revision: 24}
 - {from: "proposed", to: "active", at: "2026-10-02T10:13:54Z", actor: "human:timo", revision: 25}
@@ -92,22 +92,20 @@ Extend the existing Worker ESS contract with provisioning outcomes/views, author
 
 ## Scope
 
-Derived 2026-10-02 by `story-scoper` against incoming ESS commit `2e6b116`; every entry distinguishes inspected source from proposed placement — cited.
+Scope reconciled from the implementor's confirmation table and the coordinator's staged-diff inspection on 2026-10-02. This records observed source ownership, not completion; adversary corrections and live acceptance remain pending.
 
-- **Primary surface:** `crates/mantle/src/app/worker.rs` — cited; `up`, `install_binaries`, `install_token`, `report_identity`, `report_machine`, `render_user_data` and their tests own this behavior.
-- **Configuration:** `crates/mantle/src/config.rs`, `examples/config.toml` — cited; make common provisioning independent of the required Claude table while preserving selected-token errors and legacy parsing.
-- **Common and selected readiness:** `crates/mantle/src/adapters/substrate.rs`, `crates/mantle/src/app/session.rs` — cited; split shared `missing_facts` and preserve Claude slot validation before workspace creation.
-- **Bootstrap and daemon:** `deploy/cloud-init.yaml`, `deploy/substrate.service` — cited; render credential-free versus selected-Claude startup, verified pinned candidate installation and observed bootstrap identity.
-- **ESS contract:** `spec/domains/session.yaml`, `spec/components.yaml`, `spec/ess-inputs.yaml` — cited; incoming files own worker vocabulary, command ownership and explicit authored scenario inputs.
-- **Authored AW scenarios:** `spec/scenarios/agent-worker.yaml` — inferred; new named obligations for readiness/provisioning decisions, with OS/live cases represented honestly as external evidence.
-- **Actual adapter:** `crates/mantle/src/adapters/conformance.rs` — cited; extend the incoming adapter's dispatch, actual Rust observations, exact count/refusal accounting and scenario coverage.
-- **Contract coverage documentation:** `spec/README.md` — inferred; incoming mapped/unmapped coverage frontier must explain the added decision seam and remaining live provisioning effects.
-- **Tests and generated artifacts:** tests remain in the owned Rust modules and existing conformance adapter; synthesis remains in the existing ignored drafts directory — inferred; remove provisional `crates/mantle/tests/agent_worker.rs` and `generated/` reservations.
-- **Gate:** existing workspace cargo-test already executes the conformance adapter; no Taskfile change required for this implementation design — cited.
-- **Confidence:** high — cited; all production ownership and the incoming runner are inspected; only the authored AW scenario/documentation placement is proposed.
-- **Would collide with:** worker/config/session readiness, bootstrap/service configuration, and session-domain/conformance input/adapter changes — cited.
-- **Safety fact:** `worker.rs:269–274` restarts a shared gateway on every rerun, while `session.rs:78` shares the credential-dependent readiness function with worker readiness; both must be changed together before AW-01/AW-03 can pass — cited; proof level2, unproven by this read-only pass.
-- **Safety fact:** incoming Worker is a local stored record and its specification explicitly excludes provider/daemon liveness; new observed readiness must not be inferred from that row — cited; proof level2, unproven by this pass.
+- **Worker orchestration and selected readiness:** `crates/mantle/src/app/worker.rs`, `app/session.rs`, `adapters/substrate.rs` — cited; common readiness no longer requires Claude, selected Claude retains token/executable/slot checks, shared active upgrades defer individually, and independent installation continues.
+- **Configuration and explicit isolation:** `crates/mantle/src/config.rs`, `examples/config.toml` — cited; optional Claude table and explicit absolute config/state paths, preserving ordinary defaults.
+- **Bounded transport:** `crates/mantle/src/adapters/ssh.rs`, `crates/mantle-worker/src/lib.rs` — cited; concurrent bounded IO and owned process-group cleanup. Attack1 found cancellation and first-directory concurrency defects; review-result:codex-worker-adversary-1 records them. Ownership is confirmed, correctness still requires correction evidence.
+- **Installer library and CLI:** `crates/mantle-worker/Cargo.toml`, `src/lib.rs`, `src/main.rs` — cited; previously inferred new placement now exists and implements the single pinned installer shared by both providers. No second cloud-init installer.
+- **Workspace integration:** `Cargo.toml`, `Cargo.lock`, `crates/mantle/Cargo.toml`, `crates/mantle/src/main.rs`, `Taskfile.yml` — cited. Correction to original scoping: Taskfile does change because build-worker must include the new helper; existing cargo-test gate already runs conformance.
+- **Bootstrap and service:** `deploy/cloud-init.yaml`, `deploy/substrate.service` — cited; optional Claude slot, daemon start after gateway/helper and optional real token, and preserved aperture/CA arguments.
+- **ESS and real adapter:** `spec/domains/session.yaml`, `spec/components.yaml`, `spec/ess-inputs.yaml`, `spec/scenarios/agent-worker.yaml`, `spec/README.md`, `crates/mantle/src/adapters/conformance.rs` — cited. New authored sequence is actually selected by synthesis. WorkerRecord remains a local record, not invented remote liveness.
+- **Generated portable values:** `generated/worker-model/Cargo.toml`, `types.rs`, `source.schema.json`, `types-report.json` — cited; actual generated crate with path dependency and byte-drift test. Previously inferred placement is confirmed.
+- **Generated operational state:** `.gitignore` — cited. Correction to the provisional generation assumption: `.ess-output/state.json` contains machine/location/inode metadata and is ignored, not committed. The typed source scope contains only the four portable outputs above.
+- **Tests:** existing owned Rust modules and conformance adapter — cited; no provisional `crates/mantle/tests/agent_worker.rs` or broad `generated/` reservation remains.
+- **Confidence:** high for source placement; live AW behavior remains unverified until actual worker runs. Sources: scratch-worker/implementor-report.md section1 confirmation table, staged patch SHA256 `5950cc2b18602be4765305e4f4e52ef4301221ad859abed596c7264155517d83`, and immutable attack1 review.
+- **Collision boundary:** configuration, worker/session readiness, bootstrap/service, session ESS domain and conformance adapter remain serialized with interactive-start. No scope claim authorizes a Substrate change.
 
 ## Pinned daemon readiness evidence
 
@@ -160,3 +158,52 @@ prove fresh no-Claude readiness and non-disruptive installation beside the live 
 Source: `.engineering/reports/codex-worker-scope-2026-10-02.md`; these architecture choices are
 coordinator inference from the actual installation and shared-service boundaries, selected under
 standing wave approval. Dependencies and low-level API details remain implementor-confirmed.
+
+## Isolated operator paths
+
+The actual CLI must support explicit MANTLE_CONFIG (configuration file) and MANTLE_STATE_DIR
+(private local state directory) environment overrides, preserving current defaults. This lets
+AW-01 run with an isolated no-Claude config and separate KubeVirt namespace, database and SSH
+key without changing the operator's HOME or existing session state. The coordinator selected
+this narrow implementation detail from the existing Config::load/state_dir hardcoded paths;
+source ownership remains the already assigned config.rs/main.rs and example/help surfaces.
+No global environment mutation or credential copying belongs to this change. Test default and
+explicit paths through pure selection or subprocess boundaries.
+
+## Generated model output correction
+
+Implementation observed ESS0.50 .ess-output/state.json is an operational ownership envelope:
+root components, device/inode, random anchor, sequence and checksum. It is not a portable
+model artifact. The coordinator inspected its actual JSON and corrects the earlier five-file
+scope: commit only Cargo.toml, types.rs, source.schema.json and types-report.json, all generated
+unchanged. Add .gitignore ownership for generated/**/.ess-output/; leave local generated state
+untouched and ignored. Regeneration drift compares every byte of the four portable artifacts
+from a fresh output directory. Any operational-envelope validation uses that freshly produced
+state, not byte equality with another location. The initial new state-byte-equality test was
+invalid and its red evidence is retained; correcting it does not waive model drift checking.
+
+## Rerun with newly built shared artifacts
+
+AW-03's ordinary workflow supplies the current task build-worker output, whose shared-binary
+digests can differ from the running deployment even while only adding Codex. Defer/refuse the
+changed shared upgrade means leave those active bytes and processes untouched, print which
+upgrade requires maintenance, and continue the independent helper/Codex installation. Do not
+refuse all worker up solely because an unrelated shared upgrade was deferred, and do not claim
+that deferred bytes were installed. This worker story's installer needs no changed launcher or
+gateway; a demonstrated dependency would require an explicit prerequisite instead. Primary live
+AW-03 evidence uses freshly built artifacts and observes preserved live process identities plus
+new Codex capability; an exact-old-binaries fixture alone is narrower than the normal workflow.
+
+Source: coordinator inspection of worker.rs install_binaries during implementation, which
+currently bails before helper upload on any active shared digest difference. This clarification
+preserves the original acceptance and makes its ordinary caller explicit.
+
+## Rebase onto the complete native ESS sweep
+
+Operator request2026-10-02: "btw, make sure you rebae from main, we did a bigger ESS sweep in case you missed it". Fresh git fetch advanced origin/main from2e6b116 to a7b26668a20dce232c5e068989b6818bdefa4171. The incoming commit is bot-authored and bot-committed.
+
+The sweep changes production worker/session orchestration seams, native component adapters and the complete inventory gate. Published baseline is304scenarios (CLI204,egress66,launcher34), with zero failures/skips/unsupported/outside/refused; all216authored scenarios reject the no-op target. These are the incoming report's observations, not a run of this unrebased worker unit.
+
+Preserve every incoming scenario and coverage floor. Rebase the wave onto a base containing this main, adapt the actual worker decision adapter to the native runner, extend the complete inventory and rerun the exact current gate. The earlier65-scenario worker run is historical and cannot stand in for that verification. Preserve all retained adversarial cases and both correction classes. Final full attack2 runs only on the reconciled source. No live acceptance or implementation completion is claimed until the rebased source and current gate pass.
+
+Sources: git fetch/log/diff, incoming spec/README.md, spec/conformance-baseline.json, Taskfile.yml and crates/mantle-conformance. Reconciliation is within the approved wave; no push/tag/release is authorized.
