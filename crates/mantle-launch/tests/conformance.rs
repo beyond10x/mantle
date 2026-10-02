@@ -1416,6 +1416,9 @@ struct CancellationClient {
 }
 impl CancellationClient {
     fn new(root: &Path, mode: &str) -> Result<Self> {
+        Self::with_readiness(root, mode, false)
+    }
+    fn with_readiness(root: &Path, mode: &str, readiness: bool) -> Result<Self> {
         let (stdin, input, stdout, output, terminal) = if mode.starts_with("pty") {
             let (master, slave) = mantle_launch::sys::openpty(ctl::Window {
                 cols: 100,
@@ -1454,6 +1457,9 @@ impl CancellationClient {
             .arg(root.join("session"));
         if terminal.is_none() {
             command.arg("--no-tty");
+        }
+        if readiness {
+            command.arg("--wait-ready");
         }
         let process = Process(
             command
@@ -1504,6 +1510,104 @@ impl CancellationClient {
         stop_client(&mut self.process)?;
         Ok(false)
     }
+}
+
+const ATTACH_READY: &[u8] = b"\x1eMANTLE-ATTACH-READY-1\x1f";
+const ATTACH_ACK: &[u8] = b"\x1eMANTLE-ATTACH-ACK-1\x1f";
+
+fn await_readiness(client: &mut CancellationClient) -> Result<()> {
+    let deadline = Instant::now() + Duration::from_secs(3);
+    let mut bytes = Vec::new();
+    while bytes.len() < ATTACH_READY.len() {
+        ensure!(Instant::now() < deadline, "readiness marker missing");
+        ensure!(
+            client.process.0.try_wait()?.is_none(),
+            "attach ended before readiness"
+        );
+        bounded_read(&mut client.output, &mut bytes, ATTACH_READY.len())?;
+    }
+    ensure!(bytes == ATTACH_READY, "readiness marker changed");
+    let until = Instant::now() + Duration::from_millis(200);
+    while Instant::now() < until {
+        bounded_read(&mut client.output, &mut bytes, ATTACH_READY.len())?;
+    }
+    Ok(())
+}
+
+#[test]
+fn attach_readiness_holds_replay_and_preserves_first_keyboard_bytes() -> Result<()> {
+    let dir = scratch()?;
+    let mut command = serve(dir.path());
+    command
+        .args(["--volatile-replay", "--"])
+        .arg(PROBE)
+        .args(["roundtrip", "--done-file"])
+        .arg(dir.path().join("burst"));
+    let mut server = Process(command.spawn()?);
+    ready(dir.path(), &mut server)?;
+    let mut client = CancellationClient::with_readiness(dir.path(), "pty-aliased", true)?;
+    await_readiness(&mut client)?;
+    // The trigger immediately follows ACK in one write, so over-reading ACK loses it.
+    let mut input = ATTACH_ACK.to_vec();
+    input.extend_from_slice(b"!first-keyboard\x03\x1b[A\n");
+    client.input.write_all(&input)?;
+    let expected: Vec<u8> = b"ready\n"
+        .iter()
+        .copied()
+        .chain((0..24 * 1024).map(|i| b'A' + (i % 23) as u8))
+        .chain(b"first-keyboard\x03\x1b[A\n".iter().copied())
+        .collect();
+    let mut actual = Vec::new();
+    let until = Instant::now() + Duration::from_secs(5);
+    while actual.len() < expected.len() {
+        ensure!(
+            Instant::now() < until,
+            "first keyboard byte lost: got {} expected {}, suffix {:?}",
+            actual.len(),
+            expected.len(),
+            &actual[actual.len().saturating_sub(32)..]
+        );
+        bounded_read(&mut client.output, &mut actual, expected.len())?;
+    }
+    ensure!(actual == expected, "handshake leaked or replay changed");
+    ensure!(client.cancel(libc::SIGTERM)?, "cancel failed");
+    ensure!(
+        client.restored()? == (true, true),
+        "terminal restoration failed"
+    );
+    ensure!(server.0.try_wait()?.is_none(), "agent stopped");
+    Ok(())
+}
+
+#[test]
+fn attach_readiness_missing_invalid_and_signalled_peers_are_bounded() -> Result<()> {
+    let fixture = ReplayFixture::new(true)?;
+    for action in [0, 1, libc::SIGINT, libc::SIGTERM, libc::SIGHUP] {
+        let mut client =
+            CancellationClient::with_readiness(fixture.dir.path(), "pty-aliased", true)?;
+        await_readiness(&mut client)?;
+        if action == 1 {
+            client.input.write_all(b"invalid")?;
+        }
+        if action > 1 {
+            ensure!(client.cancel(action)?, "readiness signal not serviced");
+        } else {
+            let deadline = Instant::now() + Duration::from_secs(12);
+            loop {
+                if let Some(exit) = client.process.0.try_wait()? {
+                    ensure!(!exit.success(), "missing/invalid readiness accepted");
+                    break;
+                }
+                ensure!(Instant::now() < deadline, "readiness wait unbounded");
+                std::thread::sleep(Duration::from_millis(10));
+            }
+        }
+        ensure!(
+            client.restored()? == (true, true),
+            "readiness failure left terminal altered"
+        );
+    }
+    Ok(())
 }
 fn bounded_read(file: &mut File, bytes: &mut Vec<u8>, limit: usize) -> Result<()> {
     let mut fds = [mantle_launch::sys::pollfd(Some(file.as_fd()), libc::POLLIN)];

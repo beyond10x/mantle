@@ -930,6 +930,7 @@ pub(crate) fn attach_request(_agent: &AgentKind) -> RunRequest {
         argv: vec![
             "/opt/mantle/bin/mantle-launch".into(),
             "attach".into(),
+            "--wait-ready".into(),
             "--dir".into(),
             sub::AGENT_DIR.into(),
         ],
@@ -1261,6 +1262,7 @@ mod adversary_activation_wire {
                 json!([
                     "/opt/mantle/bin/mantle-launch",
                     "attach",
+                    "--wait-ready",
                     "--dir",
                     "/workspace/.mantle/agent"
                 ])

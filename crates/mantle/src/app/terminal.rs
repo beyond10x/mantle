@@ -38,6 +38,60 @@ pub enum Ended {
 
 /// `Ctrl-]` (design § 10); followed by `d` it detaches, followed by anything else both bytes pass.
 const ESCAPE: u8 = 0x1d;
+const READY: &[u8] = b"\x1eMANTLE-ATTACH-READY-1\x1f";
+const ACK: &[u8] = b"\x1eMANTLE-ATTACH-ACK-1\x1f";
+
+#[derive(Default)]
+struct Readiness {
+    matched: usize,
+}
+
+impl Readiness {
+    fn feed(&mut self, bytes: &[u8]) -> Result<bool> {
+        if bytes.len() > READY.len() - self.matched
+            || bytes != &READY[self.matched..self.matched + bytes.len()]
+        {
+            bail!("invalid launcher readiness marker; update the worker launcher");
+        }
+        self.matched += bytes.len();
+        Ok(self.matched == READY.len())
+    }
+}
+
+async fn wait_ready(channel: &mut PipeChannel) -> Result<PtyWindow> {
+    let mut ready = Readiness::default();
+    loop {
+        match channel
+            .next_frame()
+            .await
+            .context("waiting for launcher readiness")?
+        {
+            Some(PipeFrame::Output { bytes, .. }) => {
+                if ready.feed(&bytes)? {
+                    // The user may resize while the remote launcher starts. Synchronize before
+                    // releasing replay rather than treating that new size as already applied.
+                    let window = local_window();
+                    channel
+                        .resize(window)
+                        .await
+                        .context("synchronizing terminal size")?;
+                    channel
+                        .write(ACK.to_vec())
+                        .await
+                        .context("acknowledging launcher readiness")?;
+                    return Ok(window);
+                }
+            }
+            Some(PipeFrame::ProtocolError { code, message, .. }) => {
+                bail!("the session ended with a protocol error {code}: {message}")
+            }
+            None | Some(PipeFrame::Exit { .. }) => {
+                bail!("launcher ended before terminal readiness")
+            }
+            Some(_) => {}
+        }
+    }
+}
 
 /// Splits keyboard input at the detach sequence `Ctrl-] d`, across reads.
 #[derive(Default)]
@@ -72,7 +126,19 @@ impl DetachKey {
 }
 
 pub async fn run(mut channel: PipeChannel) -> Result<Ended> {
+    let mut terminated = signal(SignalKind::terminate()).context("watching termination")?;
+    let mut interrupted = signal(SignalKind::interrupt()).context("watching interruption")?;
+    let mut hung_up = signal(SignalKind::hangup()).context("watching hangup")?;
+    let mut resized = signal(SignalKind::window_change()).context("watching window size")?;
     let _raw = RawMode::enable()?;
+    let mut window = tokio::select! {
+        result = tokio::time::timeout(std::time::Duration::from_secs(10), wait_ready(&mut channel)) => {
+            result.context("launcher readiness timed out after 10s")??
+        }
+        _ = terminated.recv() => return Ok(Ended::Closed),
+        _ = interrupted.recv() => return Ok(Ended::Closed),
+        _ = hung_up.recv() => return Ok(Ended::Closed),
+    };
     let (sender, mut receiver) = mpsc::channel::<Vec<u8>>(64);
     // Blocking stdin reads stay on their own thread; the process exits without joining it.
     std::thread::spawn(move || {
@@ -89,13 +155,14 @@ pub async fn run(mut channel: PipeChannel) -> Result<Ended> {
             }
         }
     });
-    let mut resized = signal(SignalKind::window_change()).context("watching window size")?;
-    let mut window = local_window();
     let mut stdout = std::io::stdout();
     let mut stdin_open = true;
     let mut detach = DetachKey::default();
     loop {
         tokio::select! {
+            _ = terminated.recv() => return Ok(Ended::Closed),
+            _ = interrupted.recv() => return Ok(Ended::Closed),
+            _ = hung_up.recv() => return Ok(Ended::Closed),
             frame = channel.next_frame() => match frame.context("reading from the session")? {
                 Some(PipeFrame::Output { bytes, .. }) => {
                     stdout.write_all(&bytes)?;
@@ -138,6 +205,22 @@ pub async fn run(mut channel: PipeChannel) -> Result<Ended> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn readiness_marker_is_consumed_across_every_split() {
+        let marker = b"\x1eMANTLE-ATTACH-READY-1\x1f";
+        for split in 0..marker.len() {
+            let mut ready = Readiness::default();
+            assert!(!ready.feed(&marker[..split]).unwrap());
+            assert!(ready.feed(&marker[split..]).unwrap());
+        }
+        let mut ready = Readiness::default();
+        assert!(ready.feed(b"not a launcher").is_err());
+        let mut ready = Readiness::default();
+        let mut unexpected = marker.to_vec();
+        unexpected.extend_from_slice(b"premature replay");
+        assert!(ready.feed(&unexpected).is_err());
+    }
 
     #[test]
     fn ctrl_bracket_d_detaches_and_forwards_what_came_before() {

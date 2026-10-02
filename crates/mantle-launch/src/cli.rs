@@ -83,6 +83,10 @@ pub struct AttachArgs {
     #[arg(long, value_name = "DIR", value_parser = absolute_path)]
     pub dir: PathBuf,
 
+    /// Hold replay until the Mantle client acknowledges terminal readiness (10 second bound).
+    #[arg(long)]
+    pub wait_ready: bool,
+
     /// Relay plain standard input and output: no raw mode, no window size. For tests.
     #[arg(long, hide = true)]
     pub no_tty: bool,

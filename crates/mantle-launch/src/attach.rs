@@ -6,7 +6,7 @@ use std::io::{self, ErrorKind, Read, Write};
 use std::os::fd::{AsFd, BorrowedFd};
 use std::sync::mpsc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result, bail};
 
@@ -16,6 +16,8 @@ use crate::{signals, sys};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const RELAY_CHUNK: usize = 16 * 1024;
+const READY: &[u8] = b"\x1eMANTLE-ATTACH-READY-1\x1f";
+const ACK: &[u8] = b"\x1eMANTLE-ATTACH-ACK-1\x1f";
 
 pub fn run(args: &AttachArgs) -> Result<u8> {
     let paths = Paths::new(&args.dir);
@@ -47,6 +49,9 @@ pub fn run(args: &AttachArgs) -> Result<u8> {
     };
     if tty {
         send_window(&mut ctl, stdin.as_fd());
+    }
+    if args.wait_ready && !wait_ready(&mut stdin, &mut stdout, &mut ctl, tty)? {
+        return Ok(0);
     }
     let (mut output, mut input) = connect(&paths)?;
 
@@ -105,6 +110,56 @@ pub fn run(args: &AttachArgs) -> Result<u8> {
         }
     }
     Ok(0)
+}
+
+/// The WebSocket must be draining before opening the replay FIFO. Raw mode is already
+/// established, so ACK cannot echo into output or be consumed as an agent keystroke.
+fn wait_ready(stdin: &mut File, stdout: &mut File, ctl: &mut File, tty: bool) -> Result<bool> {
+    let _nonblocking = sys::nonblocking(&[stdin.as_fd(), stdout.as_fd()])?;
+    let deadline = Instant::now() + CONNECT_TIMEOUT;
+    let mut sent = 0;
+    let mut received = 0;
+    let mut ack = [0; ACK.len()];
+    while received < ACK.len() {
+        if signals::take_terminate().is_some() {
+            return Ok(false);
+        }
+        if signals::take_resize() && tty {
+            send_window(ctl, stdin.as_fd());
+        }
+        if Instant::now() >= deadline {
+            bail!("terminal client did not acknowledge readiness within 10s");
+        }
+        let mut fds = [
+            sys::pollfd((sent < READY.len()).then(|| stdout.as_fd()), libc::POLLOUT),
+            sys::pollfd((sent == READY.len()).then(|| stdin.as_fd()), libc::POLLIN),
+        ];
+        sys::poll(&mut fds, Duration::from_millis(100))?;
+        if fds[0].revents != 0 {
+            match stdout.write(&READY[sent..]) {
+                Ok(0) => bail!("terminal closed before readiness"),
+                Ok(n) => sent += n,
+                Err(e) if matches!(e.kind(), ErrorKind::Interrupted | ErrorKind::WouldBlock) => {}
+                Err(e) => return Err(e.into()),
+            }
+        }
+        if fds[1].revents != 0 {
+            // Read only ACK's remaining length. Keyboard input in the same transport frame
+            // remains in stdin and reaches the normal relay unchanged.
+            match stdin.read(&mut ack[received..]) {
+                Ok(0) => bail!("terminal closed before acknowledging readiness"),
+                Ok(n) => {
+                    received += n;
+                    if ack[..received] != ACK[..received] {
+                        bail!("invalid terminal readiness acknowledgement");
+                    }
+                }
+                Err(e) if matches!(e.kind(), ErrorKind::Interrupted | ErrorKind::WouldBlock) => {}
+                Err(e) => return Err(e.into()),
+            }
+        }
+    }
+    Ok(true)
 }
 
 /// One direction holds at most one read, with no allocation or growth while backpressured.
