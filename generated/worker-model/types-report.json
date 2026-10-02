@@ -1,12 +1,12 @@
 {
   "format": "ess-types-report/3",
-  "source_digest": "3a08777de0d97b8f4b6127d959d931d021cd3fbac3a529f3522372ec4169c4ea",
+  "source_digest": "45700f1d2dc4e3c23ba9a26824b43bef5e98d2623981472ab852f3b57951dcac",
   "input": {
     "kind": "model",
     "system": "mantle",
     "specification_version": "v1",
-    "contract_digest": "slice-sha256/2:56aab6ba125583c0c6be3eeee9810eac6eb0aaffb7e676a2b72816bd94fbc3ed",
-    "projection_digest": "3ef81d5ac70860642aa827435edd83524e76e7c372a323937d65756a82463861"
+    "contract_digest": "slice-sha256/2:a75255e82037660d65588ad00ec716984f426db2c0e032e194a75f58467e005f",
+    "projection_digest": "c1d8c2c1722e8dbe4a1e79fdbda1c03574b01c27cf185b13a12c0d2ad0dee9f4"
   },
   "generator_version": "0.50.0",
   "target": "rust",
@@ -16,11 +16,15 @@
   },
   "roots": [
     "mantle.session.AgentInstallationFacts",
-    "mantle.session.AgentInstallationOutcome"
+    "mantle.session.AgentInstallationOutcome",
+    "mantle.session.AgentKind",
+    "mantle.session.AuthenticationMethod"
   ],
   "declarations": {
     "mantle.session.AgentInstallationFacts": "MantleSessionAgentInstallationFacts",
-    "mantle.session.AgentInstallationOutcome": "MantleSessionAgentInstallationOutcome"
+    "mantle.session.AgentInstallationOutcome": "MantleSessionAgentInstallationOutcome",
+    "mantle.session.AgentKind": "MantleSessionAgentKind",
+    "mantle.session.AuthenticationMethod": "MantleSessionAuthenticationMethod"
   },
   "annotations": [
     {
@@ -50,6 +54,36 @@
     },
     {
       "pointer": "/$defs/mantle.session.AgentInstallationOutcome/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AgentKind/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AgentKind/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AgentKind/x-ess-name",
+      "rule": "x-ess-name",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AuthenticationMethod/title",
+      "rule": "title",
+      "detail": "retained in source.schema.json; no decoder behavior inferred"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AuthenticationMethod/x-ess-kind",
+      "rule": "x-ess-kind",
+      "detail": "model identity and wire mapping retained in source.schema.json"
+    },
+    {
+      "pointer": "/$defs/mantle.session.AuthenticationMethod/x-ess-name",
       "rule": "x-ess-name",
       "detail": "model identity and wire mapping retained in source.schema.json"
     }

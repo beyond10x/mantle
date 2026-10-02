@@ -41,6 +41,9 @@ fn parse_args(input: &Value) -> Result<Value> {
                     "dir":encoded(a.dir.as_os_str().as_bytes()),"cwd":encoded(a.cwd.as_os_str().as_bytes()),
                     "secret_fd":a.secret_fd,"secret_env":a.secret_env,"proxy":a.proxy,"scrollback_bytes":a.scrollback_bytes,
                     "volatile_replay":a.volatile_replay,
+                    "private_dirs":a.private_dirs.iter().map(|p|encoded(p.as_os_str().as_bytes())).collect::<Vec<_>>(),
+                    "volatile_dirs":a.volatile_dirs.iter().map(|p|encoded(p.as_os_str().as_bytes())).collect::<Vec<_>>(),
+                    "check_private_files":a.check_private_files.iter().map(|p|encoded(p.as_os_str().as_bytes())).collect::<Vec<_>>(),
                     "mkdirs":a.mkdirs.iter().map(|p|encoded(p.as_os_str().as_bytes())).collect::<Vec<_>>(),
                     "command":a.command.iter().map(|v|encoded(v.as_bytes())).collect::<Vec<_>>()
                 }})
@@ -308,6 +311,7 @@ impl Boundary for Launcher {
     fn execute(&mut self, command: &str, input: &Value) -> Result<Reply> {
         Ok(Reply::returned(match command {
             "mantle.launch.ParseArgs" => parse_args(input)?,
+            "mantle.launch.PrivatePaths" => private_paths()?,
             "mantle.launch.ReadSecret" => {
                 match secret::read_secret(bytes(&input["bytes"])?.as_slice()) {
                     Ok(value) => {
@@ -1074,5 +1078,274 @@ fn adversary_sigint_while_detached_never_persists_replay() -> Result<()> {
     assert!(!entry_present(
         &fixture.dir.path().join("session/server.lock")
     )?);
+    Ok(())
+}
+
+fn private_paths() -> Result<Value> {
+    use std::os::unix::fs::{MetadataExt, symlink};
+    let dir = scratch()?;
+    let root = dir.path();
+    let shared = root.join("shared");
+    fs::create_dir(&shared)?;
+    fs::set_permissions(&shared, fs::Permissions::from_mode(0o755))?;
+    let home = shared.join("private");
+    fs::create_dir(&home)?;
+    fs::set_permissions(&home, fs::Permissions::from_mode(0o755))?;
+    let auth = home.join("auth.json");
+    fs::write(&auth, b"synthetic-auth-canary")?;
+    fs::set_permissions(&auth, fs::Permissions::from_mode(0o600))?;
+    let before = fs::metadata(&auth)?;
+    let mut initialized = true;
+    for _ in 0..2 {
+        let mut command = serve(root);
+        command
+            .arg("--private-dir")
+            .arg(&home)
+            .arg("--check-private-file")
+            .arg(&auth)
+            .arg("--")
+            .arg(PROBE)
+            .arg("mark")
+            .arg("--path")
+            .arg(root.join("dispatched"));
+        let mut process = Process(command.spawn()?);
+        let mut errors = LimitedOutput::new(process.0.stderr.take().context("stderr")?);
+        initialized &= wait(&mut process.0)?.success();
+        errors.finish()?;
+        ensure!(
+            !errors.contains(b"synthetic-auth-canary"),
+            "file contents reached diagnostics"
+        );
+    }
+    let after = fs::metadata(&auth)?;
+    let mut refused_before_dispatch = Vec::new();
+    let mut targets_preserved = true;
+    for kind in [
+        "parent-link",
+        "final-link",
+        "traversal",
+        "not-directory",
+        "disk-volatile",
+        "file-link",
+        "file-hardlink",
+        "file-directory",
+        "file-mode",
+    ] {
+        let case = scratch()?;
+        let base = case.path();
+        fs::create_dir(base.join("session"))?;
+        let mut watch = creation_watch(&base.join("session"))?;
+        let target = base.join("target");
+        fs::create_dir(&target)?;
+        fs::set_permissions(&target, fs::Permissions::from_mode(0o755))?;
+        let candidate = base.join("candidate");
+        let sentinel = target.join("sentinel");
+        fs::write(&sentinel, b"synthetic-auth-canary")?;
+        fs::set_permissions(&sentinel, fs::Permissions::from_mode(0o600))?;
+        let original = fs::metadata(&sentinel)?;
+        let mut command = serve(base);
+        match kind {
+            "parent-link" => {
+                symlink(&target, &candidate)?;
+                command.arg("--private-dir").arg(candidate.join("child"));
+            }
+            "final-link" => {
+                symlink(&target, &candidate)?;
+                command.arg("--private-dir").arg(&candidate);
+            }
+            "traversal" => {
+                command.arg("--private-dir").arg(target.join("../escaped"));
+            }
+            "not-directory" => {
+                fs::write(&candidate, b"unchanged")?;
+                command.arg("--private-dir").arg(&candidate);
+            }
+            "disk-volatile" => {
+                command.arg("--volatile-dir").arg(&target);
+            }
+            "file-link" => {
+                symlink(&sentinel, &candidate)?;
+                command.arg("--check-private-file").arg(&candidate);
+            }
+            "file-hardlink" => {
+                fs::hard_link(&sentinel, &candidate)?;
+                command.arg("--check-private-file").arg(&candidate);
+            }
+            "file-directory" => {
+                command.arg("--check-private-file").arg(&target);
+            }
+            "file-mode" => {
+                fs::write(&candidate, b"unchanged")?;
+                fs::set_permissions(&candidate, fs::Permissions::from_mode(0o644))?;
+                command.arg("--check-private-file").arg(&candidate);
+            }
+            _ => unreachable!(),
+        }
+        command
+            .arg("--")
+            .arg(PROBE)
+            .arg("mark")
+            .arg("--path")
+            .arg(base.join("dispatched"));
+        let mut process = Process(command.spawn()?);
+        let mut errors = LimitedOutput::new(process.0.stderr.take().context("stderr")?);
+        let status = wait(&mut process.0)?;
+        errors.finish()?;
+        refused_before_dispatch.push(
+            !status.success()
+                && !entry_present(&base.join("dispatched"))?
+                && !created_entry(&mut watch, b"ctl")?,
+        );
+        let observed = fs::metadata(&sentinel)?;
+        targets_preserved &= fs::read(&sentinel)? == b"synthetic-auth-canary"
+            && original.ino() == observed.ino()
+            && original.mode() == observed.mode()
+            && fs::metadata(&target)?.mode() & 0o777 == 0o755;
+    }
+    Ok(
+        json!({"initialized":initialized,"repeated_inode":before.ino()==after.ino(),
+        "auth_bytes_preserved":fs::read(&auth)? == b"synthetic-auth-canary",
+        "shared_mode_unchanged":fs::metadata(&shared)?.mode() & 0o777 == 0o755,
+        "target_mode":fs::metadata(&home)?.mode() & 0o777,
+        "refused_before_dispatch":refused_before_dispatch,"targets_preserved":targets_preserved}),
+    )
+}
+
+#[test]
+fn private_path_initialization_preserves_auth_and_refuses_unsafe_entries() -> Result<()> {
+    let observed = private_paths()?;
+    assert_eq!(observed["initialized"], true);
+    assert_eq!(observed["target_mode"], 448);
+    assert_eq!(observed["refused_before_dispatch"], json!(vec![true; 9]));
+    assert_eq!(observed["targets_preserved"], true);
+    Ok(())
+}
+
+#[test]
+fn adversary_private_file_special_entries_refuse_without_opening_or_dispatch() -> Result<()> {
+    use std::os::unix::fs::{MetadataExt, symlink};
+    use std::os::unix::net::UnixListener;
+    for kind in ["fifo", "socket", "dangling-parent", "mode-special"] {
+        let dir = scratch()?;
+        let root = dir.path();
+        fs::create_dir(root.join("session"))?;
+        let mut watch = creation_watch(&root.join("session"))?;
+        let candidate = root.join("auth.json");
+        let socket = match kind {
+            "fifo" => {
+                mantle_launch::session::make_fifo(&candidate)?;
+                None
+            }
+            "socket" => Some(UnixListener::bind(&candidate)?),
+            "dangling-parent" => {
+                symlink(root.join("missing"), &candidate)?;
+                None
+            }
+            "mode-special" => {
+                fs::write(&candidate, b"adversary-private-file-canary")?;
+                fs::set_permissions(&candidate, fs::Permissions::from_mode(0o4600))?;
+                None
+            }
+            _ => unreachable!(),
+        };
+        let original = fs::symlink_metadata(&candidate)?;
+        let path = if kind == "dangling-parent" {
+            candidate.join("auth.json")
+        } else {
+            candidate.clone()
+        };
+        let started = Instant::now();
+        let mut command = serve(root);
+        command
+            .arg("--check-private-file")
+            .arg(path)
+            .arg("--")
+            .arg(PROBE)
+            .arg("mark")
+            .arg("--path")
+            .arg(root.join("dispatched"));
+        let mut process = Process(command.spawn()?);
+        let mut errors = LimitedOutput::new(process.0.stderr.take().context("stderr")?);
+        assert_eq!(wait(&mut process.0)?.code(), Some(1), "{kind}");
+        errors.finish()?;
+        assert!(started.elapsed() < Duration::from_secs(2), "{kind} blocked");
+        assert!(!entry_present(&root.join("dispatched"))?);
+        assert!(!created_entry(&mut watch, b"ctl")?);
+        assert!(!errors.contains(b"adversary-private-file-canary"));
+        let observed = fs::symlink_metadata(&candidate)?;
+        assert_eq!(
+            (observed.dev(), observed.ino(), observed.mode()),
+            (original.dev(), original.ino(), original.mode())
+        );
+        drop(socket);
+    }
+    Ok(())
+}
+
+#[test]
+fn adversary_private_paths_accept_tmpfs_and_preserve_auth_metadata() -> Result<()> {
+    use std::os::unix::fs::MetadataExt;
+    let parent =
+        std::env::var_os("MANTLE_ADVERSARY_RUNTIME").unwrap_or_else(|| OsString::from("/dev/shm"));
+    let runtime = tempfile::tempdir_in(parent)?;
+    let dir = scratch()?;
+    let root = dir.path();
+    let home = root.join("private-home");
+    fs::create_dir(&home)?;
+    let auth = home.join("auth.json");
+    fs::write(&auth, b"adversary-metadata-only-canary")?;
+    fs::set_permissions(&auth, fs::Permissions::from_mode(0o600))?;
+    let old = fs::metadata(&auth)?;
+    for _ in 0..2 {
+        let mut command = serve(root);
+        command
+            .arg("--private-dir")
+            .arg(&home)
+            .arg("--volatile-dir")
+            .arg(runtime.path().join("sqlite"))
+            .arg("--check-private-file")
+            .arg(&auth)
+            .arg("--check-private-file")
+            .arg(home.join("absent/config.toml"))
+            .arg("--")
+            .arg(PROBE)
+            .arg("mark")
+            .arg("--path")
+            .arg(root.join("dispatched"));
+        let mut process = Process(command.spawn()?);
+        let mut errors = LimitedOutput::new(process.0.stderr.take().context("stderr")?);
+        assert_eq!(wait(&mut process.0)?.code(), Some(0));
+        errors.finish()?;
+        assert_eq!(fs::read(root.join("dispatched"))?, b"dispatched");
+        assert!(!errors.contains(b"adversary-metadata-only-canary"));
+        let now = fs::metadata(&auth)?;
+        assert_eq!(
+            (
+                now.dev(),
+                now.ino(),
+                now.mode(),
+                now.atime(),
+                now.atime_nsec(),
+                now.mtime(),
+                now.mtime_nsec()
+            ),
+            (
+                old.dev(),
+                old.ino(),
+                old.mode(),
+                old.atime(),
+                old.atime_nsec(),
+                old.mtime(),
+                old.mtime_nsec()
+            )
+        );
+        assert_eq!(fs::metadata(&home)?.mode() & 0o7777, 0o700);
+        assert_eq!(
+            fs::metadata(runtime.path().join("sqlite"))?.mode() & 0o7777,
+            0o700
+        );
+        assert!(!home.join("absent").exists());
+    }
+    assert_eq!(fs::read(auth)?, b"adversary-metadata-only-canary");
     Ok(())
 }

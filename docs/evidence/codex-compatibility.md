@@ -1,5 +1,43 @@
 # Codex qualification under Substrate — 2026-10-02
 
+## Private runtime preparation — CW01–CW09
+
+The local `runtime-sinks` probe reverified pinned Codex 0.153.4 against SHA256
+`56ef98ab4032d317ab26e9b5e5a175650717351edb16ed9cde0cb6d1734d62da`, then ran the real
+launcher with a fresh synthetic home, cleared environment, volatile replay and tmpfs directories.
+No operator credential/configuration was read; no login or model turn was requested. This local
+observation does not change the confined qualification or authenticated limitations below.
+
+The fixed `--strict-config`, ChatGPT/file authentication, `on-request` approval and explicit
+`danger-full-access` outer-confinement candidate reached the welcome/login screen. A deliberately
+conflicting ordinary user config selected a nonexistent provider, API auth, keyring, persistent
+diagnostic paths, enabled history/analytics/feedback/updates and local endpoint overrides. Fixed
+CLI settings kept the selected provider and endpoints at their ChatGPT values and the real TUI
+remained alive across initial attach, reattach, resize and a bounded slow-reader pause. This is
+ordinary config precedence evidence, not authenticated managed-policy evidence.
+
+Observed real Codex sinks were `state_5.sqlite`, `logs_2.sqlite`, `goals_1.sqlite`,
+`memories_1.sqlite`, `queue_1.sqlite`, their WAL/SHM files, and `codex-tui.log`, under the
+launcher-verified tmpfs runtime root. The conflicting persistent sink paths and launcher
+`last-output` were absent. An explicit synthetic SQLite fixture placed a canary in both its live
+database and WAL; the bounded scanner found both and caught a deliberately planted persistent
+diagnostic file before its removal. That fixture is independent of Codex authentication and does
+not establish the behavior of an unexercised refresh or failure path.
+
+Reproduce with the Rust `codex_qualification runtime-sinks` example, passing `--codex`, the
+`--sha256` above, `--launcher`, an existing private `--scratch-parent`, an existing private tmpfs
+`--runtime-parent`, and `--seconds 6`. The helper removes only its own disposable children and
+reports observations without raw terminal bytes. Production requests use equivalent fixed
+configuration with `/workspace/.mantle/home/.codex` for intended auth/conversation files and
+`/tmp/mantle-codex/{sqlite,log}` for runtime diagnostics.
+
+Mantle accepts and persists Codex/ChatgptDevice selection but still refuses start/attach before
+credential or provider side effects. Supported Substrate non-recording capture, actual device
+login, token refresh, authenticated tool approvals and lifecycle parity remain unverified and
+belong to the parent integration story. No confidential end-to-end session is claimed here.
+
+## Earlier confined qualification
+
 Codex 0.153.4 reaches its unauthenticated interactive screen through the existing
 Mantle PTY/FIFO launcher under Substrate 0.7.8 without relaxing confinement.
 The default nested `workspace-write` tool sandbox fails its shell and Cargo controls

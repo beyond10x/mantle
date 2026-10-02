@@ -32,7 +32,10 @@
           "mkdirs": [],
           "command": [
             "L2FnZW50"
-          ]
+          ],
+          "private_dirs": [],
+          "volatile_dirs": [],
+          "check_private_files": []
         },
         "attach": null,
         "diagnostic": null

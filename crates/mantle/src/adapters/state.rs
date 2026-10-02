@@ -7,7 +7,10 @@ use std::path::Path;
 use anyhow::{Context, Result, bail};
 use rusqlite::{Connection, OptionalExtension as _, params};
 
-use crate::domain::session::SessionState;
+use crate::domain::session::{
+    AgentKind, AuthenticationMethod, SessionState, agent_name, auth_name, resolve_identity,
+    validate_identity,
+};
 
 pub struct Store {
     connection: Connection,
@@ -33,6 +36,8 @@ pub struct SessionRecord {
     pub requested_json: String,
     pub created_at: String,
     pub failure: Option<String>,
+    pub agent_kind: AgentKind,
+    pub authentication: AuthenticationMethod,
 }
 
 #[derive(Debug, Clone)]
@@ -77,18 +82,44 @@ CREATE TABLE IF NOT EXISTS sources (
 
 impl Store {
     pub fn open(path: &Path) -> Result<Self> {
-        let connection =
+        let mut connection =
             Connection::open(path).with_context(|| format!("opening {}", path.display()))?;
-        connection
-            .execute_batch(SCHEMA)
-            .context("creating the state schema")?;
+        Self::initialize(&mut connection)?;
         Ok(Self { connection })
+    }
+
+    fn initialize(connection: &mut Connection) -> Result<()> {
+        let tx = connection.transaction()?;
+        tx.execute_batch(SCHEMA)
+            .context("creating the state schema")?;
+        let columns = tx
+            .prepare("PRAGMA table_info(sessions)")?
+            .query_map([], |row| row.get::<_, String>(1))?
+            .collect::<rusqlite::Result<Vec<_>>>()?;
+        match (columns.iter().any(|s| s == "agent_kind"), columns.iter().any(|s| s == "authentication")) {
+            (false, false) => tx.execute_batch("ALTER TABLE sessions ADD COLUMN agent_kind TEXT NOT NULL DEFAULT 'claude-code'; ALTER TABLE sessions ADD COLUMN authentication TEXT NOT NULL DEFAULT 'claude-oauth';")?,
+            (true, true) => {},
+            _ => bail!("incomplete session identity schema"),
+        }
+        {
+            let mut rows =
+                tx.prepare("SELECT DISTINCT agent_kind, authentication FROM sessions")?;
+            for row in rows.query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })? {
+                let (agent, auth) = row?;
+                resolve_identity(&agent, Some(&auth))
+                    .context("invalid session identity in state database")?;
+            }
+        }
+        tx.commit()?;
+        Ok(())
     }
 
     #[cfg(test)]
     fn in_memory() -> Result<Self> {
-        let connection = Connection::open_in_memory()?;
-        connection.execute_batch(SCHEMA)?;
+        let mut connection = Connection::open_in_memory()?;
+        Self::initialize(&mut connection)?;
         Ok(Self { connection })
     }
 
@@ -125,10 +156,11 @@ impl Store {
     }
 
     pub fn insert_session(&self, session: &SessionRecord) -> Result<()> {
+        validate_identity(&session.agent_kind, &session.authentication)?;
         let result = self.connection.execute(
             "INSERT INTO sessions(id, name, worker, state, manifest_digest, workspace, agent_exec,
-                                  requested_json, created_at, failure)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+                                  requested_json, created_at, failure, agent_kind, authentication)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
             params![
                 session.id,
                 session.name,
@@ -140,6 +172,8 @@ impl Store {
                 session.requested_json,
                 session.created_at,
                 session.failure,
+                agent_name(&session.agent_kind),
+                auth_name(&session.authentication),
             ],
         );
         match result {
@@ -248,7 +282,7 @@ impl Store {
 
 const SESSION_COLUMNS: &str =
     "SELECT id, name, worker, state, manifest_digest, workspace, agent_exec,
-        requested_json, created_at, failure FROM sessions";
+        requested_json, created_at, failure, agent_kind, authentication FROM sessions";
 
 type RawSession = (
     String,
@@ -261,6 +295,8 @@ type RawSession = (
     String,
     String,
     Option<String>,
+    String,
+    String,
 );
 
 fn read_session(row: &rusqlite::Row<'_>) -> rusqlite::Result<RawSession> {
@@ -275,6 +311,8 @@ fn read_session(row: &rusqlite::Row<'_>) -> rusqlite::Result<RawSession> {
         row.get(7)?,
         row.get(8)?,
         row.get(9)?,
+        row.get(10)?,
+        row.get(11)?,
     ))
 }
 
@@ -290,7 +328,11 @@ fn finish_session(raw: RawSession) -> Result<SessionRecord> {
         requested_json,
         created_at,
         failure,
+        agent,
+        auth,
     ) = raw;
+    let (agent_kind, authentication) = resolve_identity(&agent, Some(&auth))
+        .context("invalid session identity in state database")?;
     Ok(SessionRecord {
         id,
         name,
@@ -302,6 +344,8 @@ fn finish_session(raw: RawSession) -> Result<SessionRecord> {
         requested_json,
         created_at,
         failure,
+        agent_kind,
+        authentication,
     })
 }
 
@@ -321,6 +365,8 @@ mod tests {
             requested_json: "{}".to_owned(),
             created_at: "2026-10-02T00:00:00Z".to_owned(),
             failure: None,
+            agent_kind: AgentKind::V0,
+            authentication: AuthenticationMethod::V1,
         }
     }
 

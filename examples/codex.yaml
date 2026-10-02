@@ -1,0 +1,16 @@
+# Preparatory integration: start currently refuses until Substrate supports non-recording capture.
+# Login and an authenticated model/tool turn are separate acceptance requirements.
+apiVersion: mantle.beyond10x.dev/v1alpha1
+kind: Session
+metadata:
+  name: codex-example
+workspace:
+  repositories:
+    - name: substrate
+      repository: https://github.com/beyond10x/substrate.git
+      ref: main
+      mount: substrate
+agent:
+  kind: codex
+  auth: chatgpt-device
+  cwd: /workspace/substrate

@@ -2,8 +2,8 @@
   "format": "mantle-conformance-baseline/1",
   "components": {
     "mantle-cli": {
-      "answered_floor": 213,
-      "total_floor": 213,
+      "answered_floor": 218,
+      "total_floor": 218,
       "skipped_ceiling": 0
     },
     "mantle-egress": {
@@ -12,8 +12,8 @@
       "skipped_ceiling": 0
     },
     "mantle-launch": {
-      "answered_floor": 45,
-      "total_floor": 45,
+      "answered_floor": 47,
+      "total_floor": 47,
       "skipped_ceiling": 0
     }
   },
@@ -90,6 +90,7 @@
     "mantle.launch.ParseArgs/outcome/returned",
     "mantle.launch.ParseWindow/outcome/returned",
     "mantle.launch.PersistentReplayCompatibility/outcome/returned",
+    "mantle.launch.PrivatePaths/outcome/returned",
     "mantle.launch.ReadSecret/outcome/returned",
     "mantle.launch.ReplayRing/outcome/returned",
     "mantle.launch.Signals/outcome/returned",
@@ -108,8 +109,9 @@
     "mantle.launch/authored/filesystem-links-and-locks",
     "mantle.launch/authored/missing-command",
     "mantle.launch/authored/os-argument-bytes-and-exit",
-    "mantle.launch/authored/persistent-replay-compatibility",
     "mantle.launch/authored/oversize-scrollback-write",
+    "mantle.launch/authored/persistent-replay-compatibility",
+    "mantle.launch/authored/private-path-initialization",
     "mantle.launch/authored/process-group-signals",
     "mantle.launch/authored/proxy-userinfo",
     "mantle.launch/authored/pty-fifo-lifecycle",
@@ -186,6 +188,7 @@
     "mantle.manifest/authored/wrong-root",
     "mantle.manifest/authored/wrong-runtime",
     "mantle.manifest/authored/zero-cpu-clamped",
+    "mantle.orchestration.CodexPreflight/outcome/returned",
     "mantle.orchestration.Observe/outcome/returned",
     "mantle.orchestration.Request/outcome/returned",
     "mantle.orchestration.Start/outcome/returned",
@@ -211,6 +214,8 @@
     "mantle.orchestration/authored/aws-up-running",
     "mantle.orchestration/authored/aws-up-stopped",
     "mantle.orchestration/authored/aws-up-stopping",
+    "mantle.orchestration/authored/codex-private-runtime",
+    "mantle.orchestration/authored/codex-start",
     "mantle.orchestration/authored/exec-request",
     "mantle.orchestration/authored/kubevirt-down-always",
     "mantle.orchestration/authored/kubevirt-down-missing",
@@ -282,7 +287,9 @@
     "mantle.session.BeginStop/outcome/moved",
     "mantle.session.FinishStop/outcome/missing",
     "mantle.session.FinishStop/outcome/moved",
+    "mantle.session.IdentityMigration/outcome/returned",
     "mantle.session.InsertSession/outcome/conflict",
+    "mantle.session.InsertSession/outcome/invalid-identity",
     "mantle.session.InsertSession/outcome/recorded",
     "mantle.session.MaterializationFailed/outcome/missing",
     "mantle.session.MaterializationFailed/outcome/moved",

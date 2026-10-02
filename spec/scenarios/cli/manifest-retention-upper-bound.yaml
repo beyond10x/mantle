@@ -28,7 +28,9 @@
           "pids": 4096,
           "storage_bytes": null,
           "retain_for_secs": 86400,
-          "digest": "sha256:4a6662e256c9ebb6c3fdfaf441aef20375f8c51cdaf6ae91684ff406fe058e26"
+          "digest": "sha256:4a6662e256c9ebb6c3fdfaf441aef20375f8c51cdaf6ae91684ff406fe058e26",
+          "agent_kind": "ClaudeCode",
+          "authentication": "ClaudeOauth"
         },
         "diagnostic": null
       }

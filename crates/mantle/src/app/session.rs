@@ -15,7 +15,7 @@ use crate::app::terminal::{self, Ended};
 use crate::app::worker::{WORKER, install_token};
 use crate::config::Config;
 use crate::domain::manifest::{self, Resolved};
-use crate::domain::session::SessionState;
+use crate::domain::session::{AgentKind, SessionState, agent_name, auth_name, validate_identity};
 
 /// Substrate admits no proxy variable in a request, so git takes the gateway as a config value.
 const GIT_PROXY: &str = "http.proxy=http://127.0.0.1:3128";
@@ -71,24 +71,38 @@ pub async fn start(
     let text = std::fs::read_to_string(manifest_path)
         .with_context(|| format!("reading {manifest_path}"))?;
     let resolved = manifest::parse(&text)?;
-    let token = config.claude_token()?;
+    let token = selected_credentials(&resolved, || config.claude_token())?;
     let worker = worker(store)?;
     let connected = connect(config, &worker).await?;
     let machine = connected.client.machine();
     let executable = connected
         .ssh
         .bounded(
-            "test -x /opt/mantle/bin/claude",
+            match resolved.agent_kind {
+                AgentKind::V0 => "test -x /opt/mantle/bin/claude",
+                AgentKind::V1 => "test -x /opt/mantle/bin/codex",
+            },
             None,
             Duration::from_secs(15),
         )?
         .status
         .success();
-    let missing = sub::selected_claude_missing_facts(&machine, executable);
+    let missing = match resolved.agent_kind {
+        AgentKind::V0 => sub::selected_claude_missing_facts(&machine, executable),
+        AgentKind::V1 => {
+            let mut missing = sub::missing_facts(&machine);
+            if !executable {
+                missing.push("agent.executable[codex]".into());
+            }
+            missing
+        }
+    };
     if !missing.is_empty() {
         bail!("FAILED_CAPABILITY: the worker lacks {}", missing.join(", "));
     }
-    install_token(&connected.ssh, &token)?;
+    if let Some(token) = token {
+        install_token(&connected.ssh, &token)?;
+    }
 
     let id = format!("ses_{}", ulid::Ulid::new().to_string().to_lowercase());
     store.insert_session(&SessionRecord {
@@ -102,6 +116,8 @@ pub async fn start(
         requested_json: requested_json(&resolved).to_string(),
         created_at: chrono::Utc::now().to_rfc3339(),
         failure: None,
+        agent_kind: resolved.agent_kind.clone(),
+        authentication: resolved.authentication.clone(),
     })?;
     println!("Session        {} ({id})", resolved.name);
     println!("Worker         {} {}", worker.region, worker.instance);
@@ -116,7 +132,12 @@ pub(crate) trait StartPort {
     fn workspace_id<'a>(&self, workspace: &'a Self::Workspace) -> &'a str;
     async fn start_agent(&self, workspace: &Self::Workspace, resolved: &Resolved)
     -> Result<String>;
-    async fn attach(&self, workspace: &Self::Workspace, name: &str) -> Result<()>;
+    async fn attach(
+        &self,
+        workspace: &Self::Workspace,
+        name: &str,
+        agent: &AgentKind,
+    ) -> Result<()>;
 }
 impl StartPort for Connected {
     type Workspace = Workspace;
@@ -153,8 +174,8 @@ impl StartPort for Connected {
     async fn start_agent(&self, workspace: &Workspace, resolved: &Resolved) -> Result<String> {
         start_agent(workspace, resolved).await
     }
-    async fn attach(&self, workspace: &Workspace, name: &str) -> Result<()> {
-        attach_workspace(workspace, name).await
+    async fn attach(&self, workspace: &Workspace, name: &str, agent: &AgentKind) -> Result<()> {
+        attach_workspace(workspace, name, agent).await
     }
 }
 
@@ -165,6 +186,8 @@ pub(crate) async fn start_recorded(
     port: &impl StartPort,
     attach: bool,
 ) -> Result<()> {
+    validate_identity(&resolved.agent_kind, &resolved.authentication)?;
+    sub::require_capture_binding(resolved.agent_kind == AgentKind::V1)?;
     let workspace = port.create(id, resolved).await?;
     store.set_workspace(id, port.workspace_id(&workspace))?;
     println!("Workspace      {}", port.workspace_id(&workspace));
@@ -197,11 +220,31 @@ pub(crate) async fn start_recorded(
         }
     }
     if attach {
-        port.attach(&workspace, &resolved.name).await?;
+        port.attach(&workspace, &resolved.name, &resolved.agent_kind)
+            .await?;
     } else {
         println!("Attach with    mantle attach {}", resolved.name);
+        if resolved.agent_kind == AgentKind::V1 {
+            println!(
+                "Authentication complete only after attached Codex login; process readiness does not establish it."
+            );
+        }
     }
     Ok(())
+}
+
+/// Selection is checked before calling the credential source, connecting to a provider or
+/// inserting a session. No mutable availability flag can bypass this production adapter.
+pub(crate) fn selected_credentials(
+    resolved: &Resolved,
+    read_claude: impl FnOnce() -> Result<Vec<u8>>,
+) -> Result<Option<Vec<u8>>> {
+    validate_identity(&resolved.agent_kind, &resolved.authentication)?;
+    sub::require_capture_binding(resolved.agent_kind == AgentKind::V1)?;
+    match resolved.agent_kind {
+        AgentKind::V0 => read_claude().map(Some),
+        AgentKind::V1 => Ok(None),
+    }
 }
 
 fn requested_json(resolved: &Resolved) -> serde_json::Value {
@@ -371,8 +414,8 @@ async fn start_agent(workspace: &Workspace, resolved: &Resolved) -> Result<Strin
     Ok(exec.id().to_owned())
 }
 
-async fn attach_workspace(workspace: &Workspace, name: &str) -> Result<()> {
-    let session = attach_request()
+async fn attach_workspace(workspace: &Workspace, name: &str, agent: &AgentKind) -> Result<()> {
+    let session = attach_request(agent)
         .pty(workspace)?
         .input_limit_bytes(b10x_substrate_sdk::MAX_SESSION_INPUT_BYTES)
         .frame_limit_bytes(b10x_substrate_sdk::MAX_SESSION_FRAME_BYTES)
@@ -396,6 +439,7 @@ async fn attach_workspace(workspace: &Workspace, name: &str) -> Result<()> {
 
 pub async fn attach(config: &Config, store: &Store, name: &str) -> Result<()> {
     let record = live(store, name)?;
+    sub::require_capture_binding(record.agent_kind == AgentKind::V1)?;
     let connected = connect(config, &worker(store)?).await?;
     let workspace = connected
         .client
@@ -415,7 +459,7 @@ pub async fn attach(config: &Config, store: &Store, name: &str) -> Result<()> {
             );
         }
     }
-    attach_workspace(&workspace, name).await
+    attach_workspace(&workspace, name, &record.agent_kind).await
 }
 
 fn live(store: &Store, name: &str) -> Result<SessionRecord> {
@@ -463,14 +507,16 @@ pub fn list(store: &Store) -> Result<()> {
         return Ok(());
     }
     println!(
-        "{:<24} {:<24} {:<30} CREATED",
-        "NAME", "STATE (recorded)", "ID"
+        "{:<24} {:<24} {:<12} {:<16} {:<30} CREATED",
+        "NAME", "STATE (recorded)", "AGENT", "AUTH METHOD", "ID"
     );
     for session in sessions {
         println!(
-            "{:<24} {:<24} {:<30} {}",
+            "{:<24} {:<24} {:<12} {:<16} {:<30} {}",
             session.name,
             session.state.to_string(),
+            agent_name(&session.agent_kind),
+            auth_name(&session.authentication),
             session.id,
             session.created_at
         );
@@ -484,6 +530,11 @@ pub async fn status(config: &Config, store: &Store, name: &str) -> Result<()> {
     println!("Session");
     println!("  id              {}", record.id);
     println!("  recorded state  {}", record.state);
+    println!("  agent           {}", agent_name(&record.agent_kind));
+    println!(
+        "  auth method     {} (not an authenticated-status observation)",
+        auth_name(&record.authentication)
+    );
     println!("  manifest        {}", record.manifest_digest);
     if let Some(failure) = &record.failure {
         println!("  failure         {failure}");
@@ -736,6 +787,7 @@ fn not_found(error: &b10x_substrate_sdk::SdkError) -> bool {
 /// The exact command request Mantle passes to the pinned SDK. No credential value belongs here.
 #[derive(serde::Serialize)]
 pub(crate) struct RunRequest {
+    pub(crate) requires_non_recording: bool,
     argv: Vec<String>,
     environment: std::collections::BTreeMap<String, String>,
     aperture: Option<String>,
@@ -749,6 +801,7 @@ pub(crate) struct RunRequest {
 }
 impl RunRequest {
     fn command(&self, workspace: &Workspace) -> Result<b10x_substrate_sdk::CommandBuilder> {
+        sub::require_capture_binding(self.requires_non_recording)?;
         let (program, args) = self.argv.split_first().context("empty argv")?;
         let mut command = workspace
             .command(program.as_str())
@@ -780,6 +833,7 @@ impl RunRequest {
         Ok(command)
     }
     fn pty(&self, workspace: &Workspace) -> Result<b10x_substrate_sdk::PipeSessionBuilder> {
+        sub::require_capture_binding(self.requires_non_recording)?;
         let (program, args) = self.argv.split_first().context("empty argv")?;
         let mut command = workspace
             .pty_session(program.as_str(), terminal::local_window())
@@ -803,7 +857,8 @@ impl RunRequest {
     }
 }
 pub(crate) fn agent_request(resolved: &Resolved) -> RunRequest {
-    RunRequest {
+    let mut request = RunRequest {
+        requires_non_recording: resolved.agent_kind == AgentKind::V1,
         argv: [
             "/opt/mantle/bin/mantle-launch",
             "serve",
@@ -839,10 +894,28 @@ pub(crate) fn agent_request(resolved: &Resolved) -> RunRequest {
         memory_bytes: resolved.memory_bytes,
         processes: resolved.pids,
         lease_secs: Some(resolved.retain_for.as_secs()),
+    };
+    if resolved.agent_kind == AgentKind::V1 {
+        request.argv = codex_argv(&resolved.agent_cwd);
+        request.secret_slot = None;
+        request.secret_fd = None;
+        request
+            .environment
+            .remove("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC");
+        request.environment.remove("DISABLE_AUTOUPDATER");
+        request
+            .environment
+            .insert("CODEX_HOME".into(), "/workspace/.mantle/home/.codex".into());
+        request.environment.insert("RUST_LOG".into(), "off".into());
+        request
+            .environment
+            .insert("CODEX_TUI_RECORD_SESSION".into(), "0".into());
     }
+    request
 }
 pub(crate) fn exec_request(program: &str, args: &[String], cpu: u32) -> RunRequest {
     RunRequest {
+        requires_non_recording: false,
         argv: std::iter::once(program.to_owned())
             .chain(args.iter().cloned())
             .collect(),
@@ -860,8 +933,9 @@ pub(crate) fn exec_request(program: &str, args: &[String], cpu: u32) -> RunReque
         lease_secs: None,
     }
 }
-pub(crate) fn attach_request() -> RunRequest {
+pub(crate) fn attach_request(agent: &AgentKind) -> RunRequest {
     RunRequest {
+        requires_non_recording: *agent == AgentKind::V1,
         argv: vec![
             "/opt/mantle/bin/mantle-launch".into(),
             "attach".into(),
@@ -885,4 +959,65 @@ pub(crate) fn attach_request() -> RunRequest {
         processes: 32,
         lease_secs: Some(ATTACH_TIMEOUT.as_secs()),
     }
+}
+
+fn codex_argv(cwd: &str) -> Vec<String> {
+    let mut argv: Vec<String> = [
+        "/opt/mantle/bin/mantle-launch",
+        "serve",
+        "--dir",
+        sub::AGENT_DIR,
+        "--volatile-replay",
+        "--cwd",
+        cwd,
+        "--private-dir",
+        "/workspace/.mantle",
+        "--private-dir",
+        "/workspace/.mantle/home",
+        "--private-dir",
+        "/workspace/.mantle/home/.codex",
+        "--volatile-dir",
+        "/tmp/mantle-codex/sqlite",
+        "--volatile-dir",
+        "/tmp/mantle-codex/log",
+        "--check-private-file",
+        "/workspace/.mantle/home/.codex/auth.json",
+        "--check-private-file",
+        "/workspace/.mantle/home/.codex/config.toml",
+        "--check-private-file",
+        "/workspace/.mantle/home/.codex/environments.toml",
+        "--mkdir",
+        "/workspace/.mantle/cargo",
+        "--proxy",
+        sub::PROXY,
+        "--",
+        "/opt/mantle/bin/codex",
+        "--strict-config",
+        "--sandbox",
+        "danger-full-access",
+        "--ask-for-approval",
+        "on-request",
+    ]
+    .into_iter()
+    .map(str::to_owned)
+    .collect();
+    // Outer confinement remains Substrate's responsibility. This requests approvals and
+    // never uses Codex's flag that bypasses both approvals and sandboxing.
+    for setting in [
+        "forced_login_method=\"chatgpt\"",
+        "cli_auth_credentials_store=\"file\"",
+        "history.persistence=\"none\"",
+        "analytics.enabled=false",
+        "feedback.enabled=false",
+        "check_for_update_on_startup=false",
+        "sqlite_home=\"/tmp/mantle-codex/sqlite\"",
+        "log_dir=\"/tmp/mantle-codex/log\"",
+        "model_provider=\"openai\"",
+        "chatgpt_base_url=\"https://chatgpt.com/backend-api/\"",
+        "openai_base_url=\"https://chatgpt.com/backend-api/codex\"",
+    ] {
+        argv.push("-c".into());
+        argv.push(setting.into());
+    }
+    argv
 }

@@ -40,6 +40,15 @@ const READS_PER_TURN: usize = 16;
 const REDRAW_HOLD: Duration = Duration::from_millis(200);
 
 pub fn run(args: &ServeArgs) -> Result<u8> {
+    for dir in &args.private_dirs {
+        session::prepare_private_dir(dir, false)?;
+    }
+    for dir in &args.volatile_dirs {
+        session::prepare_private_dir(dir, true)?;
+    }
+    for file in &args.check_private_files {
+        session::check_private_file(file)?;
+    }
     let secret = match (args.secret_fd, args.secret_env.as_deref()) {
         (Some(fd), Some(name)) => Some((name, secret::read_from_fd(fd, name)?)),
         _ => None,

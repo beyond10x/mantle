@@ -44,6 +44,7 @@ types:
     fields:
       - {name: kind, type: String}
       - {name: cwd, type: String}
+      - {name: auth, type: 'Optional<String>'}
   - name: mantle.manifest.Resources
     kind: struct
     fields:
@@ -69,6 +70,8 @@ types:
       - {name: name, type: String}
       - {name: repositories, type: 'List<mantle.manifest.Repository>'}
       - {name: agent_cwd, type: String}
+      - {name: agent_kind, type: mantle.session.AgentKind}
+      - {name: authentication, type: mantle.session.AuthenticationMethod}
       - {name: cpu, type: Integer}
       - {name: memory_bytes, type: Integer}
       - {name: pids, type: Integer}

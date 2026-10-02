@@ -91,7 +91,7 @@ impl session::StartPort for &Plane {
         self.call("agent")?;
         Ok("exec-1".into())
     }
-    async fn attach(&self, _: &Self, _: &str) -> Result<()> {
+    async fn attach(&self, _: &Self, _: &str, _: &crate::domain::session::AgentKind) -> Result<()> {
         self.call("attach")
     }
 }
@@ -243,9 +243,14 @@ fn record(state: SessionState) -> SessionRecord {
         requested_json: "{}".into(),
         created_at: "2026-10-02T00:00:00Z".into(),
         failure: None,
+        agent_kind: crate::domain::session::AgentKind::V0,
+        authentication: crate::domain::session::AuthenticationMethod::V1,
     }
 }
 pub(super) fn execute(command: &str, input: &Value) -> Result<Reply> {
+    if command == "mantle.orchestration.CodexPreflight" {
+        return codex_preflight();
+    }
     if command == "mantle.orchestration.Observe" {
         let facts: Value = serde_json::from_str(input["facts_json"].as_str().context("facts")?)?;
         let machine: b10x_substrate_sdk::Machine = serde_json::from_value(json!({
@@ -276,7 +281,7 @@ pub(super) fn execute(command: &str, input: &Value) -> Result<Reply> {
             "agent" => session::agent_request(&manifest::parse(
                 input["manifest"].as_str().context("manifest")?,
             )?),
-            "attach" => session::attach_request(),
+            "attach" => session::attach_request(&crate::domain::session::AgentKind::V0),
             _ => {
                 let argv: Vec<String> = serde_json::from_value(input["argv"].clone())?;
                 let (program, args) = argv.split_first().context("argv")?;
@@ -341,4 +346,39 @@ pub(super) fn execute(command: &str, input: &Value) -> Result<Reply> {
         let sources:Vec<_>=store.sources("session-1")?.iter().map(|s|json!({"mount":s.mount,"commit":s.commit,"declared_ref":s.declared_ref})).collect();
         Ok(Reply::returned(json!({"succeeded":result.is_ok(),"state":r.state.to_string(),"workspace":r.workspace,"agent_exec":r.agent_exec,"failure":r.failure,"calls":plane.calls.borrow().clone(),"sources":sources})))
     })
+}
+
+fn codex_preflight() -> Result<Reply> {
+    let resolved = manifest::parse(include_str!("../../../../examples/codex.yaml"))?;
+    let store = Store::in_memory()?;
+    let reads = std::cell::Cell::new(0);
+    let result = session::selected_credentials(&resolved, || {
+        reads.set(reads.get() + 1);
+        Ok(b"synthetic-claude-token".to_vec())
+    });
+    let plane = Plane::new(&json!({}));
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?;
+    // This is the real start flow with its admission check, not a fake successful provider.
+    let started = runtime.block_on(session::start_recorded(
+        &store, "blocked", &resolved, &&plane, true,
+    ));
+    let rows = store.live_sessions()?.len();
+    let mut persisted = record(SessionState::Running);
+    persisted.agent_kind = resolved.agent_kind.clone();
+    persisted.authentication = resolved.authentication.clone();
+    store.insert_session(&persisted)?;
+    let stored = store
+        .live_session(&persisted.name)?
+        .context("stored selection")?;
+    let attach = session::attach_request(&stored.agent_kind);
+    let request = session::agent_request(&resolved);
+    Ok(Reply::returned(
+        json!({"refused":result.is_err() && started.is_err(),
+        "diagnostic":result.unwrap_err().to_string(),"credential_reads":reads.get(),
+        "calls":plane.calls.borrow().clone(),"session_rows":rows,
+        "attach_requires_non_recording":attach.requires_non_recording,
+        "request_requires_non_recording":request.requires_non_recording}),
+    ))
 }

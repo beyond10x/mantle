@@ -37,6 +37,14 @@ struct Cli {
 enum Mode {
     /// Run where invoked. This mode alone never establishes Substrate confinement.
     Local(Local),
+    /// Observe fixed runtime sinks with an isolated synthetic home; never logs in.
+    RuntimeSinks {
+        #[command(flatten)]
+        local: Local,
+        /// Existing private tmpfs parent, checked by the real launcher before dispatch.
+        #[arg(long)]
+        runtime_parent: PathBuf,
+    },
     /// Invoke the same helper in a new, no-egress/no-secret Substrate workspace.
     Confined(Confined),
     /// Internal negative controls; no authentication or program output is read.
@@ -314,7 +322,7 @@ fn read_screen(output: &mut File, input: &mut File, screen: &mut Screen) -> Resu
     }
     Ok(())
 }
-fn tui(args: &Local, root: &Path) -> Result<Value> {
+fn tui(args: &Local, root: &Path, runtime: Option<&Path>) -> Result<Value> {
     let session = root.join("session");
     let mut command = Command::new(&args.launcher);
     isolated(&mut command, root);
@@ -329,19 +337,56 @@ fn tui(args: &Local, root: &Path) -> Result<Value> {
             "8192",
             "--proxy",
             "http://127.0.0.1:9",
-            "--",
-        ])
-        .arg(&args.codex)
-        .args([
-            "--sandbox",
-            "workspace-write",
-            "--ask-for-approval",
-            "on-request",
-            "-c",
-            "check_for_update_on_startup=false",
-            "-c",
-            "cli_auth_credentials_store=\"file\"",
-        ])
+        ]);
+    if let Some(runtime) = runtime {
+        command.arg("--volatile-replay");
+        for path in [root.join("home"), root.join("home/.codex")] {
+            command.arg("--private-dir").arg(path);
+        }
+        for name in ["sqlite", "log"] {
+            command.arg("--volatile-dir").arg(runtime.join(name));
+        }
+        for name in ["auth.json", "config.toml", "environments.toml"] {
+            command
+                .arg("--check-private-file")
+                .arg(root.join("home/.codex").join(name));
+        }
+        command
+            .env("CODEX_HOME", root.join("home/.codex"))
+            .env("RUST_LOG", "off")
+            .env("CODEX_TUI_RECORD_SESSION", "0");
+    }
+    command.arg("--").arg(&args.codex).args([
+        "--sandbox",
+        if runtime.is_some() {
+            "danger-full-access"
+        } else {
+            "workspace-write"
+        },
+        "--ask-for-approval",
+        "on-request",
+        "-c",
+        "check_for_update_on_startup=false",
+        "-c",
+        "cli_auth_credentials_store=\"file\"",
+    ]);
+    if let Some(runtime) = runtime {
+        command.arg("--strict-config");
+        for setting in [
+            "forced_login_method=\"chatgpt\"".to_owned(),
+            "history.persistence=\"none\"".into(),
+            "analytics.enabled=false".into(),
+            "feedback.enabled=false".into(),
+            format!("sqlite_home={:?}", runtime.join("sqlite")),
+            format!("log_dir={:?}", runtime.join("log")),
+            "model_provider=\"openai\"".into(),
+            "chatgpt_base_url=\"https://chatgpt.com/backend-api/\"".into(),
+            "openai_base_url=\"https://chatgpt.com/backend-api/codex\"".into(),
+        ] {
+            command.arg("-c").arg(setting);
+        }
+    }
+    command
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null());
@@ -382,6 +427,9 @@ fn tui(args: &Local, root: &Path) -> Result<Value> {
         while Instant::now() < until {
             if Instant::now() >= next_storage_check {
                 check_scratch_budget(root)?;
+                if let Some(runtime) = runtime {
+                    check_scratch_budget(runtime)?;
+                }
                 next_storage_check = Instant::now() + Duration::from_millis(100);
             }
             read_screen(&mut output, &mut input, &mut screen)?;
@@ -398,6 +446,12 @@ fn tui(args: &Local, root: &Path) -> Result<Value> {
         }
     }
     server.stop()?;
+    if runtime.is_some() {
+        ensure!(
+            !session.join("last-output").exists(),
+            "volatile launcher retained terminal output"
+        );
+    }
     // The launcher can retain last-output. It stays under the private root and is deleted without reading it.
     Ok(
         json!({"phases":observations,"cleanup":"launcher reaped", "usable_screen":"requires human verification",
@@ -588,7 +642,7 @@ async fn local(args: Local) -> Result<Value> {
     } else {
         json!("not requested")
     };
-    let screen = tui(&args, &scratch.0);
+    let screen = tui(&args, &scratch.0, None);
     scratch.cleanup()?;
     let screen = screen?;
     Ok(
@@ -597,6 +651,139 @@ async fn local(args: Local) -> Result<Value> {
         "controls":controls,"tools":tools,"tui":screen,"credentials":"fresh private HOME; no login requested; no inherited environment",
         "auth_refresh":"not-run", "raw_terminal_retained":false,"scratch_cleanup":"removed"}),
     )
+}
+
+const RUNTIME_CANARY: &[u8] = b"mantle-synthetic-runtime-canary-e1c756";
+
+// Inspect only bounded regular files in this invocation's synthetic fixtures, while WAL is live.
+// This does not read any operator path or assert that an unexercised refresh path is safe.
+fn scan_canary(root: &Path) -> Result<Vec<PathBuf>> {
+    fn visit(path: &Path, base: &Path, budget: &mut u64, found: &mut Vec<PathBuf>) -> Result<()> {
+        for entry in fs::read_dir(path)? {
+            let entry = entry?;
+            let meta = entry.file_type()?;
+            if meta.is_dir() {
+                visit(&entry.path(), base, budget, found)?;
+            } else if meta.is_file() {
+                let mut bytes = Vec::new();
+                File::open(entry.path())?
+                    .take(*budget + 1)
+                    .read_to_end(&mut bytes)?;
+                ensure!(bytes.len() as u64 <= *budget, "sink scan exceeded bound");
+                *budget -= bytes.len() as u64;
+                if bytes
+                    .windows(RUNTIME_CANARY.len())
+                    .any(|w| w == RUNTIME_CANARY)
+                {
+                    found.push(entry.path().strip_prefix(base)?.to_owned());
+                }
+            }
+        }
+        Ok(())
+    }
+    let mut found = Vec::new();
+    let mut budget = SCRATCH_LIMIT;
+    visit(root, root, &mut budget, &mut found)?;
+    found.sort();
+    Ok(found)
+}
+
+fn sqlite_wal_fixture(runtime: &Path, persistent: &Path) -> Result<Value> {
+    let path = runtime.join("synthetic.db");
+    let db = rusqlite::Connection::open(&path)?;
+    db.execute_batch(
+        "PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0; CREATE TABLE logs(message BLOB);",
+    )?;
+    db.execute("INSERT INTO logs VALUES (?1)", [RUNTIME_CANARY])?;
+    db.execute_batch("PRAGMA wal_checkpoint(FULL);")?;
+    db.execute("INSERT INTO logs VALUES (?1)", [RUNTIME_CANARY])?;
+    let live = scan_canary(runtime)?;
+    ensure!(
+        live.contains(&PathBuf::from("synthetic.db"))
+            && live.contains(&PathBuf::from("synthetic.db-wal")),
+        "live database/WAL scan missed fixture"
+    );
+    let positive = persistent.join("planted-diagnostic.log");
+    fs::write(&positive, RUNTIME_CANARY)?;
+    ensure!(
+        scan_canary(persistent)?.contains(&PathBuf::from("planted-diagnostic.log")),
+        "persistent diagnostic positive control was missed"
+    );
+    fs::remove_file(positive)?;
+    ensure!(
+        scan_canary(persistent)?.is_empty(),
+        "persistent sink retained a synthetic canary"
+    );
+    drop(db);
+    Ok(
+        json!({"sqlite_and_live_wal_detected":true,"persistent_positive_control_detected":true,
+        "persistent_canary_after_removal":false,"provenance":"explicit synthetic SQLite fixture, not Codex refresh"}),
+    )
+}
+
+async fn runtime_sinks(args: Local, runtime_parent: PathBuf) -> Result<Value> {
+    ensure!(
+        !args.tool_controls && !args.outer_profile_control,
+        "runtime-sinks does not run tool controls"
+    );
+    ensure!(
+        args.codex.is_absolute() && args.launcher.is_absolute(),
+        "executable paths must be absolute"
+    );
+    verify_digest(&args.codex, &args.sha256)?;
+    let persistent = Scratch::new(&args.scratch_parent)?;
+    let runtime = Scratch::new(&runtime_parent)?;
+    version(&args.codex, &persistent.0).await?;
+    let config = persistent.0.join("home/.codex/config.toml");
+    // Ordinary local settings deliberately disagree with every fixed privacy/auth control.
+    let text = format!(
+        "sqlite_home={:?}\nlog_dir={:?}\nmodel_provider=\"unusable-fixture\"\nforced_login_method=\"api\"\ncli_auth_credentials_store=\"keyring\"\ncheck_for_update_on_startup=true\nchatgpt_base_url=\"http://127.0.0.1:1/\"\nopenai_base_url=\"http://127.0.0.1:1/\"\n[history]\npersistence=\"save-all\"\n[analytics]\nenabled=true\n[feedback]\nenabled=true\n",
+        persistent.0.join("wrong-sqlite"),
+        persistent.0.join("wrong-log")
+    );
+    OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(&config)?
+        .write_all(text.as_bytes())?;
+    let screen = tui(&args, &persistent.0, Some(&runtime.0))?;
+    ensure!(
+        screen["phases"]
+            .as_array()
+            .context("TUI phases")?
+            .iter()
+            .all(|p| p["launcher_alive"] == true),
+        "fixed-config TUI exited"
+    );
+    let log = runtime.0.join("log/codex-tui.log");
+    ensure!(
+        log.is_file(),
+        "pinned Codex did not create the configured text-log sink"
+    );
+    ensure!(
+        !persistent.0.join("wrong-sqlite").exists() && !persistent.0.join("wrong-log").exists(),
+        "local config overrode fixed sink paths"
+    );
+    let mut sqlite_files: Vec<String> = fs::read_dir(runtime.0.join("sqlite"))?
+        .map(|e| e.map(|e| e.file_name().to_string_lossy().into_owned()))
+        .collect::<std::io::Result<_>>()?;
+    sqlite_files.sort();
+    ensure!(
+        sqlite_files.iter().any(|p| p.ends_with(".sqlite"))
+            && sqlite_files.iter().any(|p| p.ends_with(".sqlite-wal")),
+        "pinned Codex did not create configured SQLite/WAL sinks"
+    );
+    let fixture = sqlite_wal_fixture(&runtime.0, &persistent.0)?;
+    let observation = json!({"format":"mantle.codex-runtime-sinks/1", "version":VERSION,
+        "sha256":args.sha256.to_ascii_lowercase(),"tui":screen,"text_log_created_in_tmpfs":true,
+        "codex_sqlite_files":sqlite_files,"text_log_bytes":fs::metadata(log)?.len(),"conflicting_local_sink_paths_absent":true,
+        "synthetic_fixture":fixture,"auth_refresh":"not-run","managed_policy":"not-run",
+        "authenticated_model_turn":"not-run","credentials":"isolated synthetic home; no login",
+        "end_to_end_non_recording":"not-established; Substrate capture binding unavailable"});
+    persistent.cleanup()?;
+    runtime.cleanup()?;
+    Ok(observation)
 }
 
 async fn confined(args: Confined) -> Result<Value> {
@@ -678,6 +865,10 @@ async fn confined(args: Confined) -> Result<Value> {
 async fn main() {
     let result = match Cli::parse().mode {
         Mode::Local(args) => local(args).await,
+        Mode::RuntimeSinks {
+            local,
+            runtime_parent,
+        } => runtime_sinks(local, runtime_parent).await,
         Mode::Confined(args) => confined(args).await,
         Mode::Controls { scratch_parent } => (|| {
             let scratch = Scratch::new(&scratch_parent)?;
