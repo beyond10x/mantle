@@ -12,7 +12,7 @@ use crate::adapters::ssh::Ssh;
 use crate::adapters::state::{SessionRecord, SourceRecord, Store, WorkerRecord};
 use crate::adapters::substrate::{self as sub, bytes};
 use crate::app::terminal::{self, Ended};
-use crate::app::worker::{WORKER, install_token};
+use crate::app::worker::{SUBSTRATE_VERSION, WORKER, install_token};
 use crate::config::Config;
 use crate::domain::manifest::{self, Resolved};
 use crate::domain::session::{AgentKind, SessionState, agent_name, auth_name, validate_identity};
@@ -558,8 +558,8 @@ pub async fn status(config: &Config, store: &Store, name: &str) -> Result<()> {
     let limits = machine.facts.exec_cgroup_limits.clone();
     println!("Resources       requested              enforcement");
     println!(
-        "  cpu           {:<22} not enforced (Substrate 0.7.8 bounds cumulative CPU time only); CARGO_BUILD_JOBS={}",
-        requested["cpu"], requested["cpu"]
+        "  cpu           {:<22} not enforced (Substrate {} bounds cumulative CPU time only); CARGO_BUILD_JOBS={}",
+        requested["cpu"], SUBSTRATE_VERSION, requested["cpu"]
     );
     println!(
         "  memory        {:<22} {}",
@@ -1268,6 +1268,12 @@ mod adversary_activation_wire {
                 ])
             );
             assert_eq!(posts[1]["input"]["mode"], "pty");
+            // Wire 0.17 omits Recorded (the default); selecting Unrecorded emits a field.
+            assert!(posts[1]["input"].get("capture").is_none());
+            assert_eq!(
+                b10x_substrate_sdk::CaptureMode::default(),
+                b10x_substrate_sdk::CaptureMode::Recorded
+            );
             assert!(posts[1]["input"]["input_limit_bytes"].as_u64().unwrap() > 0);
             assert!(posts[1]["input"]["frame_limit_bytes"].as_u64().unwrap() > 0);
             assert!(posts[1]["input"]["queued_frames"].as_u64().unwrap() > 0);
