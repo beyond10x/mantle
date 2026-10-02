@@ -1,5 +1,5 @@
-# Preparatory integration: start currently refuses until Substrate supports non-recording capture.
-# Login and an authenticated model/tool turn are separate acceptance requirements.
+# Uses the existing Substrate terminal capture behavior, as Claude does.
+# Complete ChatGPT device login in the Codex terminal when prompted.
 apiVersion: mantle.beyond10x.dev/v1alpha1
 kind: Session
 metadata:

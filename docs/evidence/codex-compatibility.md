@@ -31,10 +31,13 @@ reports observations without raw terminal bytes. Production requests use equival
 configuration with `/workspace/.mantle/home/.codex` for intended auth/conversation files and
 `/tmp/mantle-codex/{sqlite,log}` for runtime diagnostics.
 
-Mantle accepts and persists Codex/ChatgptDevice selection but still refuses start/attach before
-credential or provider side effects. Supported Substrate non-recording capture, actual device
-login, token refresh, authenticated tool approvals and lifecycle parity remain unverified and
-belong to the parent integration story. No confidential end-to-end session is claimed here.
+Mantle accepts and persists Codex/ChatgptDevice selection. The operator subsequently removed
+the Codex-only requirement for non-recording Substrate capture: start and attach use the same
+existing Substrate terminal transport and capture behavior as Claude. Launcher replay remains
+volatile and runtime diagnostics remain on verified tmpfs; those measures do not establish
+end-to-end non-recording. Actual device login, token refresh, authenticated model/tool turns and
+lifecycle parity remain unverified and belong to the parent integration story. The historical
+probe observations below are unchanged by removing that startup prerequisite.
 
 ## Earlier confined qualification
 
