@@ -1,0 +1,30 @@
+{
+  "artifact": "story:agent-ready-worker",
+  "reviews": 14,
+  "from": "review-result:codex-worker-adversary-1",
+  "from_reviewer": "unattributed",
+  "to": "review-result:codex-worker-adversary-2",
+  "to_reviewer": "unattributed",
+  "carried": [],
+  "new": [],
+  "resolved": [
+    {
+      "file": "crates/mantle-worker/src/lib.rs",
+      "line": 451,
+      "category": "boundary",
+      "severity": "blocker",
+      "verdict": "CONFIRMED",
+      "origin": "introduced",
+      "message": "Terminal SIGINT leaves the bounded transport child running after its caller exits."
+    },
+    {
+      "file": "crates/mantle-worker/src/lib.rs",
+      "line": 355,
+      "category": "concurrency",
+      "severity": "warning",
+      "verdict": "CONFIRMED",
+      "origin": "introduced",
+      "message": "Concurrent first installers can fail with EEXIST before reaching their exclusive installer lock."
+    }
+  ]
+}

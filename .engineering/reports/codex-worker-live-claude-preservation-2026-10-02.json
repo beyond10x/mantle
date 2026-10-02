@@ -1,0 +1,22 @@
+[
+  {
+    "id": "ex_01M3XM4NJFGYT9PM2XN1Q6VGZ3",
+    "state": "running",
+    "exit_code": null,
+    "workspace": "ws_01M3XM4JMC9HPG29BPJ5C50K57",
+    "lease": {
+      "state": "active",
+      "renew_by": "2026-10-02T14:17:03.823647838Z"
+    }
+  },
+  {
+    "id": "ex_01M3XM4NJFGYT9PM2XN1Q6VGZ3",
+    "state": "running",
+    "exit_code": null,
+    "workspace": "ws_01M3XM4JMC9HPG29BPJ5C50K57",
+    "lease": {
+      "state": "active",
+      "renew_by": "2026-10-02T14:17:03.823647838Z"
+    }
+  }
+]

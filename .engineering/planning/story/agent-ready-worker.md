@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:agent-ready-worker
 kind: story
-status: active
+status: implemented
 title: Provision an agent-ready worker without Claude credentials
 relations:
 - decomposes: epic:codex-parity
@@ -25,7 +25,7 @@ scope:
   path: crates/mantle/Cargo.toml
 - confidence: cited
   path: crates/mantle/src/adapters/conformance.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
   path: crates/mantle/src/adapters/ssh.rs
@@ -57,22 +57,23 @@ scope:
   path: spec/README.md
 - confidence: cited
   path: spec/components.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/conformance-baseline.json
-- confidence: inferred
+- confidence: cited
   path: spec/domains/orchestration.yaml
 - confidence: cited
   path: spec/domains/session.yaml
 - confidence: cited
   path: spec/ess-inputs.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/cli/agent-worker.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/cli/orchestration-observe-common-without-claude.yaml
-revision: 46
+revision: 52
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T10:13:54Z", actor: "human:timo", revision: 24}
 - {from: "proposed", to: "active", at: "2026-10-02T10:13:54Z", actor: "human:timo", revision: 25}
+- {from: "active", to: "implemented", at: "2026-10-02T13:00:17Z", actor: "human:timo", revision: 52, decided_on: {"recorded":{"test_result":4,"review_outcome":2,"verification":3}}}
 ---
 ## Context
 
@@ -100,20 +101,17 @@ Extend the existing Worker ESS contract with provisioning outcomes/views, author
 
 ## Scope
 
-Scope reconciled from the implementor's confirmation table and the coordinator's staged-diff inspection on 2026-10-02. This records observed source ownership, not completion; adversary corrections and live acceptance remain pending.
+## Scope
 
-- **Worker orchestration and selected readiness:** `crates/mantle/src/app/worker.rs`, `app/session.rs`, `adapters/substrate.rs` — cited; common readiness no longer requires Claude, selected Claude retains token/executable/slot checks, shared active upgrades defer individually, and independent installation continues.
-- **Configuration and explicit isolation:** `crates/mantle/src/config.rs`, `examples/config.toml` — cited; optional Claude table and explicit absolute config/state paths, preserving ordinary defaults.
-- **Bounded transport:** `crates/mantle/src/adapters/ssh.rs`, `crates/mantle-worker/src/lib.rs` — cited; concurrent bounded IO and owned process-group cleanup. Attack1 found cancellation and first-directory concurrency defects; review-result:codex-worker-adversary-1 records them. Ownership is confirmed, correctness still requires correction evidence.
-- **Installer library and CLI:** `crates/mantle-worker/Cargo.toml`, `src/lib.rs`, `src/main.rs` — cited; previously inferred new placement now exists and implements the single pinned installer shared by both providers. No second cloud-init installer.
-- **Workspace integration:** `Cargo.toml`, `Cargo.lock`, `crates/mantle/Cargo.toml`, `crates/mantle/src/main.rs`, `Taskfile.yml` — cited. Correction to original scoping: Taskfile does change because build-worker must include the new helper; existing cargo-test gate already runs conformance.
-- **Bootstrap and service:** `deploy/cloud-init.yaml`, `deploy/substrate.service` — cited; optional Claude slot, daemon start after gateway/helper and optional real token, and preserved aperture/CA arguments.
-- **ESS and real adapter:** `spec/domains/session.yaml`, `spec/components.yaml`, `spec/ess-inputs.yaml`, `spec/scenarios/agent-worker.yaml`, `spec/README.md`, `crates/mantle/src/adapters/conformance.rs` — cited. New authored sequence is actually selected by synthesis. WorkerRecord remains a local record, not invented remote liveness.
-- **Generated portable values:** `generated/worker-model/Cargo.toml`, `types.rs`, `source.schema.json`, `types-report.json` — cited; actual generated crate with path dependency and byte-drift test. Previously inferred placement is confirmed.
-- **Generated operational state:** `.gitignore` — cited. Correction to the provisional generation assumption: `.ess-output/state.json` contains machine/location/inode metadata and is ignored, not committed. The typed source scope contains only the four portable outputs above.
-- **Tests:** existing owned Rust modules and conformance adapter — cited; no provisional `crates/mantle/tests/agent_worker.rs` or broad `generated/` reservation remains.
-- **Confidence:** high for source placement; live AW behavior remains unverified until actual worker runs. Sources: scratch-worker/implementor-report.md section1 confirmation table, staged patch SHA256 `5950cc2b18602be4765305e4f4e52ef4301221ad859abed596c7264155517d83`, and immutable attack1 review.
-- **Collision boundary:** configuration, worker/session readiness, bootstrap/service, session ESS domain and conformance adapter remain serialized with interactive-start. No scope claim authorizes a Substrate change.
+All31 changed paths in final unit dc71f10d32451f9ed57365685b702c4c5ee8c6a5 match the typed scope exactly, with cited confidence. Coordinator comparison against b3a9c456 found no missing or extra scope paths; the final tunnel correction touches only three already-owned SSH/Cargo paths. Scope confirmation sources are the initial implementation, correction1, rebase reconciliation and tunnel-correction reports under .engineering/reports/.
+
+- Worker/session orchestration, capability mapping, configuration and explicit config/state paths retain their confirmed ownership. Common readiness excludes Claude; selected Claude checks credential/executable/slot before workspace creation. Native Observe preserves the legacy selected-Claude default and adds common-only capability observation.
+- Rust worker library/CLI, bounded SSH delivery, startup cancellation handling and private ephemeral tunnel allocation are confirmed. The last correction leaves persistent state/key paths unchanged. Both independent-review findings are resolved; all retained assertions remain. Fixture isolation resolves the observed inherited-writer ETXTBSY mechanism without a production retry or weakened installer-concurrency test.
+- Cargo, deploy, example configuration and Taskfile ownership is confirmed. Correction to initial inference: build-worker includes the new helper; plain cargo fmt --check selects all six workspace packages while generated-byte drift independently checks the excluded generated crate.
+- Native ESS paths retain all304 incoming scenario names and add9, giving313 complete scenarios. The worker sequence's final path is spec/scenarios/cli/agent-worker.yaml, superseding its original root-level placement; the common-only case is spec/scenarios/cli/orchestration-observe-common-without-claude.yaml. No generic mantle-conformance runner edit was needed. All218 authored scenarios reject the no-op target.
+- Exactly four portable worker-model outputs are committed. Operational .ess-output state remains ignored, correcting the initial five-file generated scope; provenance regeneration and drift verification passed.
+
+The rebase additions were inferred when scheduled, then changed to cited from actual diff and execution. Interactive-start remains serialized against these worker/session/configuration/ESS/adapter surfaces. No Substrate source change is part of this unit. Live AW acceptance now passes on fresh and existing workers; final integration gate results are recorded separately.
 
 ## Pinned daemon readiness evidence
 
@@ -235,3 +233,23 @@ The first full workspace run after rebase failed the retained interrupted-activa
 Ranked hypotheses from implementor inspection: (1) a sibling test's fork temporarily inherits another installer thread's writable staging descriptor; (2) the installer retains its own writer; (3) another installer writes the same inode. The local writer is explicitly dropped before execution; private staging and per-root locking oppose the latter two. A deterministic isolated Rust probe invoked actual run_bounded: it returned ETXTBSY after the parent closed its writer while a fork child retained that descriptor, and the same executable succeeded after that child exited. This proves the inherited-writer mechanism; attribution of the original intermittent scheduling interleaving remains inferred. Evidence: scratch-worker/rebase-inherited-writer.log and the retained trace/report.
 
 Actual production topology is one synchronous Installer invocation in standalone mantle-worker main. Concurrent worker-up operations create independent helper processes and cannot inherit each other's writers. The parallel test process combines several independent installers with subprocess/cancellation fixtures. Coordinator authorized test-process isolation for each installer case, preserving all assertions and explicit concurrent-install threads within their isolated child. No production retry, sleep, widened deadline, blanket test serialization or weakened assertion is authorized. Rerun the original full suite and native aggregate after this correction; independent attack2 remains pending.
+
+## Live acceptance tunnel-path correction
+
+Existing-worker live acceptance succeeded: first worker up exit0 Installed0.153.4, repeat exit0 AlreadyCurrent; observed old service PIDs/start times/shared hashes unchanged and Claude exec still running. Fresh worker21c01ed2-df0f-4ff1-a79a-0c397c186073 in namespace mantle-wave3-acceptance bootstrapped, rebooted into the required kernel and installed the same candidate, but worker up exited1 at its final local SSH tunnel. Exact source: scratch-int/fresh-worker-up.log; OpenSSH rejected the local forwarding specification because the long isolated state directory plus worker UUID/PID socket name exceeds the Unix-socket path limit. Fresh AW-01 is NOT VERIFIED until the same CLI completes after correction.
+
+Coordinator authorized a bounded correction in already-owned SSH/Cargo surfaces: allocate a unique short private ephemeral socket directory independently of persistent state/key paths; retain it for Tunnel lifetime and clean it after child cleanup. A standard secure temporary directory under an explicit short root is acceptable; ambient TMPDIR must not recreate the length defect. Reproduce the actual allocation/bind failure before fixing, preserve all existing assertions, and cover path length, delimiter/nonASCII inputs, concurrency, directory privacy and cleanup. No state/key relocation, fixture shortening or VM recreation. The fresh provisioned worker is retained for the retry.
+
+This live-discovered defect followed two completed adversarial passes; it does not reset the attack budget. The coordinator reviews the correction diff and regression assertions and reruns relevant gates/live acceptance. No third full adversary is authorized or required. Add exact native ESS scope if needed before editing outside the current paths.
+
+## Live acceptance and tunnel correction verified
+
+## Live acceptance and tunnel correction verified
+
+The exact fresh VM21c01ed2-df0f-4ff1-a79a-0c397c186073, no-Claude configuration and original long MANTLE_STATE_DIR were retained. Initial up installed Codex but exited1 at local SSH forwarding; the actual allocation/bind regression reproduced that failure before the correction. Socket allocation now uses unique private0700 directories below explicit /tmp, retains them until SSH cleanup and leaves persistent state/key paths unchanged. Three retained regressions cover the original length, unusual state/TMPDIR paths, concurrent allocations, modes/ownership and success/error cleanup. No third adversarial pass occurred; the coordinator inspected the narrow correction and all assertions.
+
+Corrected CLI SHA2560762c0584d9c1043d7f398f06ca4ee2712c514e54b8e7c219a89b7d667bb4390 completed the same fresh-worker up with exit0, AlreadyCurrent, coherent version/archive/binary digests and common READY. Root tested Claude token absence; running service command and machine facts expose no Claude slot. Selected Claude start separately exited1 with its actionable missing-config message and zero session rows. No auth/model call is claimed. Sources: codex-worker-fresh-up-2026-10-02.log, codex-worker-fresh-install-2026-10-02.txt, codex-worker-fresh-machine-2026-10-02.json and codex-worker-tunnel-correction-2026-10-02.md under .engineering/reports/.
+
+Existing-worker up exited0 Installed, then exit0 AlreadyCurrent, while exact daemon/gateway PIDs/start times, shared executable hashes and running Claude exec remained unchanged. Changed shared binaries were reported deferred. Sources: existing-before-up.txt, existing-after-up.txt, existing-worker-up.log, codex-worker-existing-repeat-2026-10-02.log and codex-worker-live-claude-preservation-2026-10-02.json under .engineering/reports/.
+
+The complete final worker unit is dc71f10d32451f9ed57365685b702c4c5ee8c6a5, merged by bot as247ed1715ac24bba0c4188354d5aac3c02d6c26a. Both author and committer were verified. Offline correction gates report167 Rust tests and313 complete native scenarios. The live AW claim is VERIFIED; closing integration gates remain a separate required observation.

@@ -7,7 +7,7 @@ title: Codex terminal confidentiality over retained Substrate streams
 relations:
 - designs: story:codex-interactive-start
 - informed_by: coordination-blocker:codex-terminal-capture
-revision: 3
+revision: 4
 ---
 ## Problem and evidence
 
@@ -68,3 +68,13 @@ The sweep's launcher library can host an inferred shared terminal_protocol modul
 Source inspection also identifies blocking writes in both current attach and laptop output. Encryption alone does not establish responsiveness under a slow reader: bound complete-record queues and partial-write offsets, preserve control/signal handling, and never drop ciphertext bytes to make space. The fixture collectors themselves need finite byte/wait bounds for added flood cases. Treat a stale preexisting last-output path explicitly in the volatile contract rather than making an absence claim about a reused path.
 
 The report's generated terminal-model operational state file is not a proposed committed artifact. As established by worker generation, only portable generated source/schema/report files may be tracked; ignore machine/inode state. Final exact generated placement remains inferred until the ESS probe establishes it. Typed protocol values, final story prose and the four-critic review remain pending after worker integration; no new protocol implementation is authorized by this section.
+
+## Concrete contract preparation after worker integration
+
+## Concrete contract preparation after worker integration
+
+Read-only proposal against worker integration247ed1715ac24bba0c4188354d5aac3c02d6c26a is appended to .engineering/reports/codex-interactive-native-scope-2026-10-02.md. It names ESS value types, three real native commands, exact request mode/output-bound observations and the ten previously scoped authored scenario files. The current applied specification validated and compiled; the proposed YAML is text only and has not been applied or validated. This is preparation for the next review, not blocker clearance or implementation approval.
+
+Before dispatch, settle the generated wire representation and numeric/Bytes bounds, measured age record overhead/end reserve, bounded partial-write/teardown behavior, prevention of accidental plaintext attachment selection for volatile Codex sessions, and truthful AgentStreamClosed versus observed remote exit. Proposed stale last-output behavior is refusal before child launch, preserving the existing path/target; legacy persistent sessions remain unchanged. Runtime wire types must be generated from reviewed ESS, not manually duplicated.
+
+The concrete proposed cases preserve all current legacy scenarios and require actual codec/process/PTY/FIFO observations, malformed/refused record cases, full-byte input/resize/control delivery, no persisted last-output, encrypted canary exclusion, explicit budget ending and manual reattach. Native tests still cannot discharge actual Substrate SQLite/WAL or real Codex diagnostic sink tests. Choice2 and the finite manual-reattach tradeoff remain pending the four-critic planning review.

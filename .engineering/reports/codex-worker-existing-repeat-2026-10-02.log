@@ -1,0 +1,18 @@
+worker      vm/mantle-default (Running)
+bootstrap   {"claude_code":"2.1.287","kernel":"6.8.0-146-generic","rustc":"rustc 1.97.1 (8bab26f4f 2026-07-14)","substrate_commit":"05695970b069f79e6678f2f02cbd78bbe5fa2a56","substrate_daemon":"substrate-daemon 0.7.8"}
+deferred    mantle-egress upgrade: active shared service retained; schedule maintenance to apply changed bytes
+deferred    mantle-launch upgrade: active shared service retained; schedule maintenance to apply changed bytes
+binaries    reconciled; active shared services retained (deferred upgrades listed above)
+codex install "AlreadyCurrent"
+image       20260926
+os          Ubuntu 24.04.5 LTS
+kernel      6.8.0-146-generic
+bubblewrap  bubblewrap 0.9.0
+egress      b95ad15bea045439
+launch      4a66681c6a3f539f
+daemon      024ee80d1e5046f0
+codex       0.153.4 x86_64-unknown-linux-musl binary=56ef98ab4032d317ab26e9b5e5a175650717351edb16ed9cde0cb6d1734d62da archive=c485e889611b73ff5c3cc11fb5cea7551ef504465ad8675163766b9b1a9ec84a (verified installation; authentication unknown)
+substrate   driver 0.7.8 snapshot sha256:590d998fea1f8b2433f7a515738300d837c6f1ea423432f0fc60de5f6c7a28f1
+quota       workspace storage quota NOT served; storage requests are not enforced
+usage       served (block_io=true)
+state       READY (common confinement/toolchain; agent authentication not checked)

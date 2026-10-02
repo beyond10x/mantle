@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T12:26:10Z",
+  "actor": "human:timo",
+  "artifact": "story:agent-ready-worker",
+  "kind": "story",
+  "revision": 48,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "Live existing worker up exit0: Codex absent→Installed0.153.4 with pinned digest; Claude exec running before/after and unchanged service PIDs/start times/shared hashes; fresh AW case still pending",
+    "reference": ".engineering/reports/existing-before-up.txt vs .engineering/reports/existing-after-up.txt; .engineering/reports/existing-worker-up.log"
+  }
+}

@@ -70,7 +70,9 @@ Inferred exact generated model placement, only after the types/generator probe i
 - `generated/terminal-model/types.rs`
 - `generated/terminal-model/source.schema.json`
 - `generated/terminal-model/types-report.json`
-- `generated/terminal-model/.ess-output/state.json`
+
+Generator `.ess-output/` operational state is ignored, not a proposed tracked artifact. This
+corrects the initial placement list after design revision 3 and the worker generation evidence.
 
 Do not reserve broad `generated/`, duplicate the worker model or hand-copy generated types.
 If a suitable reviewed shared generated model exists after worker merge, rescope these five
@@ -202,3 +204,220 @@ Review must decide if its reduced plaintext allowance satisfies intended parity.
 The four-critic design/story review and worker-merge revalidation remain required. Auth cache,
 actual agent identity migration, Codex config precedence and observed gateway hosts stay in the
 larger interactive story; this report neither removes them nor claims them implemented.
+
+## Proposed ESS amendment after worker merge (text only)
+
+Refreshed against `247ed1715ac24bba0c4188354d5aac3c02d6c26a`, design revision 3. Read the
+ESS specifying procedure plus syntax/later-formats references. Baseline read-only checks:
+`ess specify validate --path spec` exited 0: `mantle v1 — 7 file(s), 218 scenario(s), valid`;
+`ess specify compile --path spec --format json` exited 0 with output discarded. The proposal
+below has NOT been applied or validated; the coordinator must validate/type-generate it before
+implementation. No generated/runtime model is hand-transcribed here.
+
+### Proposed reviewed constants and byte semantics
+
+These numerical choices are proposals so tests have falsifiable boundaries, not established
+library measurements: protocol version 1; terminal payload at most 4096 bytes per output record;
+clear length prefix exactly four unsigned big-endian bytes; encrypted body at most 32768 bytes;
+one complete finalized age file per body; plaintext envelope at most 24576 bytes; fixed single
+X25519 recipient; output cap 1048576 bytes; reserve 4096 bytes INCLUDING framing for the encrypted
+End record. A minimum accepted attachment budget of 36868 bytes allows one maximum wire record
+(32772 bytes) plus the reserved End record. The production path always requests the fixed 1MiB
+cap; the smaller budget is a bounded fixture/configuration seam, not a user override of Substrate.
+
+Use fresh stream identifier per attachment, 32 lowercase hexadecimal characters, supplied as a
+non-secret expected value to both sides. Sequences start at zero, are contiguous and checked for
+overflow. Encrypted records contain version, stream identifier, sequence, kind, payload and end
+reason. End has empty payload and exactly one reason. Output has nonempty payload and no reason.
+Decode/verify an entire record before releasing its payload; clear length never authorizes an
+unbounded allocation. Unknown versions/kinds/extra envelope fields are refused. The actual ESS
+generated serialization shape (especially Bytes) must determine exact wire encoding; do not
+invent a second handwritten model or assume the generator serializes Bytes as a particular JSON
+shape. The proposed maxima must be proved against that generated shape plus the pinned age crate.
+
+Input is also length-delimited and bounded, with version/sequence/kind, keyboard Bytes or Window.
+The first record must be InitialWindow; later Resize records use the same 1..1000 cell bounds.
+Keyboard records preserve all byte values. Operator detach is handled locally before framing,
+as today. Do not translate Ctrl-C/Ctrl-D into a process kill or raw-pipe half-close. Unexpected
+input EOF terminates only attachment; no promise of flushing keyboard data after operator detach.
+
+### `spec/domains/launch.yaml` additions
+
+Append the following entries to the EXISTING types/commands lists, not duplicate top-level keys.
+They model values/native boundary observations only; no stored entity or fabricated lifecycle.
+
+```yaml
+# types additions
+- name: mantle.launch.ReplayPersistence
+  kind: enum
+  variants: [PersistentLastOutput, VolatileOnly]
+- name: mantle.launch.AttachmentTransport
+  kind: enum
+  variants: [Terminal, EncryptedPipes]
+- name: mantle.launch.OutputRecordKind
+  kind: enum
+  variants: [Output, End]
+- name: mantle.launch.AttachmentEndReason
+  kind: enum
+  variants: [BudgetEnded, AgentStreamClosed]
+- name: mantle.launch.InputRecordKind
+  kind: enum
+  variants: [InitialWindow, Keyboard, Resize]
+- name: mantle.launch.TerminalOutputRecord
+  kind: struct
+  fields:
+    - {name: version, type: Integer}
+    - {name: stream_id, type: String}
+    - {name: sequence, type: Integer}
+    - {name: kind, type: mantle.launch.OutputRecordKind}
+    - {name: payload, type: Bytes}
+    - {name: end_reason, type: 'Optional<mantle.launch.AttachmentEndReason>'}
+- name: mantle.launch.TerminalInputRecord
+  kind: struct
+  fields:
+    - {name: version, type: Integer}
+    - {name: sequence, type: Integer}
+    - {name: kind, type: mantle.launch.InputRecordKind}
+    - {name: payload, type: Bytes}
+    - {name: window, type: 'Optional<mantle.launch.Window>'}
+- name: mantle.launch.TerminalRefusal
+  kind: enum
+  variants: [Version, Length, Key, Authentication, Stream, Sequence, Shape, Truncated, MissingEnd, TrailingRecord, Budget, Window, InputOrder, StaleOutput]
+- name: mantle.launch.RecordFault
+  kind: enum
+  variants: [None, UnknownVersion, OversizeLength, ZeroLength, WrongKey, CorruptCiphertext, WrongStream, FirstSequenceOne, Duplicate, Reordered, PartialPrefix, PartialBody, MissingEnd, RecordAfterEnd, SequenceOverflow]
+- name: mantle.launch.AttachmentProbe
+  kind: enum
+  variants: [Lifecycle, BudgetEnd, SlowReader, InputControls, Canary]
+- name: mantle.launch.StaleOutputKind
+  kind: enum
+  variants: [Absent, RegularFile, Symlink]
+
+# commands additions: adapter creates fresh private fixture identity internally, never returns it.
+- name: mantle.launch.ValidateTerminalRecords
+  input:
+    - {name: payload, type: Bytes}
+    - {name: fault, type: mantle.launch.RecordFault}
+    - {name: fragment_bytes, type: Integer, example: 1}
+  response:
+    - {name: delivered, type: Bytes}
+    - {name: end_reason, type: 'Optional<mantle.launch.AttachmentEndReason>'}
+    - {name: refusal, type: 'Optional<mantle.launch.TerminalRefusal>'}
+    - {name: plaintext_in_wire, type: Boolean}
+    - {name: peak_buffer_bytes, type: Integer}
+  outcomes: [{name: returned, returns: true}]
+- name: mantle.launch.EncryptedAttachment
+  input:
+    - {name: probe, type: mantle.launch.AttachmentProbe}
+  response:
+    - {name: output_matches, type: Boolean}
+    - {name: control_observations_match, type: Boolean}
+    - {name: observed_windows, type: 'List<mantle.launch.Window>'}
+    - {name: input_refusals, type: 'List<mantle.launch.TerminalRefusal>'}
+    - {name: keyboard_bytes, type: Bytes}
+    - {name: interrupt_observed, type: Boolean}
+    - {name: terminal_eof_observed, type: Boolean}
+    - {name: replayed, type: Boolean}
+    - {name: agent_survived, type: Boolean}
+    - {name: exclusive_attach, type: Boolean}
+    - {name: last_output_exists, type: Boolean}
+    - {name: plaintext_in_capture, type: Boolean}
+    - {name: bytes_accepted, type: Integer}
+    - {name: bytes_delivered, type: Integer}
+    - {name: wire_bytes, type: Integer}
+    - {name: budget_observed, type: Boolean}
+    - {name: end_reason, type: 'Optional<mantle.launch.AttachmentEndReason>'}
+    - {name: within_deadline, type: Boolean}
+    - {name: bounded_buffers, type: Boolean}
+  outcomes: [{name: returned, returns: true}]
+- name: mantle.launch.ObserveReplayPersistence
+  input:
+    - {name: policy, type: mantle.launch.ReplayPersistence}
+    - {name: stale_output, type: mantle.launch.StaleOutputKind}
+  response:
+    - {name: started, type: Boolean}
+    - {name: replayed, type: Boolean}
+    - {name: last_output_exists, type: Boolean}
+    - {name: stale_target_unchanged, type: Boolean}
+    - {name: refusal, type: 'Optional<mantle.launch.TerminalRefusal>'}
+  outcomes: [{name: returned, returns: true}]
+```
+
+Register `mantle.launch.ObserveReplayPersistence` in components and every corresponding scenario;
+the differently named `ReplayPersistence` is its value type. All three commands call actual production codec/launcher code.
+Probe enums select fixed finite fixtures, never expected answers; every response field comes
+from measured bytes/process/files. Invalid automatic synthesized examples must yield a typed
+refusal/observation, not panic. Define fixture-safe scalar examples before synthesis.
+
+Extend ServeArgs with `replay_persistence: mantle.launch.ReplayPersistence`, default
+PersistentLastOutput. Extend AttachArgs with `transport`, optional `recipient`, optional
+`stream_id`, and `output_budget_bytes`; validate required/forbidden combinations through clap.
+No identity/private key field belongs to ESS argv/request/response fixtures. Do not claim
+these optional fields permit plaintext fallback. Existing ParseArgs snapshots gain explicit
+default fields; all preexisting acceptance remains.
+
+### Request mode and exact existing-file changes
+
+In `spec/domains/orchestration.yaml`, extend `Request` input with optional public recipient and
+stream identifier; select agent from its already-supplied manifest. Extend response with
+`channel: mantle.orchestration.RunChannel` (`Exec`, `Pty`, `Pipes`) and `output_bytes: Integer`.
+These must be fields of the real request descriptor used by the SDK-building method, not facts
+manufactured in the conformance serializer. `agent`/`exec` retain Exec; legacy attach retains Pty;
+Codex attach is Pipes. The Codex agent request includes the explicit VolatileOnly launcher mode.
+All old root/aperture/slot/FD/argv/env/lease/resource assertions remain.
+
+`spec/components.yaml` registers the three new launch commands. `spec/ess-inputs.yaml` adds the
+ten exact inferred scenario paths already listed above. `spec/conformance-baseline.json` keeps
+all existing IDs/floors and adds the new synthesized/authored IDs once actually generated.
+Do not lower counts, introduce skips or refresh recorded successes without real native runs.
+
+### Exact named acceptance expectations in those ten files
+
+Each file remains one authored scenario with explicit timeline steps. The slash names below
+identify its separately asserted steps; do not collapse them into an unqualified aggregate pass.
+
+| File stem | Named expectations |
+| --- | --- |
+| orchestration-codex-attach-request | `codex-pipes`: channel Pipes, output_bytes 1048576, no secret slot/FD/aperture, public fixture recipient/stream id only, argv selects encrypted attach. `legacy-pty`: old Claude request unchanged except explicit channel Pty/output cap. `private-absent`: no private identity input/output. |
+| orchestration-codex-agent-request | `codex-volatile`: Codex executable, fixed private home, VolatileOnly flag, no Claude slot/FD/token. `legacy-claude`: existing exact Claude request remains. |
+| encrypted-attach-arguments | `valid`: encrypted mode plus recipient/stream/cap accepted; `missing-recipient`, `bad-recipient`, `missing-stream`, `bad-stream`, `too-small-budget`, `over-cap`, `incompatible-no-tty`: refused before opening FIFOs; `legacy-defaults`: unchanged default mode. No diagnostic echoes raw supplied recipient garbage. |
+| encrypted-record-validation | Payload `Q01FLUNBTkFSWS0wMQ==` (synthetic CME-CANARY-01). `complete-byte-fragmented`: delivered exact input, AgentStreamClosed, no refusal, plaintext_in_wire false. `unknown-version`: Version; `oversize/zero-length`: Length; `wrong-key`: Key; `bit-flip`: Authentication; `wrong-stream`: Stream; `first-sequence-one/duplicate/reordered/overflow`: Sequence; `partial-prefix/body`: Truncated; `missing-end`: MissingEnd; `record-after-end`: TrailingRecord. No payload from an invalid record is delivered; already-verified earlier records remain valid observations. |
+| encrypted-input-controls | `initial-window`: real child observes 80x24; `resize`: framed 120x40 reaches child; `binary-input`: all byte values preserved through protocol (inner raw-mode fixture); `ctrl-c`: real child observes signal without ending server; `ctrl-d`: terminal EOF behavior preserved; `bad-window/input-before-initial/duplicate-initial`: Window/InputOrder refusals; `local-detach`: Ctrl-] d not forwarded. |
+| encrypted-attachment-lifecycle | `attach-detach-reattach`: exact known output and bounded replay survive fresh identities; `same-size-redraw`: observable repaint; `single-client`: competing attach refused; server/agent survive detach; FIFO modes stay0600. After final agent exit, last_output_exists false; no decrypted capture persisted. |
+| encrypted-budget-end | Fixture budget36868, infinite-beyond-budget FINITE watchdog-controlled source. Authenticated BudgetEnded record fits the admitted total; wire_bytes<=36868; bytes_delivered==bytes_accepted; no FIFO bytes accepted without room for their full encrypted record+ending; agent_survived true; exclusive lock released; later manual fresh-key attach replays current bounded screen. No automatic reconnect. Truncated/EOF alone is not BudgetEnded. |
+| encrypted-slow-reader | Pause consumer500ms, then drain; bounded_buffers true; within_deadline true (5s completion/recovery watchdog); frame authentication/order retained; input/resize delivered when output can resume; no lost accepted record. A permanently blocked consumer yields bounded teardown, never a successful complete ending. Short prompt arrives within1s under an otherwise idle local fixture. |
+| volatile-replay-no-last-output | `fresh`: started/replayed true, last_output_exists false during/after exit. `stale-regular/stale-symlink`: proposed refusal StaleOutput before child launch; stale_target_unchanged true; do not unlink or overwrite. `legacy`: existing persistent behavior and permissions unchanged. |
+| encrypted-output-canary | Real fixture emits synthetic canary, laptop decoder observes it, raw captured stdout/stderr/launcher files exclude it; private fixture identity absent from argv/env/reports. Native response stores only equality/digest/count findings. Substrate DB/WAL and actual Codex diagnostic exclusion remain separately required live tests. |
+
+Dynamic counts/peaks cannot be guessed as exact constants. Native observations may additionally
+return derived bound/equality booleans above, computed from actual counters/bytes; preserve raw
+non-secret counts in results. Authored expectations compare concrete payloads and refusal codes,
+and assert the defined bounds/equalities. If current ESS scenario syntax cannot express numeric
+inequalities, assert a typed production boundary decision plus actual counts, never change the
+native runner into a predicate evaluator. Full YAML scenario materialization is still required.
+
+### Remaining mechanisms that must be settled before claiming a complete contract
+
+1. `UNMAPPED[wire-representation]`: generator Bytes/union/numeric serialization and strict decoder
+   behavior must be probed before the proposed maxima or exact wire v1 is binding. The contract
+   text is falsifiable, but its generator/runtime mapping is unverified. Generate portable models
+   with ESS; never hand-transcribe them. Ignore `.ess-output/` operational state.
+2. `UNMAPPED[budget-proof]`: prove a maximum encrypted data/end size for the pinned age dependency
+   and generated envelope. If 32768/4096 bounds fail, revise reviewed constants and tests BEFORE
+   implementation dispatch. Do not encrypt/read arbitrary extra FIFO data and drop it afterward.
+3. `UNMAPPED[slow-reader-end]`: choose explicit finite partial-write/teardown deadlines and observe
+   their interaction with output backpressure; a complete ending cannot be guaranteed to a reader
+   that never reads. Distinguish budget ending from transport failure; no success claim on timeout.
+4. `UNMAPPED[volatile-mode-selection]`: public attach-by-name must recover the actual stored agent
+   and always select encrypted mode for Codex. A direct legacy launcher attach on the same FIFO is
+   outside that selected path; decide how server metadata/argument checks prevent accidental
+   downgrade in supported commands. Do not promise same-uid malicious-process isolation.
+5. `UNMAPPED[stream-end-observation]`: FIFO closure proves the agent stream closed, not the remote
+   agent exit status. Keep reason AgentStreamClosed; status must use actual Substrate observation.
+6. Design choice2/privacy prose and finite manual budget reattach remain pending critic judgment;
+   real Codex diagnostics and Substrate durable sinks are not covered by a native codec test.
+
+Minimal exact files remain those in this report; no new broad directory reservation. The intended
+shared module is still `crates/mantle-launch/src/terminal_protocol.rs`; compiled generated model
+location is the four portable `generated/terminal-model/` files above, subject to the ESS probe.
+The existing Taskfile already runs all native component gates and inventory reconciliation.

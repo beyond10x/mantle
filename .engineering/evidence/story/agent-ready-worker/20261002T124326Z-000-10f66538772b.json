@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T12:43:26Z",
+  "actor": "human:timo",
+  "artifact": "story:agent-ready-worker",
+  "kind": "story",
+  "revision": 49,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "VERIFIED: real no-Claude fresh worker bootstrap/install followed by corrected same-VM worker up exit0 AlreadyCurrent and READY; existing-worker Installed/repeat AlreadyCurrent exit0 preserve Claude exec and shared services. Baseline required-Claude parser cannot provide this new behavior; original red parser/bootstrap tests and native304 baseline retained.",
+    "reference": ".engineering/reports/codex-worker-fresh-up-2026-10-02.log; .engineering/reports/codex-worker-fresh-install-2026-10-02.txt; .engineering/reports/codex-worker-fresh-machine-2026-10-02.json; .engineering/reports/codex-worker-live-claude-preservation-2026-10-02.json; .engineering/reports/codex-worker-initial-implementation-2026-10-02.md"
+  }
+}

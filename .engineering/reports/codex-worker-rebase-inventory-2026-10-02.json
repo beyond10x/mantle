@@ -1,0 +1,80 @@
+{
+  "baseline_scenarios": 304,
+  "final_scenarios": 313,
+  "missing_baseline_names": [],
+  "added_names": [
+    "mantle.orchestration/authored/observe-common-without-claude",
+    "mantle.session.AssessAgentInstallation/outcome/already-current",
+    "mantle.session.AssessAgentInstallation/outcome/installed",
+    "mantle.session.AssessAgentInstallation/outcome/refused",
+    "mantle.session.AssessSharedBinaryUpgrade/outcome/applicable",
+    "mantle.session.AssessSharedBinaryUpgrade/outcome/deferred",
+    "mantle.session.AssessWorkerReadiness/outcome/missing",
+    "mantle.session.AssessWorkerReadiness/outcome/ready",
+    "mantle.session/authored/aw-01-through-aw-05-worker-decisions"
+  ],
+  "baseline_floors": {
+    "mantle-cli": {
+      "answered_floor": 204,
+      "total_floor": 204,
+      "skipped_ceiling": 0
+    },
+    "mantle-egress": {
+      "answered_floor": 66,
+      "total_floor": 66,
+      "skipped_ceiling": 0
+    },
+    "mantle-launch": {
+      "answered_floor": 34,
+      "total_floor": 34,
+      "skipped_ceiling": 0
+    }
+  },
+  "final_floors": {
+    "mantle-cli": {
+      "answered_floor": 213,
+      "total_floor": 213,
+      "skipped_ceiling": 0
+    },
+    "mantle-egress": {
+      "answered_floor": 66,
+      "total_floor": 66,
+      "skipped_ceiling": 0
+    },
+    "mantle-launch": {
+      "answered_floor": 34,
+      "total_floor": 34,
+      "skipped_ceiling": 0
+    }
+  },
+  "counts": {
+    "error": 0,
+    "failed": 0,
+    "passed": 313,
+    "skipped": 0,
+    "total": 313,
+    "unsupported": 0
+  },
+  "coverage": {
+    "authored": 218,
+    "generated": 95,
+    "outside": 0,
+    "refused": 0
+  },
+  "spec_digest": "8a272638ba1e78a3a382335a397e223d44436d4b3423664c5c1c22ffe8f0f895",
+  "noop": {
+    "authored_passes": [],
+    "format": "mantle-noop-audit/1",
+    "implementation": "deliberately inert accepted commands and empty observations",
+    "passed": [
+      "mantle.egress.ClassifyAddress/outcome/returned",
+      "mantle.manifest.Parse/outcome/returned",
+      "mantle.manifest.ValidateMemory/outcome/accepted",
+      "mantle.manifest.ValidatePids/outcome/accepted",
+      "mantle.manifest.ValidateRetention/outcome/accepted",
+      "mantle.orchestration.WorkerRecords/outcome/returned"
+    ],
+    "scenarios": 313,
+    "spec_digest": "8a272638ba1e78a3a382335a397e223d44436d4b3423664c5c1c22ffe8f0f895"
+  }
+}

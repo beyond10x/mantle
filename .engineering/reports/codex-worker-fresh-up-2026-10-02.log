@@ -1,0 +1,16 @@
+worker      vm/mantle-default (Running)
+bootstrap   {"claude_code":"2.1.287","kernel":"6.8.0-146-generic","rustc":"rustc 1.97.1 (8bab26f4f 2026-07-14)","substrate_daemon":"substrate-daemon 0.7.8","substrate_image":"ghcr.io/beyond10x/b10x-substrate-daemon@sha256:74f91a11d51397e2d9b1cb46728e2305d7ec1cf296591529133c5cb784df3ba4","substrate_layer":"sha256:49f18a9ddd920bde1cae6e38d3392f94d737492d5817c70df5e7caff06d3b237"}
+binaries    reconciled; active shared services retained (deferred upgrades listed above)
+codex install "AlreadyCurrent"
+image       20260926
+os          Ubuntu 24.04.5 LTS
+kernel      6.8.0-146-generic
+bubblewrap  bubblewrap 0.9.0
+egress      06791ce00304bc2d
+launch      7750081ad2fe23a0
+daemon      c156b71a9414b1e7
+codex       0.153.4 x86_64-unknown-linux-musl binary=56ef98ab4032d317ab26e9b5e5a175650717351edb16ed9cde0cb6d1734d62da archive=c485e889611b73ff5c3cc11fb5cea7551ef504465ad8675163766b9b1a9ec84a (verified installation; authentication unknown)
+substrate   driver 0.7.8 snapshot sha256:ea98ea91b06a4466fd3ae9875166eff184ae3df4cfa52fcf6d95ffef7765fbcf
+quota       workspace storage quota NOT served; storage requests are not enforced
+usage       served (block_io=true)
+state       READY (common confinement/toolchain; agent authentication not checked)

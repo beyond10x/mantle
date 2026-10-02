@@ -1,0 +1,6 @@
+MainPID=1769
+ExecStart={ path=/usr/local/bin/substrate-daemon ; argv[]=/usr/local/bin/substrate-daemon --socket /run/substrate/substrate.sock --state /var/lib/substrate/state/state.db --workspaces /var/lib/substrate/workspaces --deployment mantle-worker --allow-uid 1000 --cgroup-root /sys/fs/cgroup/system.slice/substrate.service --egress-aperture egress=127.0.0.1:3128/tcp --ca-bundle /etc/ssl/certs/ca-certificates.crt ; ignore_errors=no ; start_time=[Fri 2026-10-02 12:29:41 UTC] ; stop_time=[n/a] ; pid=1769 ; code=(null) ; status=0/0 }
+ActiveEnterTimestamp=Fri 2026-10-02 12:29:42 UTC
+Conditions=[unprintable]
+codex-cli 0.153.4
+{"architecture":"x86_64-unknown-linux-musl","binary_sha256":"56ef98ab4032d317ab26e9b5e5a175650717351edb16ed9cde0cb6d1734d62da","compressed_sha256":"c485e889611b73ff5c3cc11fb5cea7551ef504465ad8675163766b9b1a9ec84a","version":"0.153.4"}

@@ -1,0 +1,7 @@
+   Compiling serde_core v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling memchr v2.8.3
+   Compiling mantle-docs v0.1.0 (~/.local/state/worktree/trees/b10x/mantle/mantle-wave3-integration/crates/mantle-docs)
+    Finished `dev` profile [unoptimized] target(s) in 5.15s
+     Running `/dev/shm/mantle-wave3-target-int/debug/mantle-docs build --out website/build --commit 247ed1715ac24bba0c4188354d5aac3c02d6c26a`
+Mantle documentation built at website/build

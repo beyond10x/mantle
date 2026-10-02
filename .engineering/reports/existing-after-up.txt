@@ -1,0 +1,11 @@
+MainPID=1588
+ActiveState=active
+ActiveEnterTimestamp=Fri 2026-10-02 01:33:07 UTC
+
+MainPID=7692
+ActiveState=active
+ActiveEnterTimestamp=Fri 2026-10-02 06:16:54 UTC
+b95ad15bea0454396fe7fb6941ed5bd6c2f9b3f2383b7af040ba18eb2e9af8d4  /opt/mantle/bin/mantle-egress
+4a66681c6a3f539f0f9d053d4dda1af770ddda704820b4246df8fac4d83931c2  /opt/mantle/bin/mantle-launch
+codex-cli 0.153.4
+{"architecture":"x86_64-unknown-linux-musl","binary_sha256":"56ef98ab4032d317ab26e9b5e5a175650717351edb16ed9cde0cb6d1734d62da","compressed_sha256":"c485e889611b73ff5c3cc11fb5cea7551ef504465ad8675163766b9b1a9ec84a","version":"0.153.4"}

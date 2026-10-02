@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T13:00:17Z",
+  "actor": "human:timo",
+  "artifact": "story:agent-ready-worker",
+  "kind": "story",
+  "revision": 51,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Final integration gate at247ed1715ac24bba0c4188354d5aac3c02d6c26a: fmt, full-workspace clippy,167 Rust tests,313 native scenarios, ESS validation, AEP validation and docs build each exited0; no skipped gate steps.",
+    "reference": ".engineering/reports/codex-worker-final-gate-2026-10-02/"
+  }
+}
