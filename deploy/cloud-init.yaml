@@ -1,0 +1,136 @@
+#cloud-config
+# Substitution: SSH_PUBLIC_KEY, SUBSTRATE_IMAGE_REPOSITORY, SUBSTRATE_DAEMON_LAYER (the hex digest of
+# the release image layer holding the daemon), SUBSTRATE_IMAGE_MANIFEST, SUBSTRATE_VERSION, RUST_CHANNEL
+# and CLAUDE_CODE_VERSION
+# are replaced inline. SUBSTRATE_SERVICE, EGRESS_SERVICE and
+# BWRAP_APPARMOR each occupy a line of their own; replace that whole line with the file's lines,
+# every non-empty line indented by exactly six spaces.
+
+ssh_pwauth: false
+ssh_authorized_keys:
+  - "{{SSH_PUBLIC_KEY}}"
+
+users:
+  - default
+  - name: substrate
+    uid: 900
+    system: true
+    no_create_home: true
+    homedir: /nonexistent
+    shell: /usr/sbin/nologin
+    lock_passwd: true
+
+package_update: true
+packages:
+  - acl
+  - bubblewrap
+  - socat
+  - python3
+  - tmux
+  - git
+  - build-essential
+  - cmake
+  - ninja-build
+  - pkg-config
+  - libssl-dev
+  - xfsprogs
+  - curl
+  - ca-certificates
+  - jq
+  - ripgrep
+  - linux-generic
+
+write_files:
+  - path: /etc/apparmor.d/mantle-bwrap
+    owner: root:root
+    permissions: "0644"
+    content: |
+      {{BWRAP_APPARMOR}}
+  - path: /etc/systemd/system/substrate.service
+    owner: root:root
+    permissions: "0644"
+    content: |
+      {{SUBSTRATE_SERVICE}}
+  - path: /etc/systemd/system/mantle-egress.service
+    owner: root:root
+    permissions: "0644"
+    content: |
+      {{EGRESS_SERVICE}}
+
+runcmd:
+  - set -eux
+  - export HOME=/root
+  - install -d -m 0755 /etc/default/grub.d
+  - echo 'GRUB_FLAVOUR_ORDER="generic"' > /etc/default/grub.d/60-mantle-kernel.cfg
+  - update-grub
+  - kernel_target=$(ls /boot/vmlinuz-*-generic | sed 's|^/boot/vmlinuz-||' | sort -V | tail -n 1)
+  - '[ -n "$kernel_target" ]'
+  - root_disk=/dev/$(lsblk -ndo PKNAME "$(findmnt -nvo SOURCE / | tr -d '[:space:]')" | tr -d '[:space:]')
+  - '[ "$root_disk" != /dev/ ]'
+  - |-
+    n=0; until [ "$(lsblk -dnpo NAME,TYPE | awk -v r="$root_disk" '$2 == "disk" && $1 != r' | wc -l)" -eq 1 ]; do n=$((n + 1)); [ "$n" -lt 300 ] || { echo "mantle: expected exactly one data disk besides $root_disk" >&2; exit 1; }; sleep 1; done
+  - |-
+    data_disk=$(lsblk -dnpo NAME,TYPE | awk -v r="$root_disk" '$2 == "disk" && $1 != r { print $1 }')
+  - udevadm settle
+  - rc=0; blkid -p "$data_disk" >/dev/null || rc=$?
+  - '[ "$rc" -eq 0 ] || [ "$rc" -eq 2 ]'
+  - '[ "$rc" -eq 0 ] || mkfs.xfs -q -L mantle-data "$data_disk"'
+  - '[ "$(blkid -p -o value -s TYPE "$data_disk")" = xfs ]'
+  - data_uuid=$(blkid -p -o value -s UUID "$data_disk")
+  - install -d -m 0755 /var/lib/substrate
+  - |-
+    grep -q '[[:space:]]/var/lib/substrate[[:space:]]' /etc/fstab || echo "UUID=$data_uuid /var/lib/substrate xfs defaults,prjquota,nofail 0 2" >> /etc/fstab
+  - systemctl daemon-reload
+  - mountpoint -q /var/lib/substrate || mount /var/lib/substrate
+  - mountpoint -q /var/lib/substrate
+  - chown root:root /var/lib/substrate
+  - chmod 0755 /var/lib/substrate
+  - install -d -o substrate -g substrate -m 0700 /var/lib/substrate/state /var/lib/substrate/workspaces
+  - install -d -o root -g root -m 0755 /var/lib/mantle /opt/mantle /opt/mantle/bin
+  - install -d -o substrate -g substrate -m 0700 /var/lib/mantle/secrets
+  - apparmor_parser -r -W /etc/apparmor.d/mantle-bwrap
+  - |-
+    runuser -u substrate -- /usr/bin/bwrap --unshare-user --disable-userns --assert-userns-disabled --unshare-pid --unshare-net --ro-bind /usr /usr --symlink usr/bin /bin --symlink usr/lib /lib --symlink usr/lib64 /lib64 --proc /proc --dev /dev --chdir / -- /usr/bin/true
+  - |-
+    rustup_sha=$(curl -fsSL https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init.sha256 | cut -d' ' -f1)
+  - curl -fsSLo /var/tmp/rustup-init https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init
+  - echo "$rustup_sha  /var/tmp/rustup-init" | sha256sum -c -
+  - chmod 0755 /var/tmp/rustup-init
+  - |-
+    RUSTUP_HOME=/opt/mantle/rustup CARGO_HOME=/opt/mantle/cargo /var/tmp/rustup-init -y --no-modify-path --profile minimal --default-toolchain {{RUST_CHANNEL}} --component rustfmt,clippy
+  - rm -f /var/tmp/rustup-init
+  - |-
+    claude_sha=$(curl -fsSL https://downloads.claude.ai/claude-code-releases/{{CLAUDE_CODE_VERSION}}/manifest.json | jq -er '.platforms."linux-x64".checksum')
+  - curl -fsSLo /var/tmp/claude https://downloads.claude.ai/claude-code-releases/{{CLAUDE_CODE_VERSION}}/linux-x64/claude
+  - echo "$claude_sha  /var/tmp/claude" | sha256sum -c -
+  - install -o root -g root -m 0755 /var/tmp/claude /opt/mantle/bin/claude
+  - rm -f /var/tmp/claude
+  - claude_version=$(env -i PATH=/usr/bin:/bin HOME=/nonexistent /opt/mantle/bin/claude --version | cut -d' ' -f1)
+  - '[ "$claude_version" = "{{CLAUDE_CODE_VERSION}}" ]'
+  - chmod -R a+rX /opt/mantle
+  - rm -rf /var/tmp/mantle-substrate-daemon && install -d -m 0700 /var/tmp/mantle-substrate-daemon
+  - |-
+    registry_token=$(curl -fsSL 'https://ghcr.io/token?scope=repository:{{SUBSTRATE_IMAGE_REPOSITORY}}:pull' | jq -er .token)
+  - |-
+    curl -fsSL -H "Authorization: Bearer $registry_token" -o /var/tmp/mantle-substrate-daemon/layer.tgz 'https://ghcr.io/v2/{{SUBSTRATE_IMAGE_REPOSITORY}}/blobs/sha256:{{SUBSTRATE_DAEMON_LAYER}}'
+  - echo "{{SUBSTRATE_DAEMON_LAYER}}  /var/tmp/mantle-substrate-daemon/layer.tgz" | sha256sum -c -
+  - tar -xzf /var/tmp/mantle-substrate-daemon/layer.tgz -C /var/tmp/mantle-substrate-daemon usr/local/bin/substrate-daemon
+  - install -o root -g root -m 0755 /var/tmp/mantle-substrate-daemon/usr/local/bin/substrate-daemon /usr/local/bin/substrate-daemon
+  - rm -rf /var/tmp/mantle-substrate-daemon
+  - substrate_layer="sha256:{{SUBSTRATE_DAEMON_LAYER}}"
+  - daemon_version=$(/usr/local/bin/substrate-daemon --version)
+  - '[ "$daemon_version" = "substrate-daemon {{SUBSTRATE_VERSION}}" ]'
+  - rustc_version=$(PATH=/opt/mantle/cargo/bin:/usr/bin:/bin RUSTUP_HOME=/opt/mantle/rustup /opt/mantle/cargo/bin/rustc --version)
+  - systemctl daemon-reload
+  - systemctl enable substrate.service
+  - systemctl start substrate.service
+  - |-
+    jq -n --arg substrate_image "ghcr.io/{{SUBSTRATE_IMAGE_REPOSITORY}}@sha256:{{SUBSTRATE_IMAGE_MANIFEST}}" --arg substrate_layer "$substrate_layer" --arg substrate_daemon "$daemon_version" --arg rustc "$rustc_version" --arg claude_code "$claude_version" --arg kernel "$kernel_target" '{substrate_image: $substrate_image, substrate_layer: $substrate_layer, substrate_daemon: $substrate_daemon, rustc: $rustc, claude_code: $claude_code, kernel: $kernel}' > /var/lib/mantle/bootstrap.json.partial
+  - chmod 0644 /var/lib/mantle/bootstrap.json.partial
+  - mv -f /var/lib/mantle/bootstrap.json.partial /var/lib/mantle/bootstrap.json
+  - '[ "$(uname -r)" = "$kernel_target" ] || touch /run/mantle-reboot-required'
+
+power_state:
+  mode: reboot
+  message: mantle booting the converged generic kernel
+  condition: test -f /run/mantle-reboot-required

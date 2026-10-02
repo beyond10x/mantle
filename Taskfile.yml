@@ -3,7 +3,43 @@ version: "3"
 env:
   CARGO_TARGET_DIR: "{{.HOME}}/.cache/b10x-target/mantle"
 
+vars:
+  CLUSTER: mantle
+  KUBEVIRT_VERSION: v1.9.0
+  CDI_VERSION: v1.66.1
+
 tasks:
+  k3d-up:
+    desc: A local k3d cluster with KubeVirt and CDI, the kubevirt provider's test bed
+    cmds:
+      - k3d cluster list {{.CLUSTER}} >/dev/null 2>&1 || k3d cluster create {{.CLUSTER}} --servers 1 --agents 0 --no-lb --k3s-arg "--disable=traefik@server:0" --k3s-arg "--kubelet-arg=eviction-hard=nodefs.available<5Gi,imagefs.available<5Gi@server:0" --k3s-arg "--kubelet-arg=eviction-minimum-reclaim=nodefs.available=1Gi,imagefs.available=1Gi@server:0" --wait
+      - kubectl --context k3d-{{.CLUSTER}} apply -f https://github.com/kubevirt/kubevirt/releases/download/{{.KUBEVIRT_VERSION}}/kubevirt-operator.yaml
+      - kubectl --context k3d-{{.CLUSTER}} apply -f https://github.com/kubevirt/kubevirt/releases/download/{{.KUBEVIRT_VERSION}}/kubevirt-cr.yaml
+      - kubectl --context k3d-{{.CLUSTER}} apply -f https://github.com/kubevirt/containerized-data-importer/releases/download/{{.CDI_VERSION}}/cdi-operator.yaml
+      - kubectl --context k3d-{{.CLUSTER}} apply -f https://github.com/kubevirt/containerized-data-importer/releases/download/{{.CDI_VERSION}}/cdi-cr.yaml
+      - kubectl --context k3d-{{.CLUSTER}} -n kubevirt wait kv kubevirt --for condition=Available --timeout=15m
+      - kubectl --context k3d-{{.CLUSTER}} wait cdi cdi --for condition=Available --timeout=15m
+      - until kubectl --context k3d-{{.CLUSTER}} get storageprofile local-path >/dev/null 2>&1; do sleep 2; done
+      - >-
+        kubectl --context k3d-{{.CLUSTER}} patch storageprofile local-path --type merge
+        -p '{"spec":{"claimPropertySets":[{"accessModes":["ReadWriteOnce"],"volumeMode":"Filesystem"}]}}'
+      - task: virtctl
+
+  virtctl:
+    desc: Install virtctl matching the cluster's KubeVirt into ~/.local/bin
+    status:
+      - '[ "$(virtctl version --client 2>/dev/null | grep -o "{{.KUBEVIRT_VERSION}}")" = "{{.KUBEVIRT_VERSION}}" ]'
+    cmds:
+      - mkdir -p {{.HOME}}/.local/bin
+      - curl -fsSLo {{.HOME}}/.local/bin/virtctl.partial https://github.com/kubevirt/kubevirt/releases/download/{{.KUBEVIRT_VERSION}}/virtctl-{{.KUBEVIRT_VERSION}}-linux-amd64
+      - chmod 0755 {{.HOME}}/.local/bin/virtctl.partial
+      - mv -f {{.HOME}}/.local/bin/virtctl.partial {{.HOME}}/.local/bin/virtctl
+
+  k3d-down:
+    desc: Delete the local test cluster and everything in it
+    cmds:
+      - k3d cluster delete {{.CLUSTER}}
+
   build:
     desc: Build the laptop CLI
     cmds:

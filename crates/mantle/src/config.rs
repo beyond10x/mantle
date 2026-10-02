@@ -1,0 +1,189 @@
+use std::path::{Path, PathBuf};
+
+use anyhow::{Context, Result, bail};
+use serde::Deserialize;
+
+/// The operator's configuration. It holds every cloud-account identifier Mantle uses, which is why
+/// it lives outside the repository.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Config {
+    pub provider: Provider,
+    /// One Ubuntu 24.04 build serial for every provider, so workers boot the same image build.
+    pub ubuntu_serial: String,
+    pub aws: Option<AwsConfig>,
+    pub kubevirt: Option<KubevirtConfig>,
+    pub claude: ClaudeConfig,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Provider {
+    Aws,
+    Kubevirt,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct KubevirtConfig {
+    pub context: String,
+    pub namespace: String,
+    pub cpu: u32,
+    pub memory_gib: u32,
+    pub root_disk_gib: u32,
+    pub data_disk_gib: u32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AwsConfig {
+    pub profile: String,
+    pub region: String,
+    pub vpc: String,
+    pub subnet: String,
+    #[serde(default = "default_instance_type")]
+    pub instance_type: String,
+    #[serde(default = "default_root_volume")]
+    pub root_volume_gib: i32,
+    #[serde(default = "default_data_volume")]
+    pub data_volume_gib: i32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClaudeConfig {
+    /// argv of a command that prints the token, such as a keyring lookup. Preferred.
+    pub token_command: Option<Vec<String>>,
+    /// A file holding the token, for hosts without a keyring.
+    pub token_file: Option<String>,
+}
+
+fn default_instance_type() -> String {
+    "m7i.4xlarge".to_owned()
+}
+
+const fn default_root_volume() -> i32 {
+    50
+}
+
+const fn default_data_volume() -> i32 {
+    200
+}
+
+impl Config {
+    pub fn load() -> Result<Self> {
+        let path = config_dir()?.join("config.toml");
+        let text = std::fs::read_to_string(&path).with_context(|| {
+            format!(
+                "reading {} (copy examples/config.toml there and fill it in)",
+                path.display()
+            )
+        })?;
+        let config: Self =
+            toml::from_str(&text).with_context(|| format!("parsing {}", path.display()))?;
+        if config.ubuntu_serial.len() != 8
+            || !config
+                .ubuntu_serial
+                .bytes()
+                .all(|byte| byte.is_ascii_digit())
+        {
+            bail!("ubuntu_serial must be an eight-digit build serial such as 20260926");
+        }
+        match config.provider {
+            Provider::Aws if config.aws.is_none() => {
+                bail!("provider = \"aws\" needs an [aws] table")
+            }
+            Provider::Kubevirt if config.kubevirt.is_none() => {
+                bail!("provider = \"kubevirt\" needs a [kubevirt] table")
+            }
+            _ => {}
+        }
+        Ok(config)
+    }
+
+    pub fn aws(&self) -> Result<&AwsConfig> {
+        self.aws
+            .as_ref()
+            .context("no [aws] table in the configuration")
+    }
+
+    pub fn kubevirt(&self) -> Result<&KubevirtConfig> {
+        self.kubevirt
+            .as_ref()
+            .context("no [kubevirt] table in the configuration")
+    }
+
+    /// The Claude Code OAuth token, from the configured command or file. Never logged; an error
+    /// names where the token was looked for, not what was found.
+    pub fn claude_token(&self) -> Result<Vec<u8>> {
+        let (bytes, source) = match (&self.claude.token_command, &self.claude.token_file) {
+            (Some(argv), _) => {
+                let (program, args) = argv
+                    .split_first()
+                    .context("claude.token_command is empty")?;
+                let output = std::process::Command::new(program)
+                    .args(args)
+                    .stdin(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null())
+                    .output()
+                    .with_context(|| format!("running claude.token_command ({program})"))?;
+                if !output.status.success() {
+                    bail!(
+                        "claude.token_command ({program}) exited {}; store the token from `claude setup-token` first",
+                        output.status
+                    );
+                }
+                (output.stdout, format!("claude.token_command ({program})"))
+            }
+            (None, Some(file)) => {
+                let path = expand_home(file)?;
+                let bytes = std::fs::read(&path).with_context(|| {
+                    format!(
+                        "reading the Claude token file {} (create it from `claude setup-token`)",
+                        path.display()
+                    )
+                })?;
+                (bytes, path.display().to_string())
+            }
+            (None, None) => bail!("[claude] needs token_command or token_file"),
+        };
+        let token = String::from_utf8(bytes)
+            .with_context(|| format!("the token from {source} is not UTF-8"))?;
+        let token = token.trim();
+        if token.is_empty() {
+            bail!("{source} gave an empty token");
+        }
+        Ok(token.as_bytes().to_vec())
+    }
+}
+
+fn home() -> Result<PathBuf> {
+    std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .context("HOME is not set")
+}
+
+pub fn expand_home(path: &str) -> Result<PathBuf> {
+    match path.strip_prefix("~/") {
+        Some(rest) => Ok(home()?.join(rest)),
+        None => Ok(PathBuf::from(path)),
+    }
+}
+
+pub fn config_dir() -> Result<PathBuf> {
+    Ok(home()?.join(".config/mantle"))
+}
+
+/// Owner-private state: the SQLite database, the SSH key, known hosts and forwarded sockets.
+pub fn state_dir() -> Result<PathBuf> {
+    let dir = home()?.join(".local/state/mantle");
+    ensure_private_dir(&dir)?;
+    Ok(dir)
+}
+
+pub fn ensure_private_dir(dir: &Path) -> Result<()> {
+    use std::os::unix::fs::PermissionsExt as _;
+    std::fs::create_dir_all(dir).with_context(|| format!("creating {}", dir.display()))?;
+    std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o700))
+        .with_context(|| format!("restricting {}", dir.display()))
+}

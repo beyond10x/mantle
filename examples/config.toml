@@ -1,5 +1,10 @@
 # Copy to ~/.config/mantle/config.toml and replace every placeholder.
 
+# "aws" or "kubevirt". Both boot the same Ubuntu build and the same cloud-init.
+provider = "kubevirt"
+# The Ubuntu 24.04 build serial every provider boots (cloud-images.ubuntu.com/releases/noble/).
+ubuntu_serial = "20260926"
+
 [aws]
 profile = "your-aws-profile"
 region = "eu-central-1"
@@ -9,5 +14,16 @@ instance_type = "m7i.4xlarge"
 root_volume_gib = 50
 data_volume_gib = 200
 
+[kubevirt]
+# `task k3d-up` creates this context.
+context = "k3d-mantle"
+namespace = "mantle"
+cpu = 8
+memory_gib = 20
+root_disk_gib = 20
+data_disk_gib = 40
+
 [claude]
-token_file = "~/.config/mantle/claude-token"
+# A command printing the token from `claude setup-token`; keep it in a keyring, not a file.
+# token_file = "~/.config/mantle/claude-token" works where there is no keyring.
+token_command = ["secret-tool", "lookup", "service", "mantle", "account", "claude-code"]

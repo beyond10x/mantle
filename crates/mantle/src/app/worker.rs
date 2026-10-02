@@ -1,0 +1,513 @@
+//! `mantle worker up|down|status`, for every provider.
+//!
+//! The providers differ only in how a machine is created and reached. Everything after the first
+//! SSH connection — bootstrap, binaries, credential, daemon, readiness — is one code path, so the
+//! workers they produce are the same machine.
+
+use std::path::Path;
+use std::time::Duration;
+
+use anyhow::{Context, Result, bail};
+use aws_sdk_ec2::types::InstanceStateName;
+
+use crate::adapters::aws::{self, Aws};
+use crate::adapters::kubevirt::{self, Kubevirt};
+use crate::adapters::ssh::{self, Ssh};
+use crate::adapters::state::{Store, WorkerRecord};
+use crate::adapters::substrate;
+use crate::config::{Config, Provider};
+
+pub const WORKER: &str = "default";
+/// The signed Substrate release a worker runs: image `ghcr.io/{repository}@sha256:{manifest}`, of
+/// which only the layer holding `substrate-daemon` is fetched and checked by its digest. The SDK in
+/// `Cargo.toml` is pinned to the same release (commit `05695970`).
+pub const SUBSTRATE_VERSION: &str = "0.7.8";
+pub const SUBSTRATE_IMAGE_REPOSITORY: &str = "beyond10x/b10x-substrate-daemon";
+pub const SUBSTRATE_IMAGE_MANIFEST: &str =
+    "74f91a11d51397e2d9b1cb46728e2305d7ec1cf296591529133c5cb784df3ba4";
+pub const SUBSTRATE_DAEMON_LAYER: &str =
+    "49f18a9ddd920bde1cae6e38d3392f94d737492d5817c70df5e7caff06d3b237";
+pub const RUST_CHANNEL: &str = "1.97";
+pub const CLAUDE_CODE_VERSION: &str = "2.1.287";
+
+const CLOUD_INIT: &str = include_str!("../../../../deploy/cloud-init.yaml");
+const SUBSTRATE_SERVICE: &str = include_str!("../../../../deploy/substrate.service");
+const EGRESS_SERVICE: &str = include_str!("../../../../deploy/mantle-egress.service");
+const BWRAP_APPARMOR: &str = include_str!("../../../../deploy/bwrap.apparmor");
+
+pub const SECRET_PATH: &str = "/var/lib/mantle/secrets/claude";
+
+pub struct UpOptions<'a> {
+    pub worker_binaries: &'a Path,
+    pub idle_stop: bool,
+}
+
+/// Where a recorded worker lives, written into the record so a changed configuration cannot point
+/// Mantle at a different machine under the same name.
+fn location(config: &Config) -> Result<String> {
+    Ok(match config.provider {
+        Provider::Aws => format!("aws/{}", config.aws()?.region),
+        Provider::Kubevirt => {
+            let kubevirt = config.kubevirt()?;
+            format!("kubevirt/{}/{}", kubevirt.context, kubevirt.namespace)
+        }
+    })
+}
+
+/// The SSH channel to a recorded worker.
+pub fn ssh_for(config: &Config, record: &WorkerRecord) -> Result<Ssh> {
+    let expected = location(config)?;
+    if record.region != expected {
+        bail!(
+            "the recorded worker is at {}, but the configuration selects {expected}",
+            record.region
+        );
+    }
+    let proxy = match config.provider {
+        Provider::Aws => aws::proxy_command(config.aws()?),
+        Provider::Kubevirt => {
+            Kubevirt::new(config.kubevirt()?, &config.ubuntu_serial).proxy_command(WORKER)
+        }
+    };
+    Ssh::new(&record.instance, proxy)
+}
+
+pub async fn up(config: &Config, store: &Store, options: &UpOptions<'_>) -> Result<()> {
+    let binaries = worker_binaries(options.worker_binaries)?;
+    let user_data = render_user_data(&ssh::public_key()?)?;
+    let (instance, data_volume) = match config.provider {
+        Provider::Aws => up_aws(config, &user_data, options.idle_stop).await?,
+        Provider::Kubevirt => up_kubevirt(config, &user_data).await?,
+    };
+    let record = WorkerRecord {
+        name: WORKER.to_owned(),
+        instance,
+        region: location(config)?,
+        data_volume,
+    };
+    store.put_worker(&record)?;
+    let ssh = ssh_for(config, &record)?;
+    wait_for_bootstrap(&ssh).await?;
+    install_binaries(&ssh, &binaries)?;
+    report_identity(&ssh)?;
+    // The daemon refuses to start without a non-empty, owner-only secret file
+    // (`ConditionFileNotEmpty=` in deploy/substrate.service), so the token goes first. It is read
+    // only now, so a missing token does not hold up the long first bootstrap.
+    let token = config
+        .claude_token()
+        .context("the worker is bootstrapped but Substrate cannot start; rerun `mantle worker up` once the token exists")?;
+    install_token(&ssh, &token)?;
+    ssh.check(
+        "sudo systemctl start substrate.service && systemctl is-active substrate.service",
+        None,
+    )
+    .context("starting substrate.service")?;
+    report_machine(&ssh).await
+}
+
+async fn up_aws(
+    config: &Config,
+    user_data: &str,
+    idle_stop: bool,
+) -> Result<(String, Option<String>)> {
+    let aws_config = config.aws()?;
+    let aws = Aws::connect(aws_config).await;
+    match aws.find_instance(WORKER).await? {
+        Some(found) => {
+            println!("worker      {} ({})", found.id, found.state.as_str());
+            if matches!(
+                found.state,
+                InstanceStateName::Stopped | InstanceStateName::Stopping
+            ) {
+                if found.state == InstanceStateName::Stopping {
+                    aws.wait_for_state(
+                        WORKER,
+                        InstanceStateName::Stopped,
+                        Duration::from_secs(600),
+                    )
+                    .await?;
+                }
+                aws.start(&found.id).await?;
+                println!("starting    {}", found.id);
+            }
+        }
+        None => {
+            let created_profile = aws.ensure_instance_profile().await?;
+            let group = aws.ensure_security_group().await?;
+            let ami = aws.ubuntu_ami(&config.ubuntu_serial).await?;
+            if created_profile {
+                println!(
+                    "instance profile {} created; waiting for it to propagate",
+                    aws::ROLE_NAME
+                );
+                tokio::time::sleep(Duration::from_secs(10)).await;
+            }
+            let id = aws.launch(WORKER, &ami, &group, user_data).await?;
+            println!(
+                "launched    {id} ({}, {ami}, {group})",
+                aws_config.instance_type
+            );
+        }
+    }
+    let running = aws
+        .wait_for_state(WORKER, InstanceStateName::Running, Duration::from_secs(600))
+        .await?;
+    if idle_stop {
+        aws.ensure_idle_stop_alarm(&running.id).await?;
+    }
+    Ok((running.id, running.data_volume))
+}
+
+async fn up_kubevirt(config: &Config, user_data: &str) -> Result<(String, Option<String>)> {
+    let kubevirt = Kubevirt::new(config.kubevirt()?, &config.ubuntu_serial);
+    match kubevirt.find(WORKER)? {
+        Some(vm) => {
+            println!(
+                "worker      vm/{} ({})",
+                kubevirt::vm_name(WORKER),
+                vm.printable_status
+            );
+            if vm.run_strategy != "Always" {
+                kubevirt.set_run_strategy(WORKER, "Always")?;
+                println!("starting    vm/{}", kubevirt::vm_name(WORKER));
+            }
+        }
+        None => {
+            kubevirt.launch(WORKER, user_data)?;
+            println!(
+                "launched    vm/{} from {}",
+                kubevirt::vm_name(WORKER),
+                kubevirt.image_url()
+            );
+        }
+    }
+    // The first start imports the cloud image into the root volume before the VM boots.
+    let vm = kubevirt
+        .wait_for_status(WORKER, "Running", Duration::from_secs(40 * 60))
+        .await?;
+    Ok((vm.uid, Some(format!("{}-data", kubevirt::vm_name(WORKER)))))
+}
+
+/// Polls until cloud-init wrote its last file and the worker runs the kernel it converged on.
+/// A first boot builds Substrate from source and then reboots into that kernel.
+async fn wait_for_bootstrap(ssh: &Ssh) -> Result<()> {
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(60 * 60);
+    let mut said = String::new();
+    let mut say = |text: &str| {
+        if said != text {
+            println!("waiting     {text}");
+            said = text.to_owned();
+        }
+    };
+    loop {
+        if ssh.reachable() {
+            let output = ssh.run("cat /var/lib/mantle/bootstrap.json", None)?;
+            if output.status.success() {
+                let bootstrap: serde_json::Value = serde_json::from_slice(&output.stdout)
+                    .context("parsing /var/lib/mantle/bootstrap.json")?;
+                let target = bootstrap["kernel"].as_str().unwrap_or_default().to_owned();
+                let running = ssh.check("uname -r", None)?.trim().to_owned();
+                if running == target {
+                    println!("bootstrap   {bootstrap}");
+                    return Ok(());
+                }
+                say(&format!(
+                    "for the reboot into kernel {target} (running {running})"
+                ));
+            } else {
+                let status = ssh.run("cloud-init status", None)?;
+                if String::from_utf8_lossy(&status.stdout).contains("status: error") {
+                    let log = ssh.run("sudo tail -n 40 /var/log/cloud-init-output.log", None)?;
+                    bail!(
+                        "cloud-init failed on the worker:\n{}",
+                        String::from_utf8_lossy(&log.stdout)
+                    );
+                }
+                say("for cloud-init (a first boot builds Substrate from source)");
+            }
+        } else {
+            say("for SSH");
+        }
+        if tokio::time::Instant::now() > deadline {
+            bail!("the worker did not finish bootstrapping within 60 minutes");
+        }
+        tokio::time::sleep(Duration::from_secs(20)).await;
+    }
+}
+
+struct WorkerBinaries {
+    egress: Vec<u8>,
+    launch: Vec<u8>,
+}
+
+fn worker_binaries(dir: &Path) -> Result<WorkerBinaries> {
+    let read = |name: &str| {
+        let path = dir.join(name);
+        std::fs::read(&path)
+            .with_context(|| format!("reading {} (run `task build-worker` first)", path.display()))
+    };
+    Ok(WorkerBinaries {
+        egress: read("mantle-egress")?,
+        launch: read("mantle-launch")?,
+    })
+}
+
+fn install_binaries(ssh: &Ssh, binaries: &WorkerBinaries) -> Result<()> {
+    for (name, bytes) in [
+        ("mantle-egress", &binaries.egress),
+        ("mantle-launch", &binaries.launch),
+    ] {
+        ssh.check(
+            &format!(
+                "sudo install -d -m 0755 /opt/mantle/bin && sudo tee /opt/mantle/bin/{name}.new >/dev/null \
+                 && sudo chmod 0755 /opt/mantle/bin/{name}.new && sudo mv -f /opt/mantle/bin/{name}.new /opt/mantle/bin/{name}"
+            ),
+            Some(bytes),
+        )
+        .with_context(|| format!("installing {name}"))?;
+    }
+    ssh.check(
+        "sudo systemctl enable mantle-egress.service >/dev/null 2>&1; sudo systemctl restart mantle-egress.service \
+         && systemctl is-active mantle-egress.service",
+        None,
+    )
+    .context("starting mantle-egress")?;
+    println!("installed   mantle-egress, mantle-launch; mantle-egress active");
+    Ok(())
+}
+
+/// Replaces the Claude token atomically. Substrate re-reads the slot file on every exec.
+pub fn install_token(ssh: &Ssh, token: &[u8]) -> Result<()> {
+    ssh.check(
+        &format!(
+            "sudo tee {SECRET_PATH}.new >/dev/null && sudo chown substrate:substrate {SECRET_PATH}.new \
+             && sudo chmod 0600 {SECRET_PATH}.new && sudo mv -f {SECRET_PATH}.new {SECRET_PATH}"
+        ),
+        Some(token),
+    )
+    .context("installing the Claude token on the worker")?;
+    Ok(())
+}
+
+/// What makes two workers the same machine: image build, OS, kernel and installed versions.
+fn report_identity(ssh: &Ssh) -> Result<()> {
+    let text = ssh.check(
+        "printf 'image %s\\n' \"$(sed -n 's/^serial: *//p' /etc/cloud/build.info)\"; \
+         printf 'os %s\\n' \"$(. /etc/os-release && echo \"$PRETTY_NAME\")\"; \
+         printf 'kernel %s\\n' \"$(uname -r)\"; \
+         printf 'bubblewrap %s\\n' \"$(bwrap --version)\"; \
+         printf 'egress %s\\n' \"$(sha256sum /opt/mantle/bin/mantle-egress | cut -c1-16)\"; \
+         printf 'launch %s\\n' \"$(sha256sum /opt/mantle/bin/mantle-launch | cut -c1-16)\"; \
+         printf 'daemon %s\\n' \"$(sha256sum /usr/local/bin/substrate-daemon | cut -c1-16)\"",
+        None,
+    )?;
+    for line in text.lines() {
+        if let Some((key, value)) = line.split_once(' ') {
+            println!("{key:<11} {value}");
+        }
+    }
+    Ok(())
+}
+
+async fn report_machine(ssh: &Ssh) -> Result<()> {
+    let tunnel = ssh.tunnel()?;
+    let client = substrate::connect(tunnel.socket()).await?;
+    let machine = client.machine();
+    println!(
+        "substrate   driver {} snapshot {}",
+        machine.driver_version, machine.capability_snapshot
+    );
+    println!(
+        "quota       {}",
+        if substrate::quota_served(&machine) {
+            "workspace storage quota served"
+        } else {
+            "workspace storage quota NOT served; storage requests are not enforced"
+        }
+    );
+    println!(
+        "usage       {}",
+        match &machine.facts.exec_resource_usage {
+            Some(facts) => format!("served (block_io={})", facts.block_io),
+            None => "NOT served; runs report no usage".to_owned(),
+        }
+    );
+    let missing = substrate::missing_facts(&machine);
+    if missing.is_empty() {
+        println!("state       READY");
+        Ok(())
+    } else {
+        bail!("worker is not ready; missing facts: {}", missing.join(", "))
+    }
+}
+
+pub async fn down(config: &Config) -> Result<()> {
+    match config.provider {
+        Provider::Aws => {
+            let aws = Aws::connect(config.aws()?).await;
+            let Some(found) = aws.find_instance(WORKER).await? else {
+                println!("no worker");
+                return Ok(());
+            };
+            if found.state != InstanceStateName::Stopped {
+                aws.stop(&found.id).await?;
+                aws.wait_for_state(WORKER, InstanceStateName::Stopped, Duration::from_secs(600))
+                    .await?;
+            }
+            println!(
+                "worker      {} stopped; data volume {} retained",
+                found.id,
+                found.data_volume.as_deref().unwrap_or("?")
+            );
+        }
+        Provider::Kubevirt => {
+            let kubevirt = Kubevirt::new(config.kubevirt()?, &config.ubuntu_serial);
+            if kubevirt.find(WORKER)?.is_none() {
+                println!("no worker");
+                return Ok(());
+            }
+            kubevirt.set_run_strategy(WORKER, "Halted")?;
+            kubevirt
+                .wait_for_status(WORKER, "Stopped", Duration::from_secs(600))
+                .await?;
+            println!(
+                "worker      vm/{} stopped; root and data volumes retained",
+                kubevirt::vm_name(WORKER)
+            );
+        }
+    }
+    Ok(())
+}
+
+pub async fn status(config: &Config, store: &Store) -> Result<()> {
+    let running = match config.provider {
+        Provider::Aws => {
+            let aws = Aws::connect(config.aws()?).await;
+            let Some(found) = aws.find_instance(WORKER).await? else {
+                println!("no worker");
+                return Ok(());
+            };
+            println!("worker      {}", found.id);
+            println!("state       {}", found.state.as_str());
+            println!("type        {}", found.instance_type);
+            println!(
+                "zone        {}",
+                found.availability_zone.as_deref().unwrap_or("?")
+            );
+            println!(
+                "data volume {}",
+                found.data_volume.as_deref().unwrap_or("?")
+            );
+            found.state == InstanceStateName::Running
+        }
+        Provider::Kubevirt => {
+            let kubevirt = Kubevirt::new(config.kubevirt()?, &config.ubuntu_serial);
+            let Some(vm) = kubevirt.find(WORKER)? else {
+                println!("no worker");
+                return Ok(());
+            };
+            println!("worker      vm/{} ({})", kubevirt::vm_name(WORKER), vm.uid);
+            println!("state       {}", vm.printable_status);
+            vm.printable_status == "Running"
+        }
+    };
+    if running {
+        let record = store
+            .worker(WORKER)?
+            .context("the worker runs but is not recorded; run `mantle worker up`")?;
+        let ssh = ssh_for(config, &record)?;
+        report_identity(&ssh)?;
+        report_machine(&ssh).await?;
+    }
+    Ok(())
+}
+
+/// A shell on the worker host as `ubuntu`, through the same tunnel Mantle uses.
+pub fn ssh(config: &Config, store: &Store) -> Result<()> {
+    let record = store
+        .worker(WORKER)?
+        .context("no worker recorded; run `mantle worker up` first")?;
+    let status = ssh_for(config, &record)?.interactive()?;
+    if !status.success() {
+        bail!("ssh ended {status}");
+    }
+    Ok(())
+}
+
+/// Substitutes the cloud-init template. A placeholder alone on a line is replaced by a whole file,
+/// indented to the placeholder's column; a placeholder inside a line is replaced by a value.
+pub fn render_user_data(public_key: &str) -> Result<String> {
+    let blocks = [
+        ("{{SUBSTRATE_SERVICE}}", SUBSTRATE_SERVICE),
+        ("{{EGRESS_SERVICE}}", EGRESS_SERVICE),
+        ("{{BWRAP_APPARMOR}}", BWRAP_APPARMOR),
+    ];
+    let values = [
+        ("{{SSH_PUBLIC_KEY}}", public_key),
+        ("{{SUBSTRATE_IMAGE_REPOSITORY}}", SUBSTRATE_IMAGE_REPOSITORY),
+        ("{{SUBSTRATE_DAEMON_LAYER}}", SUBSTRATE_DAEMON_LAYER),
+        ("{{SUBSTRATE_VERSION}}", SUBSTRATE_VERSION),
+        ("{{SUBSTRATE_IMAGE_MANIFEST}}", SUBSTRATE_IMAGE_MANIFEST),
+        ("{{RUST_CHANNEL}}", RUST_CHANNEL),
+        ("{{CLAUDE_CODE_VERSION}}", CLAUDE_CODE_VERSION),
+    ];
+    let mut out = String::with_capacity(CLOUD_INIT.len() * 2);
+    for line in CLOUD_INIT.lines() {
+        let trimmed = line.trim();
+        if let Some((_, body)) = blocks.iter().find(|(name, _)| *name == trimmed) {
+            let indent = &line[..line.len() - line.trim_start().len()];
+            for body_line in body.lines() {
+                if body_line.is_empty() {
+                    out.push('\n');
+                } else {
+                    out.push_str(indent);
+                    out.push_str(body_line);
+                    out.push('\n');
+                }
+            }
+            continue;
+        }
+        let mut rendered = line.to_owned();
+        for (name, value) in values {
+            rendered = rendered.replace(name, value);
+        }
+        out.push_str(&rendered);
+        out.push('\n');
+    }
+    if let Some(position) = out.find("{{") {
+        let end = out[position..]
+            .find("}}")
+            .map_or(out.len(), |end| position + end + 2);
+        bail!(
+            "cloud-init template has an unknown placeholder {}",
+            &out[position..end]
+        );
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_template_renders_every_placeholder() {
+        let rendered = render_user_data("ssh-ed25519 AAAAtest mantle").expect("renders");
+        assert!(
+            rendered.starts_with("#cloud-config"),
+            "first line must be #cloud-config"
+        );
+        assert!(rendered.contains("ssh-ed25519 AAAAtest mantle"));
+        assert!(rendered.contains(SUBSTRATE_DAEMON_LAYER));
+        assert!(
+            !rendered.contains("cargo build"),
+            "a worker must not compile Substrate"
+        );
+        assert!(!rendered.contains("{{"));
+        assert!(
+            rendered.len() <= 16 * 1024,
+            "user data is {} bytes",
+            rendered.len()
+        );
+    }
+}

@@ -2,11 +2,23 @@
 format: aep.planning-md/3
 id: story:worker-provisioning
 kind: story
-status: draft
+status: active
 title: Provision one EC2 worker reachable only through SSM
 relations:
 - decomposes: epic:vertical-slice
-revision: 1
+scope:
+- confidence: cited
+  path: crates/mantle/src/adapters/aws.rs
+- confidence: cited
+  path: crates/mantle/src/adapters/ssh.rs
+- confidence: cited
+  path: crates/mantle/src/app/worker.rs
+- confidence: cited
+  path: deploy
+revision: 4
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-01T22:38:39Z", actor: "human:timo", revision: 2}
+- {from: "proposed", to: "active", at: "2026-10-01T22:38:39Z", actor: "human:timo", revision: 3}
 ---
 # Story: Provision one EC2 worker reachable only through SSM
 
