@@ -1,0 +1,24 @@
+components:
+  - component: mantle-cli
+    summary: Local session record operations; AWS, KubeVirt and Substrate are external adapters.
+    owns:
+      domains: [mantle.session, mantle.manifest]
+    accepts:
+      commands:
+        - mantle.session.InsertSession
+        - mantle.session.Materialized
+        - mantle.session.MaterializationFailed
+        - mantle.session.AgentStarted
+        - mantle.session.AgentStartFailed
+        - mantle.session.BeginStop
+        - mantle.session.FinishStop
+        - mantle.session.SetWorkspace
+        - mantle.session.SetAgentExec
+  - component: mantle-egress
+    owns:
+      domains: [mantle.egress]
+    accepts:
+      commands: [mantle.egress.CheckDefaultDestination]
+  - component: mantle-launch
+    owns:
+      domains: [mantle.launch]

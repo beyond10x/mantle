@@ -1,0 +1,41 @@
+domain: mantle.egress
+summary: The exact default allowlist decision after authority parsing, before DNS or dialing.
+# Source: crates/mantle-egress/src/allow.rs:6-88. Destination is already normalized by parse_authority.
+types:
+  - name: mantle.egress.Destination
+    kind: struct
+    fields:
+      - {name: host, type: String}
+      - {name: port, type: Integer}
+  - name: mantle.egress.ProxyConfig
+    kind: struct
+    fields:
+      - {name: allowlist, type: 'List<mantle.egress.Destination>'}
+      - {name: max_connections, type: Integer}
+      - {name: connect_timeout, type: Duration}
+      - {name: idle_timeout, type: Duration}
+      - {name: head_timeout, type: Duration}
+      - {name: drain_timeout, type: Duration}
+errors:
+  - name: mantle.egress.NotAllowed
+    fields: []
+commands:
+  - name: mantle.egress.CheckDefaultDestination
+    # Allowlist::default_list().permits(), projected to the proxy's refusal.
+    input:
+      - {name: host, type: String}
+      - {name: port, type: Integer}
+    outcomes:
+      - name: allowed
+        when:
+          all:
+            - port == 443
+            - host:
+                in: [api.anthropic.com, platform.claude.com, github.com, codeload.github.com, objects.githubusercontent.com, index.crates.io, static.crates.io, crates.io]
+        accepts: nothing
+      - name: denied
+        error: mantle.egress.NotAllowed
+# UNMAPPED[egress-transport]: raw HTTP/1.1 CONNECT syntax, authority normalization, IP-literal
+# rejection, all-address DNS public-range checks and rebinding, concurrency budgets, deadlines,
+# byte forwarding and shutdown are temporal/OS boundaries. Sources: head.rs, addr.rs, proxy.rs.
+# Success here only admits a normalized destination; it never promises a connected tunnel.

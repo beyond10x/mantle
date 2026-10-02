@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Mantle moves your whole development session to a remote Linux worker. Run Claude Code, keep the workspace close to its toolchain, and reconnect from your laptop.">
+  <meta name="theme-color" content="#101a1b">
+  <link rel="canonical" href="https://beyond10x.github.io/mantle/">
+  <link rel="stylesheet" href="/mantle/styles.css">
+  <title>Mantle — a workspace that stays with your agent</title>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><a class="wordmark" href="#main"><span class="mark" aria-hidden="true">M</span>Mantle<span class="byline">/ beyond10x</span></a><nav aria-label="Primary"><a href="#quickstart">Get started</a><a href="#commands">Commands</a><a href="#contract">Specification</a><a href="https://github.com/beyond10x/mantle">GitHub ↗</a></nav></header>
+<main id="main">
+<section class="hero" aria-labelledby="title">
+  <div class="hero-copy"><p class="eyebrow"><span class="dot"></span> Remote development · early preview</p><h1>Your agent’s workspace.<br><em>Beyond your laptop.</em></h1><p class="lede">Run the whole development session on a Linux worker: Claude Code, its repositories, and its toolchain. Your laptop is the terminal. The worker does the building.</p><div class="actions"><a class="button" href="#quickstart">Start a session <span aria-hidden="true">→</span></a><a class="text-button" href="#how-it-works">See how it works ↓</a></div><p class="quiet">Rust · Substrate confinement · AWS or KubeVirt workers</p></div>
+  <div class="terminal" aria-label="Example session commands"><div class="terminal-bar"><span aria-hidden="true">● ● ●</span><span>laptop / mantle</span></div><pre><code><span class="prompt">$</span> mantle start mantle.yaml --detached
+
+<span class="comment"># The agent runs on the worker.</span>
+<span class="prompt">$</span> mantle attach my-project
+
+<span class="comment"># Ctrl-] then d: detach, keep working.</span>
+<span class="prompt">$</span> mantle status my-project
+
+<span class="comment"># Clean up when you are finished.</span>
+<span class="prompt">$</span> mantle stop my-project</code></pre><div class="terminal-foot"><span class="dot"></span> One session. A durable attachment boundary.</div></div>
+</section>
+<section id="how-it-works" class="section"><div class="section-heading"><p class="eyebrow">01 / Architecture</p><h2>Keep the work where it runs.</h2><p>Mantle places and connects the session. Substrate owns execution, workspaces, secrets, and the confinement boundary.</p></div><div class="flow" aria-label="Laptop connects through the provider tunnel to a Linux worker running a confined session"><div><span class="flow-label">Your laptop</span><strong>Mantle CLI</strong><p>Input, output, resize.<br>Local session records.</p></div><span class="flow-arrow" aria-hidden="true">→</span><div><span class="flow-label">Linux worker</span><strong>Substrate</strong><p>Execution and workspace.<br>Observed resource enforcement.</p></div><span class="flow-arrow" aria-hidden="true">→</span><div><span class="flow-label">Confined session</span><strong>Claude + toolchain</strong><p>Repositories under /workspace.<br>Fixed egress gateway.</p></div></div><div class="cards"><article><span class="card-number">01</span><h3>Detach without ending the agent</h3><p>The launcher holds the agent on a pseudo-terminal. A terminal attachment can end while that agent keeps running, up to its execution lease.</p></article><article><span class="card-number">02</span><h3>Choose a worker provider</h3><p>AWS uses an SSM tunnel with no inbound security-group ports. KubeVirt uses a VM and provider tunnel. The current slice selects one worker.</p></article><article><span class="card-number">03</span><h3>Read what actually happened</h3><p>Recorded intent and live Substrate observations are distinct. Unknown execution outcomes and unenforced resource requests stay visible.</p></article></div></section>
+<section id="quickstart" class="section"><div class="section-heading"><p class="eyebrow">02 / Get started</p><h2>From a manifest to a session.</h2><p>This is an early source-built preview. Use a Linux laptop and a test worker environment; there is no packaged Mantle release yet.</p></div><ol class="steps"><li><div><h3>Build the tools</h3><p>Install Rust 1.97, the <a href="https://taskfile.dev/">Task runner</a>, a musl C toolchain, and SSH. Worker binaries currently target x86-64 Linux. The repository pins Substrate’s SDK.</p><pre><code>git clone https://github.com/beyond10x/mantle.git
+cd mantle
+cargo install --locked --path crates/mantle
+rustup target add x86_64-unknown-linux-musl
+task build-worker</code></pre><p class="aside">For contributor checks, also install ESS 0.50.x and AEP 0.68.0. Tool versions are pinned in CI.</p></div></li><li><div><h3>Configure the worker and credential source</h3><p>Copy <a href="https://github.com/beyond10x/mantle/blob/main/examples/config.toml">examples/config.toml</a> to <code>~/.config/mantle/config.toml</code>. Replace all placeholders and choose <code>provider = "aws"</code> or <code>"kubevirt"</code>.</p><p>For AWS, install AWS CLI v2 and Session Manager Plugin, authenticate the chosen profile, and select your VPC and subnet. The account needs the EC2, IAM and CloudWatch permissions used by worker provisioning. For the local KubeVirt test bed, install Docker, k3d and kubectl, then run <code>task k3d-up</code>; nested virtualization must be available.</p><p>Obtain your Claude Code OAuth token with <code>claude setup-token</code> and store it in a keyring. Configure <code>claude.token_command</code> to retrieve it. An owner-protected <code>token_file</code> is supported when no keyring is available. Keep credentials and account identifiers outside the repository.</p></div></li><li><div><h3>Describe your session</h3><p>Save this as <code>mantle.yaml</code>. The first slice serves Claude Code with the <code>rust-dev</code> runtime. Sources must be HTTPS repositories reachable through the gateway.</p><pre><code>apiVersion: mantle.beyond10x.dev/v1alpha1
+kind: Session
+metadata:
+  name: my-project
+runtime:
+  profile: rust-dev
+workspace:
+  repositories:
+    - name: mantle
+      repository: https://github.com/beyond10x/mantle.git
+      ref: main
+      mount: mantle
+agent:
+  kind: claude-code
+  cwd: /workspace/mantle
+resources:
+  cpu: 4
+  memory: 16GiB
+  pids: 4096
+lifecycle:
+  detachKeepsRunning: true
+  retainFor: 8h</code></pre></div></li><li><div><h3>Bring up the worker and start</h3><pre><code>mantle worker up
+mantle start mantle.yaml</code></pre><p>First boot provisions the worker and installs the pinned toolchain and Mantle binaries. Use <code>--detached</code> on <code>start</code> to start without attaching. Press <kbd>Ctrl</kbd> + <kbd>]</kbd>, then <kbd>d</kbd>, to detach; <code>mantle attach my-project</code> returns to the terminal.</p><div class="notice"><strong>Cleanup has two distinct effects.</strong><p><code>mantle stop my-project</code> stops the agent and destroys its workspace. Save wanted changes remotely first. <code>mantle worker down</code> stops the worker while retaining its data volume. Retained cloud storage can still incur charges.</p></div></div></li></ol></section>
+<section id="commands" class="section"><div class="section-heading"><p class="eyebrow">03 / CLI reference</p><h2>The session controls.</h2></div><div class="table-wrap"><table><caption class="sr-only">Mantle commands and their behavior</caption><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><code>mantle worker up</code></td><td>Create or start the selected worker, install binaries, and check Substrate facts.</td></tr><tr><td><code>mantle worker status</code></td><td>Show provider state and the worker’s observed capabilities.</td></tr><tr><td><code>mantle worker ssh</code></td><td>Open a host shell through the provider tunnel, outside the sandbox.</td></tr><tr><td><code>mantle worker down</code></td><td>Stop the worker; retain its data volume.</td></tr><tr><td><code>mantle start [manifest] [--detached]</code></td><td>Resolve a manifest, materialize repositories, start Claude Code, and optionally attach.</td></tr><tr><td><code>mantle attach NAME</code></td><td>Attach to the agent terminal. One attachment at a time.</td></tr><tr><td><code>mantle list</code></td><td>List locally recorded sessions that are not stopped.</td></tr><tr><td><code>mantle status NAME</code></td><td>Show recorded intent, resolved sources, requested limits and current observations.</td></tr><tr><td><code>mantle exec NAME -- PROGRAM ARGS</code></td><td>Run a command with the session’s confinement and toolchain, without the agent credential.</td></tr><tr><td><code>mantle stop NAME</code></td><td>Retire the agent and destroy the workspace. Interrupted cleanup resumes from Stopping.</td></tr></tbody></table></div></section>
+<section id="boundaries" class="section"><div class="section-heading"><p class="eyebrow">04 / Current boundaries</p><h2>Explicit about what is enforced.</h2></div><div class="boundary-grid"><article><h3>Network</h3><p>The default CONNECT gateway admits eight exact HTTPS destinations for Anthropic, GitHub and crates.io. It rejects IP-literal targets and non-public resolved addresses. Naming a subset of manifest capabilities does not narrow this fixed allowlist.</p></article><article><h3>Resources</h3><p>Memory and process limits depend on the worker’s reported Substrate facts. CPU sets build parallelism through <code>CARGO_BUILD_JOBS</code>; it does not enforce CPU bandwidth. Storage quotas are conditional on worker support.</p></article><article><h3>Credentials</h3><p>The Claude token enters the sandbox through Substrate’s <code>claude</code> secret slot and the launcher’s inherited descriptor. Normal session execs receive no agent credential. The worker’s token file remains after session stop.</p></article><article><h3>Durability</h3><p>Detach preserves the running agent, subject to its lease. Retention is positive and at most 24 hours. Worker failure recovery, snapshots, shared caches, peer networking and fleet scheduling are outside the implemented slice.</p></article></div></section>
+<section id="contract" class="section contract"><div><p class="eyebrow">05 / Executable contract</p><h2>Behavior you can inspect<br>and check.</h2><p>Four ESS domains describe local sessions, manifests, egress and launcher arguments. The local suite exercises the actual SQLite methods and default allowlist. It keeps recorded state separate from live process state.</p><a class="text-button" href="https://github.com/beyond10x/mantle/tree/main/spec">Explore the specification ↗</a></div><div class="contract-panel"><div class="metric"><strong>57</strong><span>generated local scenarios<br>zero skipped in the recorded run</span></div><pre><code>task spec          # Validate the contract
+task conformance   # Exercise local behavior
+task check         # Run the repository gate</code></pre><p>Local coverage is deliberately bounded. Two synthesis refusals remain for manifest and launcher value invariants; external orchestration and OS behavior are documented gaps. Read the <a href="https://github.com/beyond10x/mantle/blob/main/spec/README.md">coverage ledger</a> and <a href="https://github.com/beyond10x/mantle/blob/main/.engineering/reports/mantle-ess-local.json">recorded results</a>.</p></div></section>
+<section id="troubleshooting" class="section"><div class="section-heading"><p class="eyebrow">06 / Troubleshooting</p><h2>Start with the observation.</h2></div><details><summary>The worker is not ready</summary><p>Run <code>mantle worker status</code>, then <code>mantle worker up</code> to finish bootstrap. The CLI checks that bootstrap completed and Substrate is active before connecting. Verify your provider configuration and token source.</p></details><details><summary>A session exists, but attach fails</summary><p><code>mantle list</code> shows recorded intent. Use <code>mantle status NAME</code> for live observations. If the agent has exited, attachment cannot restart it. Save any needed work before <code>mantle stop NAME</code> destroys the workspace.</p></details><details><summary>A repository cannot be fetched</summary><p>Check that the URL is HTTPS, the ref exists, and the host is admitted by the fixed egress allowlist. The initial slice does not provide a Git credential broker. The example uses a public GitHub repository.</p></details><details><summary>A resource request says “not enforced”</summary><p>The CLI reports the worker’s actual capabilities. It does not turn a request into proof of enforcement. Check the relevant Substrate fact; CPU bandwidth control is not implemented by this slice.</p></details></section>
+</main>
+<footer><a class="wordmark" href="#main">Mantle</a><p>A beyond10x project. Built in Rust. Confined by Substrate.</p><div><a href="https://github.com/beyond10x/mantle">Source</a><a href="https://github.com/beyond10x/mantle/issues">Issues</a><a href="https://beyond10x.github.io/substrate/">Substrate</a><a href="https://beyond10x.github.io/ess/">ESS</a></div></footer>
+</body>
+</html>

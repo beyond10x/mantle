@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T08:42:41Z",
+  "actor": "human:timo",
+  "artifact": "story:ess-contract",
+  "kind": "story",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check; exit 0; 57 generated local scenarios pass; transition and allowlist mutations detected",
+    "reference": ".engineering/reports/mantle-ess-local.json"
+  }
+}

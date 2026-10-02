@@ -374,3 +374,7 @@ mod tests {
         assert_eq!(read[0].commit, source.commit);
     }
 }
+
+#[cfg(test)]
+#[path = "conformance.rs"]
+mod conformance;

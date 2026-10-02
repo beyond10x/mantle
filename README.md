@@ -1,5 +1,7 @@
 # Mantle
 
+[Read the documentation](https://beyond10x.github.io/mantle/) · [Report an issue](https://github.com/beyond10x/mantle/issues)
+
 Mantle runs a whole development session (Claude Code, its workspace and toolchain) on a remote
 Linux worker, confined by [Substrate](https://github.com/beyond10x/substrate). The laptop renders
 the terminal; builds use the worker's CPU.
@@ -28,3 +30,10 @@ lists what the slice does differently from the design and why.
 Copy [examples/config.toml](examples/config.toml) to `~/.config/mantle/config.toml` and fill it in.
 
 Agent and contributor instructions are in [AGENTS.md](AGENTS.md).
+
+## Executable specification
+
+[spec/README.md](spec/README.md) describes the implemented contract, its source mappings and
+coverage gaps. `task spec` validates it; `task conformance` synthesizes and executes the local
+session-store and default-allowlist scenarios against production Rust code. `task check` includes
+that test through the workspace suite. Contributors need ESS 0.50.x and AEP on `PATH`.

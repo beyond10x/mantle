@@ -1,6 +1,9 @@
-format: ess/1
+format: ess/15
 system: mantle
 version: v1
 
 domains:
   - mantle.session
+  - mantle.manifest
+  - mantle.egress
+  - mantle.launch

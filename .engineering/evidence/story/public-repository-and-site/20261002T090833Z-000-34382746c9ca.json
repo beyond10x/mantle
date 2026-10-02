@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-02T09:08:33Z",
+  "actor": "human:timo",
+  "artifact": "story:public-repository-and-site",
+  "kind": "story",
+  "revision": 6,
+  "change": {
+    "change": "evidence",
+    "kind": "approval",
+    "source": "Operator approved the displayed documentation page in this session, 2026-10-02"
+  }
+}

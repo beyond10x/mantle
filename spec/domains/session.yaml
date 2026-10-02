@@ -1,73 +1,267 @@
 domain: mantle.session
+summary: Local records of intent; a recorded Running state never asserts a live process.
+
+types:
+  # crates/mantle/src/adapters/state.rs:44,60: composite PRIMARY KEY(session_id,mount).
+  # UNMAPPED[source-identity]: ESS has one identity field; sources have a composite key.
+  # Keep the actual value type; do not invent a persisted source_id or deletion cascade.
+  - name: mantle.session.SourceResolution
+    kind: struct
+    fields:
+      - {name: session_id, type: String}
+      - {name: name, type: String}
+      - {name: repository, type: String}
+      - {name: declared_ref, type: String}
+      - {name: commit, type: String}
+      - {name: mount, type: String}
 
 entities:
+  # crates/mantle/src/adapters/state.rs:30,60; domain/session.rs:10.
   - name: mantle.session.Session
-    identity:
-      name: session_id
-      type: String
+    identity: {name: session_id, type: String, naming: {wire: id}}
     fields:
-      - name: name
-        type: String
-      - name: manifest_digest
-        type: String
-      - name: worker_id
-        type: String
-      - name: substrate_workspace
-        type: String
-      - name: agent_exec
-        type: String
+      - {name: name, type: String}
+      - {name: worker, type: String}
+      - {name: manifest_digest, type: String}
+      - {name: workspace, type: 'Optional<String>'}
+      - {name: agent_exec, type: 'Optional<String>'}
+      - {name: requested_json, type: String}
+      - {name: created_at, type: String}
+      - {name: failure, type: 'Optional<String>'}
     relations:
-      - name: worker
-        kind: references
-        target: mantle.session.Worker
-        cardinality: one
-        via: worker_id
-      - name: sources
-        kind: owns
-        target: mantle.session.SourceResolution
-        cardinality: many
-        via: session_id
-    # The design's lifecycle (docs/design/00-mantle-on-substrate.md § 9) has eleven states and six
-    # failure states. They enter here together with the commands whose outcomes move between them.
+      # Worker records survive session stop; no foreign-key or existence check is enforced.
+      - {name: worker_record, kind: references, target: mantle.session.Worker, cardinality: one, via: worker}
+    # Wire states are SCREAMING_SNAKE_CASE (SessionState::Display), not the ESS spelling.
     lifecycle:
-      initial: Requested
-      states: [Requested]
-      terminal: [Requested]
+      initial: Materializing
+      states: [Materializing, Starting, Running, Stopping, Stopped, FailedMaterialization, FailedAgentStart]
+      terminal: [Stopped]
+      transitions:
+        - {name: materialized, from: [Materializing], to: Starting}
+        - {name: materialization_failed, from: [Materializing], to: FailedMaterialization}
+        - {name: started, from: [Starting], to: Running}
+        - {name: start_failed, from: [Starting], to: FailedAgentStart}
+        - {name: stopping, from: [Materializing, Starting, Running, FailedMaterialization, FailedAgentStart], to: Stopping}
+        - {name: stopped, from: [Stopping], to: Stopped}
 
+  # crates/mantle/src/adapters/state.rs:22,106: an upserted record, not provider liveness.
   - name: mantle.session.Worker
-    identity:
-      name: worker_id
-      type: String
+    identity: {name: name, type: String}
     fields:
-      - name: provider
-        type: String
-      - name: instance
-        type: String
-      - name: region
-        type: String
-      - name: capability_snapshot
-        type: String
-    lifecycle:
-      initial: Provisioning
-      states: [Provisioning]
-      terminal: [Provisioning]
+      - {name: instance, type: String}
+      - {name: region, type: String}
+      - {name: data_volume, type: 'Optional<String>'}
+    # Structural state: WorkerRecord has no status column. worker down retains this record.
+    lifecycle: {initial: Recorded, states: [Recorded], terminal: [Recorded]}
 
-  - name: mantle.session.SourceResolution
-    identity:
-      name: source_id
-      type: String
+errors:
+  - name: mantle.session.InvalidTransition
+    fields: []
+  - name: mantle.session.RecordVanished
+    fields: []
+
+# These are internal store operations invoked by app/session.rs, not new public CLI verbs.
+# Events denote local writes only; Mantle has no event bus and publishes none of them.
+commands:
+  - name: mantle.session.InsertSession
+    input:
+      - {name: session_id, type: String}
+      - {name: name, type: String}
+      - {name: worker, type: String}
+      - {name: manifest_digest, type: String}
+      - {name: requested_json, type: String}
+      - {name: created_at, type: String}
+    outcomes:
+      - name: recorded
+        creates: mantle.session.Session
+        instance: session_id
+        sets:
+          name: input.name
+          worker: input.worker
+          manifest_digest: input.manifest_digest
+          requested_json: input.requested_json
+          created_at: input.created_at
+          workspace: {cleared: true}
+          agent_exec: {cleared: true}
+          failure: {cleared: true}
+        emits: [mantle.session.SessionRecorded]
+        payload:
+          mantle.session.SessionRecorded: {session_id: input.session_id}
+    # UNMAPPED[live-name-uniqueness]: SQLite partial unique index over other records
+    # (state.rs:72) refuses duplicate live names and allows reuse after Stopped.
+    # Input id is minted by app/session.rs:85; Store receives it, so it is not generated here.
+  - name: mantle.session.Materialized
+    input:
+      - {name: session_id, type: String}
+    outcomes:
+      - name: moved
+        moves: mantle.session.Session.materialized
+        instance: session_id
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: wrong-state
+        wrong_state: true
+        error: mantle.session.InvalidTransition
+      - name: missing
+        unknown_instance: true
+        error: mantle.session.RecordVanished
+  - name: mantle.session.MaterializationFailed
+    input:
+      - {name: session_id, type: String}
+      - {name: failure, type: String}
+    outcomes:
+      - name: moved
+        moves: mantle.session.Session.materialization_failed
+        instance: session_id
+        sets: {failure: input.failure}
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: wrong-state
+        wrong_state: true
+        error: mantle.session.InvalidTransition
+      - name: missing
+        unknown_instance: true
+        error: mantle.session.RecordVanished
+  - name: mantle.session.AgentStarted
+    input:
+      - {name: session_id, type: String}
+    outcomes:
+      - name: moved
+        moves: mantle.session.Session.started
+        instance: session_id
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: wrong-state
+        wrong_state: true
+        error: mantle.session.InvalidTransition
+      - name: missing
+        unknown_instance: true
+        error: mantle.session.RecordVanished
+  - name: mantle.session.AgentStartFailed
+    input:
+      - {name: session_id, type: String}
+      - {name: failure, type: String}
+    outcomes:
+      - name: moved
+        moves: mantle.session.Session.start_failed
+        instance: session_id
+        sets: {failure: input.failure}
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: wrong-state
+        wrong_state: true
+        error: mantle.session.InvalidTransition
+      - name: missing
+        unknown_instance: true
+        error: mantle.session.RecordVanished
+  - name: mantle.session.BeginStop
+    input:
+      - {name: session_id, type: String}
+    outcomes:
+      - name: moved
+        moves: mantle.session.Session.stopping
+        instance: session_id
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: wrong-state
+        wrong_state: true
+        error: mantle.session.InvalidTransition
+      - name: missing
+        unknown_instance: true
+        error: mantle.session.RecordVanished
+  - name: mantle.session.FinishStop
+    input:
+      - {name: session_id, type: String}
+    outcomes:
+      - name: moved
+        moves: mantle.session.Session.stopped
+        instance: session_id
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: wrong-state
+        wrong_state: true
+        error: mantle.session.InvalidTransition
+      - name: missing
+        unknown_instance: true
+        error: mantle.session.RecordVanished
+
+  - name: mantle.session.SetWorkspace
+    input:
+      - {name: session_id, type: String}
+      - {name: workspace, type: String}
+    outcomes:
+      - name: recorded
+        updates: mantle.session.Session
+        instance: session_id
+        sets: {workspace: input.workspace}
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      # SQL UPDATE of an unknown id returns success with zero affected rows (state.rs:177).
+      - name: missing
+        unknown_instance: true
+        refuses: false
+  - name: mantle.session.SetAgentExec
+    input:
+      - {name: session_id, type: String}
+      - {name: agent_exec, type: String}
+    outcomes:
+      - name: recorded
+        updates: mantle.session.Session
+        instance: session_id
+        sets: {agent_exec: input.agent_exec}
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: missing
+        unknown_instance: true
+        refuses: false
+
+# UNMAPPED[orchestration]: worker upsert/provider start-stop, source writes, live Substrate
+# observations, agent start/attach/exec and retryable stop are multi-step external effects
+# (app/worker.rs, app/session.rs). A BeginStop is Store::move_session, not CLI stop: the CLI
+# deliberately skips that move when already Stopping, then retries cleanup.
+events:
+  - name: mantle.session.SessionRecorded
+    fields: [{name: session_id, type: String}]
+  - name: mantle.session.SessionChanged
+    fields: [{name: session_id, type: String}]
+
+views:
+  # state.rs:219,243: session_by_id is internal; live_sessions is the CLI read model.
+  - name: mantle.session.SessionRecords
+    source: mantle.session.Session
+    consistency: read_your_writes
     fields:
-      - name: session_id
-        type: String
-      - name: repository
-        type: String
-      - name: declared_ref
-        type: String
-      - name: commit
-        type: String
-      - name: mount
-        type: String
-    lifecycle:
-      initial: Resolved
-      states: [Resolved]
-      terminal: [Resolved]
+      - {name: session_id, type: 'String'}
+      - {name: state, type: 'mantle.session.Session.State'}
+      - {name: name, type: 'String'}
+      - {name: worker, type: 'String'}
+      - {name: manifest_digest, type: 'String'}
+      - {name: workspace, type: 'Optional<String>'}
+      - {name: agent_exec, type: 'Optional<String>'}
+      - {name: requested_json, type: 'String'}
+      - {name: created_at, type: 'String'}
+      - {name: failure, type: 'Optional<String>'}
+  # state.rs:219,243: session_by_id is internal; live_sessions is the CLI read model.
+  - name: mantle.session.LiveSessions
+    source: mantle.session.Session
+    consistency: read_your_writes
+    filter: state != Stopped
+    fields:
+      - {name: session_id, type: 'String'}
+      - {name: state, type: 'mantle.session.Session.State'}
+      - {name: name, type: 'String'}
+      - {name: worker, type: 'String'}
+      - {name: manifest_digest, type: 'String'}
+      - {name: workspace, type: 'Optional<String>'}
+      - {name: agent_exec, type: 'Optional<String>'}
+      - {name: requested_json, type: 'String'}
+      - {name: created_at, type: 'String'}
+      - {name: failure, type: 'Optional<String>'}
