@@ -1,0 +1,96 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "codex-connect-destinations",
+  "summary": "GW02: real CONNECT normalizes both fixed hosts, pins public dialing and preserves binary bytes",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBhdXRoLm9wZW5haS5jb206NDQzIEhUVFAvMS4xDQoNCgD/AQ0K",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 200,
+        "body": "AP8BDQo=",
+        "forwarded": "AP8BDQo=",
+        "resolved_names": [
+          "auth.openai.com."
+        ],
+        "dialled": [
+          "93.184.216.34:443"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:01Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBjaGF0Z3B0LmNvbTo0NDMgSFRUUC8xLjENCg0KAP8BDQo=",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 200,
+        "body": "AP8BDQo=",
+        "forwarded": "AP8BDQo=",
+        "resolved_names": [
+          "chatgpt.com."
+        ],
+        "dialled": [
+          "93.184.216.34:443"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:02Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBBVVRILk9wZW5BSS5DT00uOjQ0MyBIVFRQLzEuMQ0KDQoA/wENCg==",
+        "resolver": "mixed",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 200,
+        "body": "AP8BDQo=",
+        "forwarded": "AP8BDQo=",
+        "resolved_names": [
+          "auth.openai.com."
+        ],
+        "dialled": [
+          "93.184.216.34:443"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:03Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBDSEFUR1BULkNPTS46NDQzIEhUVFAvMS4xDQoNCgD/AQ0K",
+        "resolver": "mixed",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 200,
+        "body": "AP8BDQo=",
+        "forwarded": "AP8BDQo=",
+        "resolved_names": [
+          "chatgpt.com."
+        ],
+        "dialled": [
+          "93.184.216.34:443"
+        ]
+      }
+    }
+  ]
+}

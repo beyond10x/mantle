@@ -1,0 +1,212 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "codex-destination-refusals",
+  "summary": "GW03: wrong ports, subdomains, lookalikes, suffixes and unselected endpoints refuse before DNS/dial",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBhdXRoLm9wZW5haS5jb206ODAgSFRUUC8xLjENCg0K",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:01Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBhdXRoLm9wZW5haS5jb206ODQ0MyBIVFRQLzEuMQ0KDQo=",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:02Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBjaGF0Z3B0LmNvbTo4MCBIVFRQLzEuMQ0KDQo=",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:03Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBjaGF0Z3B0LmNvbTo4NDQzIEhUVFAvMS4xDQoNCg==",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:04Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBhdXRoLm9wZW5haS5jb20uYXR0YWNrZXIudGVzdDo0NDMgSFRUUC8xLjENCg0K",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:05Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBjaGF0Z3B0LmNvbS5hdHRhY2tlci50ZXN0OjQ0MyBIVFRQLzEuMQ0KDQo=",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:06Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBldmlsLmF1dGgub3BlbmFpLmNvbTo0NDMgSFRUUC8xLjENCg0K",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:07Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBldmlsLmNoYXRncHQuY29tOjQ0MyBIVFRQLzEuMQ0KDQo=",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:08Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBhdXRoLW9wZW5haS5jb206NDQzIEhUVFAvMS4xDQoNCg==",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:09Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBjaGF0Z3B0LWNvbTo0NDMgSFRUUC8xLjENCg0K",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:10Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBhcGkub3BlbmFpLmNvbTo0NDMgSFRUUC8xLjENCg0K",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:11Z",
+      "command": "mantle.egress.Exchange",
+      "input": {
+        "request": "Q09OTkVDVCBjZG4ub3BlbmFpLmNvbTo0NDMgSFRUUC8xLjENCg0K",
+        "resolver": "public",
+        "connector": "echo",
+        "half_close": true
+      },
+      "outcome": "returned",
+      "response": {
+        "status": 403,
+        "forwarded": "",
+        "resolved_names": [],
+        "dialled": []
+      }
+    }
+  ]
+}

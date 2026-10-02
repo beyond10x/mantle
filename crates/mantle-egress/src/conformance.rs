@@ -256,3 +256,80 @@ async fn lifetime(drain: bool) -> Result<Value> {
 fn ess_egress_conformance() -> Result<()> {
     mantle_conformance::run::<Egress>("mantle-egress", 4)
 }
+
+#[tokio::test]
+async fn adversary_codex_dns_failures_never_dial_and_public_control_relays() -> Result<()> {
+    for host in ["auth.openai.com", "chatgpt.com"] {
+        for resolver in ["private", "empty", "failure", "timeout", "mixed"] {
+            let request = format!("CONNECT {host}:443 HTTP/1.1\r\n\r\nDNS-CONTROL");
+            let observed = exchange(&json!({
+                "request": encoded(request.as_bytes()), "resolver": resolver,
+                "connector": "echo", "half_close": true
+            }))
+            .await?;
+            assert_eq!(observed["resolved_names"], json!([format!("{host}.")]));
+            if resolver == "mixed" {
+                assert_eq!(observed["status"], 200, "{host} {resolver}");
+                assert_eq!(observed["dialled"], json!(["93.184.216.34:443"]));
+                assert_eq!(bytes(&observed["body"])?, b"DNS-CONTROL");
+                assert_eq!(bytes(&observed["forwarded"])?, b"DNS-CONTROL");
+            } else {
+                assert_eq!(observed["status"], 502, "{host} {resolver}");
+                assert_eq!(observed["dialled"], json!([]), "{host} {resolver}");
+                assert_eq!(bytes(&observed["forwarded"])?, b"");
+                let body = bytes(&observed["body"])?;
+                assert!(!body.windows(11).any(|part| part == b"DNS-CONTROL"));
+            }
+        }
+    }
+    Ok(())
+}
+
+#[tokio::test]
+async fn adversary_codex_connect_authority_owns_policy_and_opaque_payload() -> Result<()> {
+    let payload = b"\0\xffCONNECT api.openai.com:443 HTTP/1.1\r\nHost: auth.openai.com\r\n\r\nTAIL";
+    for host in ["auth.openai.com", "chatgpt.com"] {
+        // An allowed Host header cannot admit another CONNECT authority, and malformed
+        // authorities cannot be repaired by percent decoding or stripping extra dots.
+        for (authority, status) in [
+            (format!("{host}.attacker.test:443"), 403),
+            (format!("{host}:444"), 403),
+            (format!("{host}..:443"), 400),
+            (format!("{host}%00.attacker.test:443"), 400),
+            (format!("user@{host}:443"), 400),
+            ("api.openai.com:443".into(), 403),
+        ] {
+            let mut request =
+                format!("CONNECT {authority} HTTP/1.1\r\nHost: {host}:443\r\n\r\n").into_bytes();
+            request.extend_from_slice(payload);
+            let observed = exchange(&json!({
+                "request": encoded(&request), "resolver": "public",
+                "connector": "echo", "half_close": true
+            }))
+            .await?;
+            assert_eq!(observed["status"], status, "{authority}");
+            assert_eq!(observed["resolved_names"], json!([]), "{authority}");
+            assert_eq!(observed["dialled"], json!([]), "{authority}");
+            assert_eq!(bytes(&observed["forwarded"])?, b"");
+        }
+        // Conversely the CONNECT authority, including existing normalization rules,
+        // owns the tunnel despite conflicting headers and HTTP-shaped binary data.
+        let mut request = format!(
+            "CONNECT {}.:00443 HTTP/1.1\r\nHost: attacker.test:80\r\n\r\n",
+            host.to_ascii_uppercase()
+        )
+        .into_bytes();
+        request.extend_from_slice(payload);
+        let observed = exchange(&json!({
+            "request": encoded(&request), "resolver": "mixed",
+            "connector": "echo", "half_close": true
+        }))
+        .await?;
+        assert_eq!(observed["status"], 200, "{host}");
+        assert_eq!(observed["resolved_names"], json!([format!("{host}.")]));
+        assert_eq!(observed["dialled"], json!(["93.184.216.34:443"]));
+        assert_eq!(bytes(&observed["forwarded"])?, payload);
+        assert_eq!(bytes(&observed["body"])?, payload);
+    }
+    Ok(())
+}

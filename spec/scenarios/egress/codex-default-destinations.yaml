@@ -1,0 +1,32 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.egress",
+  "scenario": "codex-default-destinations",
+  "summary": "GW01: exactly the two selected subscription destinations use the production default policy",
+  "timeline": [
+    {
+      "at": "2026-10-02T00:00:00Z",
+      "command": "mantle.egress.CheckDefaultDestination",
+      "input": {
+        "host": "auth.openai.com",
+        "port": 443
+      },
+      "outcome": "allowed",
+      "response": {
+        "allowed": true
+      }
+    },
+    {
+      "at": "2026-10-02T00:00:01Z",
+      "command": "mantle.egress.CheckDefaultDestination",
+      "input": {
+        "host": "chatgpt.com",
+        "port": 443
+      },
+      "outcome": "allowed",
+      "response": {
+        "allowed": true
+      }
+    }
+  ]
+}

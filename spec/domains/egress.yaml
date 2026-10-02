@@ -68,7 +68,7 @@ commands:
           all:
             - port == 443
             - host:
-                in: [api.anthropic.com, platform.claude.com, github.com, codeload.github.com, objects.githubusercontent.com, index.crates.io, static.crates.io, crates.io]
+                in: [api.anthropic.com, platform.claude.com, github.com, codeload.github.com, objects.githubusercontent.com, index.crates.io, static.crates.io, crates.io, auth.openai.com, chatgpt.com]
         returns: true
       - name: denied
         error: mantle.egress.NotAllowed

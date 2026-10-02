@@ -237,3 +237,6 @@ scenarios:
   - scenarios/cli/codex-start.yaml
   - scenarios/cli/codex-private-runtime.yaml
   - scenarios/launch/attach-backpressure-cancellation.yaml
+  - scenarios/egress/codex-default-destinations.yaml
+  - scenarios/egress/codex-connect-destinations.yaml
+  - scenarios/egress/codex-destination-refusals.yaml
