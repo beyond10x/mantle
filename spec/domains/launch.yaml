@@ -1,0 +1,32 @@
+domain: mantle.launch
+summary: In-sandbox process and attachment arguments; no credential value is modeled.
+# Sources: crates/mantle-launch/src/cli.rs:29-90, ctl.rs, serve.rs:33-40.
+types:
+  - name: mantle.launch.ServeArgs
+    kind: struct
+    fields:
+      - {name: dir, type: String}
+      - {name: secret_fd, type: 'Optional<Integer>'}
+      - {name: secret_env, type: 'Optional<String>'}
+      - {name: proxy, type: 'Optional<String>'}
+      - {name: cwd, type: String}
+      - {name: mkdirs, type: 'List<String>'}
+      - {name: scrollback_bytes, type: Integer}
+      - {name: command, type: 'List<String>'}
+    invariants:
+      - scrollback_bytes >= 1024
+      - scrollback_bytes <= 67108864
+  - name: mantle.launch.AttachArgs
+    kind: struct
+    fields:
+      - {name: dir, type: String}
+      - {name: no_tty, type: Boolean}
+  - name: mantle.launch.Window
+    kind: struct
+    fields:
+      - {name: cols, type: Integer}
+      - {name: rows, type: Integer}
+# UNMAPPED[launcher-os]: OsString may contain non-UTF8 bytes; ESS String is only its textual subset.
+# PTY/FIFO locks, descriptor ownership, secret lifetime, single attachment, detach survival,
+# scrollback replay, resize and signal forwarding are tested by tests/launch.rs and adversary*.rs.
+# They have no persisted lifecycle; do not fabricate Attached/Detached session database states.

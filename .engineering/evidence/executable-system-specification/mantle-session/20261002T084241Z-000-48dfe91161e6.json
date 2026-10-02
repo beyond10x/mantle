@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T08:42:41Z",
+  "actor": "human:timo",
+  "artifact": "executable-system-specification:mantle-session",
+  "kind": "executable-system-specification",
+  "revision": 4,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "ESS 0.50.0 validate/compile and task check; exit 0",
+    "reference": ".engineering/reports/mantle-ess-local.json"
+  }
+}

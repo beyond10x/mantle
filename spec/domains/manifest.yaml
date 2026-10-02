@@ -1,0 +1,88 @@
+domain: mantle.manifest
+summary: The served v1alpha1 manifest and its resolved values, not future design fields.
+# Source: crates/mantle/src/domain/manifest.rs:23-162. Serde denies unknown fields.
+# Optional here means accepted omission; serde defaults and parse/resolve are described in README.
+types:
+  - name: mantle.manifest.Manifest
+    kind: struct
+    fields:
+      - {name: api_version, type: String, naming: {wire: apiVersion}}
+      - {name: kind, type: String}
+      - {name: metadata, type: mantle.manifest.Metadata}
+      - {name: placement, type: 'Optional<mantle.manifest.Placement>'}
+      - {name: runtime, type: 'Optional<mantle.manifest.Runtime>'}
+      - {name: workspace, type: mantle.manifest.Workspace}
+      - {name: agent, type: mantle.manifest.Agent}
+      - {name: resources, type: 'Optional<mantle.manifest.Resources>'}
+      - {name: network, type: 'Optional<mantle.manifest.Network>'}
+      - {name: lifecycle, type: 'Optional<mantle.manifest.Lifecycle>'}
+  - name: mantle.manifest.Metadata
+    kind: struct
+    fields: [{name: name, type: String}]
+  - name: mantle.manifest.Placement
+    kind: struct
+    fields:
+      - {name: class, type: String}
+      - {name: region, type: 'Optional<String>'}
+  - name: mantle.manifest.Runtime
+    kind: struct
+    fields: [{name: profile, type: String}]
+  - name: mantle.manifest.Workspace
+    kind: struct
+    fields:
+      - {name: root, type: 'Optional<String>'}
+      - {name: repositories, type: 'List<mantle.manifest.Repository>'}
+  - name: mantle.manifest.Repository
+    kind: struct
+    fields:
+      - {name: name, type: String}
+      - {name: repository, type: String}
+      - {name: reference, type: String, naming: {wire: ref}}
+      - {name: mount, type: String}
+  - name: mantle.manifest.Agent
+    kind: struct
+    fields:
+      - {name: kind, type: String}
+      - {name: cwd, type: String}
+  - name: mantle.manifest.Resources
+    kind: struct
+    fields:
+      - {name: cpu, type: 'Optional<Integer>'}
+      - {name: memory, type: 'Optional<String>'}
+      - {name: pids, type: 'Optional<Integer>'}
+      - {name: storage, type: 'Optional<String>'}
+  - name: mantle.manifest.Network
+    kind: struct
+    fields:
+      - {name: default, type: 'Optional<String>'}
+      - {name: profile, type: 'Optional<String>'}
+      - {name: capabilities, type: 'Optional<List<String>>'}
+  - name: mantle.manifest.Lifecycle
+    kind: struct
+    fields:
+      - {name: detach_keeps_running, type: 'Optional<Boolean>', naming: {wire: detachKeepsRunning}}
+      - {name: idle_after, type: 'Optional<String>', naming: {wire: idleAfter}}
+      - {name: retain_for, type: 'Optional<String>', naming: {wire: retainFor}}
+  - name: mantle.manifest.Resolved
+    kind: struct
+    fields:
+      - {name: name, type: String}
+      - {name: repositories, type: 'List<mantle.manifest.Repository>'}
+      - {name: agent_cwd, type: String}
+      - {name: cpu, type: Integer}
+      - {name: memory_bytes, type: Integer}
+      - {name: pids, type: Integer}
+      - {name: storage_bytes, type: 'Optional<Integer>'}
+      - {name: retain_for_secs, type: Integer}
+      - {name: digest, type: String}
+    # Bounds are read from resolve(): cpu is clamped to >=1; retain is in seconds here.
+    invariants:
+      - cpu >= 1
+      - memory_bytes >= 536870912
+      - pids >= 1
+      - pids <= 4096
+      - retain_for_secs > 0
+      - retain_for_secs <= 86400
+# UNMAPPED[manifest-resolution]: YAML strict decoding, unsigned integer width, binary size/duration
+# parsing, default application, SHA-256 of original bytes, unique mounts and cwd/ref path rules
+# remain in manifest.rs:164-417. Types alone do not assert that this parsing behavior conforms.

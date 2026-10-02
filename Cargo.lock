@@ -1797,6 +1797,7 @@ dependencies = [
  "chrono",
  "clap",
  "crossterm",
+ "mantle-egress",
  "rusqlite",
  "serde",
  "serde_json",
@@ -1805,6 +1806,15 @@ dependencies = [
  "tokio",
  "toml",
  "ulid 1.2.1",
+]
+
+[[package]]
+name = "mantle-docs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "serde_json",
 ]
 
 [[package]]

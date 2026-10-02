@@ -1,0 +1,10 @@
+format: ess-inputs/2
+requires: ess 0.50
+specification:
+  - system.yaml
+  - components.yaml
+  - domains/session.yaml
+  - domains/manifest.yaml
+  - domains/egress.yaml
+  - domains/launch.yaml
+scenarios: []

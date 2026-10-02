@@ -28,3 +28,6 @@ ulid = "1"
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+mantle-egress = { path = "../mantle-egress" }

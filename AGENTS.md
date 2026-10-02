@@ -26,6 +26,19 @@ confined by Substrate. Design: `docs/design/00-mantle-on-substrate.md`.
 | worker binaries (static musl) | `task build-worker` |
 | specification | `ess specify validate --path spec` |
 | plan | `aep plan artifact list`, `aep plan artifact validate` |
+| public documentation | `task site-build` |
+
+## Public delivery
+
+Mantle is enrolled in common Gates. Use the coordinated `b10x-gates` hooks, bot commits,
+signed `check` receipts and `publish`; private policy and signing keys stay outside this repository.
+The adoption baseline is historical evidence, not permission to introduce new policy violations.
+
+`website/` is the public documentation source. The Rust `mantle-docs` builder emits a static site
+and `.well-known/b10x-site.json` bound to the source commit. `pages.yml` builds without credentials;
+`b10x-docs-site.yml` calls the immutable Website project-site publisher for `/mantle/`, as ESS does.
+No `/docs/mantle` collection or global documentation integration is required. Never put App
+credentials in this repository. Verify the live site provenance before reporting it published.
 
 Builds use `CARGO_TARGET_DIR=$HOME/.cache/b10x-target/mantle` (set by the Taskfile).
 

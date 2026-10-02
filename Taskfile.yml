@@ -7,6 +7,8 @@ vars:
   CLUSTER: mantle
   KUBEVIRT_VERSION: v1.9.0
   CDI_VERSION: v1.66.1
+  SITE_COMMIT:
+    sh: git rev-parse HEAD
 
 tasks:
   k3d-up:
@@ -55,6 +57,16 @@ tasks:
     cmds:
       - ess specify validate --path spec
 
+  conformance:
+    desc: Run synthesized local ESS scenarios against SQLite and the default allowlist
+    cmds:
+      - cargo test --locked -p mantle ess_generated_local_conformance -- --nocapture
+
+  site-build:
+    desc: Build the standalone Mantle documentation site and its exact source provenance
+    cmds:
+      - cargo run --locked -p mantle-docs -- build --out website/build --commit {{.SITE_COMMIT}}
+
   check:
     desc: The gate
     cmds:
@@ -63,3 +75,4 @@ tasks:
       - cargo test --workspace --locked
       - task: spec
       - aep plan artifact validate
+      - task: site-build
