@@ -2,14 +2,16 @@
 format: aep.planning-md/3
 id: coordination-blocker:codex-terminal-capture
 kind: coordination-blocker
-status: open
+status: cleared
 title: Resolve terminal capture before Codex device login
 refs:
 - provider: github
   reference: beyond10x/substrate#112
 relations:
 - blocks: story:codex-interactive-start
-revision: 5
+revision: 7
+transitions:
+- {from: "open", to: "cleared", at: "2026-10-02T17:43:30Z", actor: "human:timo", revision: 7}
 ---
 ## Observation
 
@@ -53,3 +55,7 @@ All independent source units are implemented: qualification, credential-independ
 Production still returns the fixed unsupported-capture refusal before login because the pinned SDK cannot enforce the earlier accepted non-recording requirement. The previously asked operator question—use the existing Claude recording transport now, or retain the no-capture startup gate—remains unanswered. No permission is inferred from elapsed time. The latest read-only upstream check still found main6af1b91889edf5fa5455c03e68829b56e6b6cc56 and issue112 open without comments; this is not a claim about the other session's unpushed progress. No Substrate implementation was taken over.
 
 The next substantive step requires either an explicit transport-policy answer or the supported SDK delivery, followed by real operator device authentication and the named CS/DP observations. Do not invent a live pass, silently remove the guard, reopen completed local units, or create more synthetic work merely to appear active. AWS remains paused. The unbudgeted goal is active and incomplete. Source commits are local; publication/release is not part of standing wave approval.
+
+## Operator supersession 2026-10-02
+
+The operator explicitly directed: "well, then remove it, that requirement did not bother you for claude either ?!" This supersedes the Codex-only non-recording startup prerequisite and the earlier clearance condition. Codex is authorized to use the same existing Substrate terminal capture behavior as Claude. Keep private Codex auth/home, tmpfs diagnostics, volatile launcher replay and existing confinement. Substrate issue112 remains owned by another session and is no longer a Mantle startup dependency. Clear this blocker on that explicit policy decision; no upstream capability is claimed delivered. Real authentication and CS/DP live acceptance still require actual observations. The operator additionally authorizes a source release and requests docs in parallel.

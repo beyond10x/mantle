@@ -7,7 +7,7 @@ title: Codex sessions with Claude-equivalent terminal behavior
 relations:
 - informed_by: epic:vertical-slice
 - informed_by: executable-system-specification:mantle-session
-revision: 19
+revision: 20
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":1}}}
@@ -115,3 +115,7 @@ All independent source units are implemented: qualification, credential-independ
 Production still returns the fixed unsupported-capture refusal before login because the pinned SDK cannot enforce the earlier accepted non-recording requirement. The previously asked operator question—use the existing Claude recording transport now, or retain the no-capture startup gate—remains unanswered. No permission is inferred from elapsed time. The latest read-only upstream check still found main6af1b91889edf5fa5455c03e68829b56e6b6cc56 and issue112 open without comments; this is not a claim about the other session's unpushed progress. No Substrate implementation was taken over.
 
 The next substantive step requires either an explicit transport-policy answer or the supported SDK delivery, followed by real operator device authentication and the named CS/DP observations. Do not invent a live pass, silently remove the guard, reopen completed local units, or create more synthetic work merely to appear active. AWS remains paused. The unbudgeted goal is active and incomplete. Source commits are local; publication/release is not part of standing wave approval.
+
+## Current transport and release decision
+
+On 2026-10-02 the operator explicitly removed the Codex-only non-recording capture prerequisite, authorizing the existing Claude Substrate terminal transport, and requested immediate source release with parallel documentation updates. This supersedes all earlier pending-answer and capture-blocked wording. coordination-blocker:codex-terminal-capture is cleared by the policy decision, not by an upstream delivery claim. story:codex-existing-transport owns code, ESS and documentation alignment. Preserve private home, temporary Codex diagnostics, launcher volatile replay and confinement. Source release can describe this implementation without claiming unobserved authenticated CS/DP acceptance; the full epic remains incomplete until those observations exist.

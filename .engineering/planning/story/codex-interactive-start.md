@@ -72,7 +72,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/codex-start.yaml
-revision: 33
+revision: 34
 ---
 ## Context
 
@@ -197,3 +197,7 @@ All independent source units are implemented: qualification, credential-independ
 Production still returns the fixed unsupported-capture refusal before login because the pinned SDK cannot enforce the earlier accepted non-recording requirement. The previously asked operator question—use the existing Claude recording transport now, or retain the no-capture startup gate—remains unanswered. No permission is inferred from elapsed time. The latest read-only upstream check still found main6af1b91889edf5fa5455c03e68829b56e6b6cc56 and issue112 open without comments; this is not a claim about the other session's unpushed progress. No Substrate implementation was taken over.
 
 The next substantive step requires either an explicit transport-policy answer or the supported SDK delivery, followed by real operator device authentication and the named CS/DP observations. Do not invent a live pass, silently remove the guard, reopen completed local units, or create more synthetic work merely to appear active. AWS remains paused. The unbudgeted goal is active and incomplete. Source commits are local; publication/release is not part of standing wave approval.
+
+## Current transport and release decision
+
+The operator explicitly removed the Substrate no-recording prerequisite and authorized source release on 2026-10-02. Codex uses the same existing Substrate terminal capture behavior as Claude; no end-to-end no-recording claim applies. This supersedes the earlier gate, pending clarification, SDK activation dependency and the Substrate-capture portion of CS-05. Private auth/home, tmpfs diagnostic placement, volatile launcher replay, credential separation and confinement remain required. story:codex-existing-transport implements the correction; actual operator device authentication and live CS/DP observations remain unproven. Substrate issue112 belongs to another session and no longer blocks this integration.
