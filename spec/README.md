@@ -61,18 +61,28 @@ accepted values that do not drive per-session scheduling or policy. `detachKeeps
 is refused. Agent requests alone carry the `claude` secret slot on descriptor 3. Attach and exec
 requests carry no credential; all use the intended toolchain root and their explicit resource bounds.
 
-The proxy admits eight exact normalized host/port pairs. It discards unsafe resolved addresses and
+The proxy admits ten exact normalized host/port pairs. Its worker-shared default list includes
+`auth.openai.com:443` and `chatgpt.com:443` alongside the eight existing destinations; it does not
+grant API-key endpoints, wildcard hosts or other ports. It discards unsafe resolved addresses and
 pins dialing to an admitted public address. A mixed DNS answer may connect to its public member;
 it does not make the private member dialable. Permitting a name is not evidence of a tunnel.
 Shutdown owns and joins its connection tasks, aborting remaining tunnels after the drain deadline.
 
 ## Gate and evidence
 
-`task conformance` synthesizes and executes **324 scenarios: 100 generated and 224 authored**.
-The component counts are CLI 213, egress 66 and launcher 45. The complete inventory requires zero
+`task conformance` synthesizes and executes **336 scenarios: 105 generated and 231 authored**.
+The component counts are CLI 218, egress 69 and launcher 49. The complete inventory requires zero
 failed, skipped, unsupported, outside or refused scenarios. `task check` also runs the
 existing unit/integration/adversary tests, clippy, formatting, ESS validation, AEP validation and
 website generation.
+
+GW01–GW04 are exercised by `codex-default-destinations`, `codex-connect-destinations` and
+`codex-destination-refusals`, together with every retained gateway defense scenario. The existing
+real CONNECT fixture observes fully qualified resolver names, pinned public dial addresses and
+unchanged binary payloads for both new hosts, including mixed DNS and normalized authorities.
+Wrong ports, suffixes, subdomains, lookalikes, `api.openai.com` and `cdn.openai.com` refuse before
+DNS or dialing. These are local handler observations with controlled upstream IO, not live
+authentication or traffic evidence. Deployment and authenticated Codex acceptance remain separate.
 
 `crates/mantle-conformance` adapts native observations to ESS's own Rust runner, pinned to
 `8700d0808e8f3b19711629d8a17afc5281680f58` (0.50.0). It does not evaluate guards or copy an ESS

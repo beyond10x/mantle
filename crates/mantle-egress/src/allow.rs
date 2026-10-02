@@ -11,6 +11,8 @@ pub const DEFAULT_ALLOW: &[&str] = &[
     "index.crates.io:443",
     "static.crates.io:443",
     "crates.io:443",
+    "auth.openai.com:443",
+    "chatgpt.com:443",
 ];
 
 /// A validated `host:port` with the host lower-cased and its trailing dot removed.
@@ -163,10 +165,28 @@ mod tests {
     }
 
     #[test]
-    fn default_list_has_eight_hosts_on_443() {
+    fn default_list_has_ten_exact_hosts_on_443() {
         let list = Allowlist::default_list();
-        assert_eq!(list.entries().len(), 8);
+        assert_eq!(list.entries().len(), 10);
         assert!(list.entries().iter().all(|d| d.port == 443));
+        assert_eq!(
+            list.entries()
+                .iter()
+                .map(|d| d.host.as_str())
+                .collect::<Vec<_>>(),
+            [
+                "api.anthropic.com",
+                "platform.claude.com",
+                "github.com",
+                "codeload.github.com",
+                "objects.githubusercontent.com",
+                "index.crates.io",
+                "static.crates.io",
+                "crates.io",
+                "auth.openai.com",
+                "chatgpt.com",
+            ]
+        );
     }
 
     #[test]

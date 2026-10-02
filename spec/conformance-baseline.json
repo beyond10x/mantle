@@ -7,8 +7,8 @@
       "skipped_ceiling": 0
     },
     "mantle-egress": {
-      "answered_floor": 66,
-      "total_floor": 66,
+      "answered_floor": 69,
+      "total_floor": 69,
       "skipped_ceiling": 0
     },
     "mantle-launch": {
@@ -65,6 +65,9 @@
     "mantle.egress/authored/bad-header",
     "mantle.egress/authored/bad-version",
     "mantle.egress/authored/closed-incomplete",
+    "mantle.egress/authored/codex-connect-destinations",
+    "mantle.egress/authored/codex-default-destinations",
+    "mantle.egress/authored/codex-destination-refusals",
     "mantle.egress/authored/connect-failure",
     "mantle.egress/authored/connect-opaque-bytes",
     "mantle.egress/authored/connect-timeout",
