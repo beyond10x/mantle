@@ -21,13 +21,13 @@ use crate::config::{Config, Provider};
 pub const WORKER: &str = "default";
 /// The signed Substrate release a worker runs: image `ghcr.io/{repository}@sha256:{manifest}`, of
 /// which only the layer holding `substrate-daemon` is fetched and checked by its digest. The SDK in
-/// `Cargo.toml` is pinned to the same release (commit `05695970`).
-pub const SUBSTRATE_VERSION: &str = "0.7.8";
+/// `Cargo.toml` is pinned to the same release (commit `65304edf`).
+pub const SUBSTRATE_VERSION: &str = "0.7.10";
 pub const SUBSTRATE_IMAGE_REPOSITORY: &str = "beyond10x/b10x-substrate-daemon";
 pub const SUBSTRATE_IMAGE_MANIFEST: &str =
-    "74f91a11d51397e2d9b1cb46728e2305d7ec1cf296591529133c5cb784df3ba4";
+    "90469e101c828c7e88fbf1e98c63ec82b9b010e022cbe8432bfc0619c38d1511";
 pub const SUBSTRATE_DAEMON_LAYER: &str =
-    "49f18a9ddd920bde1cae6e38d3392f94d737492d5817c70df5e7caff06d3b237";
+    "4812b85baaf0bdc80f08673e21f5daf1e141eaf0646b20f040b1965de99bf281";
 pub const RUST_CHANNEL: &str = "1.97";
 pub const CLAUDE_CODE_VERSION: &str = "2.1.287";
 
