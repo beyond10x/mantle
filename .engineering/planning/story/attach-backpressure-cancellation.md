@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:attach-backpressure-cancellation
 kind: story
-status: draft
+status: active
 title: Keep attached terminals cancellable under backpressure
 relations:
 - decomposes: story:dual-agent-session-parity
@@ -36,7 +36,10 @@ scope:
   path: spec/ess-inputs.yaml
 - confidence: inferred
   path: spec/scenarios/launch/attach-backpressure-cancellation.yaml
-revision: 16
+revision: 19
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-02T16:02:44Z", actor: "human:timo", revision: 18, decided_on: {"recorded":{"test_result":1}}, executor: "agent:codex-mantle"}
+- {from: "proposed", to: "active", at: "2026-10-02T16:02:44Z", actor: "human:timo", revision: 19, decided_on: {"recorded":{"test_result":1}}, executor: "agent:codex-mantle"}
 ---
 ## Context and measured failure
 
@@ -104,3 +107,9 @@ drained=false client_and_server_reaped=true
 ```
 
 Raw drain-probe.log/drain-probe.exit and revised probe.rs are beside the retained probe-baseline.rs/probe-baseline and baseline.log. Exit1 remains intentional: the original required bounded-cancellation assertion is still red. No launcher source was changed and no agent/worker/network authentication was used.
+
+## Scope confirmation at wave6 selection
+
+Read-only story-scoper rechecked local main229f877 after Codex wiring merged. All14 exact scope entries remain sufficient:13 existing paths cited and only the new scenario path inferred. Current native fixtures include LimitedOutput at conformance.rs:489, ReplayFixture at539, Process cleanup at112, ready at389 and finite Replay/Flood probe modes. Reuse these rather than introducing another support file.
+
+The unchanged worker generated-model drift gate at mantle-worker/src/lib.rs:1772–1816 compiles the whole spec and compares all four portable model artifacts; keep all four in scope and regenerate only through pinned ESS0.50. Expected runtime implementation remains attach.rs plus sys.rs, with bounded directional buffers, POLLOUT only while bytes are pending, and RAII restoration of exact inherited F_GETFL flags. Current evidence does not require serve.rs or global signal-policy changes. The ESS/native paths provide the new AB acceptance before runtime edits. Source-scoper confidence remains high; actual cancellation success is still to be implemented and tested.

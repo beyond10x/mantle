@@ -1,0 +1,445 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "artifacts": [
+        {
+          "id": "story:attach-backpressure-cancellation",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch/src/attach.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch/src/sys.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch/tests/conformance.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch/tests/support/probe.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/Cargo.toml"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/source.schema.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types-report.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/components.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/conformance-baseline.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/launch.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/ess-inputs.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/launch/attach-backpressure-cancellation.yaml"
+            }
+          ]
+        },
+        {
+          "id": "story:slice-evidence",
+          "inferred": false,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "STATUS.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 2,
+      "artifacts": [
+        {
+          "id": "story:codex-interactive-start",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "AGENTS.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "Taskfile.yml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-egress/src/allow.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/cli.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/secret.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/serve.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/adapters/state.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/adapters/substrate.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/session.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/worker.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/config.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/domain/manifest.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/domain/session.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/tests/codex_start.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "deploy/substrate.service"
+            },
+            {
+              "confidence": "inferred",
+              "path": "examples/codex.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "examples/config.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/Cargo.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/source.schema.json"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/types-report.json"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/Cargo.toml"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/source.schema.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types-report.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/manifest.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/orchestration.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/domains/session.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli/codex-start.yaml"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 3,
+      "artifacts": [
+        {
+          "id": "story:dual-agent-session-parity",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "inferred",
+              "path": ".engineering/planning/story/session-lifecycle.md"
+            },
+            {
+              "confidence": "inferred",
+              "path": ".engineering/planning/story/slice-evidence.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "Taskfile.yml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/attach.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/serve.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/tests/agent_parity.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/session.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/terminal.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/tests/agent_parity.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "docs/evidence/agent-parity.md"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/Cargo.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/source.schema.json"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/types-report.json"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/Cargo.toml"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/source.schema.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types-report.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/domains/session.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli/agent-parity.yaml"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "collisions": [
+    {
+      "a": "story:attach-backpressure-cancellation",
+      "b": "story:codex-interactive-start",
+      "path": "generated/worker-model/Cargo.toml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:attach-backpressure-cancellation",
+      "b": "story:codex-interactive-start",
+      "path": "generated/worker-model/source.schema.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:attach-backpressure-cancellation",
+      "b": "story:codex-interactive-start",
+      "path": "generated/worker-model/types-report.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:attach-backpressure-cancellation",
+      "b": "story:codex-interactive-start",
+      "path": "generated/worker-model/types.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:attach-backpressure-cancellation",
+      "b": "story:dual-agent-session-parity",
+      "path": "crates/mantle-launch/src/attach.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:attach-backpressure-cancellation",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/Cargo.toml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:attach-backpressure-cancellation",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/source.schema.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:attach-backpressure-cancellation",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/types-report.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:attach-backpressure-cancellation",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/types.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "README.md",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "Taskfile.yml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "crates/mantle-launch/src/serve.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "crates/mantle/src/app/session.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/session-model/Cargo.toml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/session-model/source.schema.json",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/session-model/types-report.json",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/session-model/types.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/Cargo.toml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/source.schema.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/types-report.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/types.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "spec/domains/session.yaml",
+      "confidence": "inferred"
+    }
+  ],
+  "unassessed": [
+    "story:bot-history-normalization"
+  ],
+  "cycles": []
+}
