@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:codex-gateway-destinations
 kind: story
-status: proposed
+status: active
 title: Admit fixed Codex subscription destinations through the existing gateway
 relations:
 - decomposes: story:codex-interactive-start
@@ -33,9 +33,10 @@ scope:
   path: spec/scenarios/egress/codex-default-destinations.yaml
 - confidence: inferred
   path: spec/scenarios/egress/codex-destination-refusals.yaml
-revision: 16
+revision: 18
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T16:25:14Z", actor: "human:timo", revision: 16, decided_on: {"recorded":{"review_outcome":1}}}
+- {from: "proposed", to: "active", at: "2026-10-02T16:44:05Z", actor: "human:timo", revision: 18, decided_on: {"recorded":{"review_outcome":1}}}
 ---
 ## Context
 
@@ -84,3 +85,9 @@ Pinned official source: https://github.com/openai/codex/blob/rust-v0.153.4/codex
 ## Decomposition review
 
 Round1 immutable reviews codex-gateway-{design,acceptance,scope,parallel}-r1 recorded three approvals and two acceptance findings; the two statements were consolidated around their existing named observable matrices through CLI body changes, and one fixed outcome was recorded per finding. No implementation or implemented state was reopened. Round2 immutable reviews with -r2 all return approve with empty findings. The parallel critic reissued its original report with an explicitly abbreviated personal home path for portable admitted evidence. The three-worker concurrency ceiling alongside active implementation required two dispatch batches; reviewers were independent and saw no other findings. Native aep critic role types/Sonnet unavailable: inherited generic role adapters read their full procedures. Live transport/authentication obligations remain parent-owned and unestablished. Validation after the batch:61 artifacts, valid.
+
+## Scope confirmation at wave7 selection
+
+Read-only aep:story-scoper againstde01750ff88db09c7caf33812a31e05c64766840 confirms all12existing entries sufficient:9cited paths and3inferred authored scenario paths. DEFAULT_ALLOW/count assertion atallow.rs:5,166 and CheckDefaultDestination guard ategress.yaml:71 are the policy seams. Existing conformance.rs:47–115 uses the real handler/default list and records controlled resolver names, public dial addresses and opaque bytes; no fixture extension is indicated. Worker lib.rs:1772–1816 compares all4whole-spec generated outputs, retaining only actual changes. No scope correction or new path was required. Confidence high, execution and live behavior unproven by this read-only pass.
+
+Existing in-scope documentation correction: spec/README.md:71–72 still reports324 and213/66/45, whereas current baseline floors218/66/49 total333. Update its headline inventory to the actual fresh gateway results, not only append another paragraph. Source: gateway_parallel_critic returned scoper report2026-10-02; no source/test/build/AEP write by that agent.

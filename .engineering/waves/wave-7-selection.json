@@ -1,0 +1,66 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "artifacts": [
+        {
+          "id": "story:codex-gateway-destinations",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-egress/src/allow.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/Cargo.toml"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/source.schema.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types-report.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/conformance-baseline.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/egress.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/ess-inputs.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/egress/codex-connect-destinations.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/egress/codex-default-destinations.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/egress/codex-destination-refusals.yaml"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "collisions": [],
+  "unassessed": [],
+  "cycles": []
+}
