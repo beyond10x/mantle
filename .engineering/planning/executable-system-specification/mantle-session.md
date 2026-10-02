@@ -2,13 +2,13 @@
 format: aep.planning-md/3
 id: executable-system-specification:mantle-session
 kind: executable-system-specification
-status: conforming
+status: validated
 title: Mantle implemented contracts
 summary: Five ESS domains; complete native conformance with zero unresolved mappings
 relations:
 - specifies: epic:vertical-slice
 model_digest: 3a08777de0d97b8f4b6127d959d931d021cd3fbac3a529f3522372ec4169c4ea
-revision: 20
+revision: 21
 transitions:
 - {from: "draft", to: "validated", at: "2026-10-02T08:42:41Z", actor: "human:timo", revision: 5, decided_on: {"recorded":{"test_result":1}}}
 - {from: "validated", to: "conforming", at: "2026-10-02T10:39:51Z", actor: "human:timo", revision: 9, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}, executor: "agent:codex-mantle"}
@@ -18,6 +18,7 @@ transitions:
 - {from: "validated", to: "conforming", at: "2026-10-02T12:59:47Z", actor: "human:timo", revision: 17, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}}
 - {from: "conforming", to: "validated", at: "2026-10-02T13:14:34Z", actor: "human:timo", revision: 18, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}}
 - {from: "validated", to: "conforming", at: "2026-10-02T14:37:29Z", actor: "human:timo", revision: 20, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}}
+- {from: "conforming", to: "validated", at: "2026-10-02T14:44:18Z", actor: "human:timo", revision: 21, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}}
 ---
 # Mantle executable contract
 

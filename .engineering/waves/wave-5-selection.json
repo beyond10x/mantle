@@ -1,0 +1,715 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "artifacts": [
+        {
+          "id": "story:codex-session-wiring",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "AGENTS.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch/src/cli.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch/src/serve.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch/src/session.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch/tests/conformance.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch/tests/launch.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-launch/tests/support/probe.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-worker/src/lib.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/examples/codex_qualification.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/examples/tests/codex_qualification_adversary.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/conformance.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/orchestration.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/state.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/substrate.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/app/session.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/domain/manifest.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/domain/session.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/tests/codex_preflight.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "docs/evidence/codex-compatibility.md"
+            },
+            {
+              "confidence": "inferred",
+              "path": "examples/codex.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/Cargo.toml"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/source.schema.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types-report.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/components.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/conformance-baseline.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/launch.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/manifest.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/orchestration.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/session.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/ess-inputs.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli/codex-private-runtime.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli/codex-start.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/live-name-failedagentstart.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/live-name-failedmaterialization.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/live-name-materializing.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/live-name-running.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/live-name-starting.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/live-name-stopped.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/live-name-stopping.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/manifest-capabilities-are-subset-not-policy.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/manifest-defaults.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/manifest-lower-resource-bounds.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/manifest-nested-cwd.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/manifest-original-bytes-hashed.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/manifest-retention-upper-bound.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/manifest-workspace-root-cwd.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/manifest-zero-cpu-clamped.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/source-composite-insert-isolation.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/cli/source-rows-survive-stop.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/launch/argument-byte-preservation.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/launch/argument-defaults.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/launch/private-path-initialization.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/scenarios/launch/replay-policy-arguments.yaml"
+            }
+          ]
+        },
+        {
+          "id": "story:slice-evidence",
+          "inferred": false,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "STATUS.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 2,
+      "artifacts": [
+        {
+          "id": "story:codex-interactive-start",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "AGENTS.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "Taskfile.yml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-egress/src/allow.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/cli.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/secret.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/serve.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/adapters/state.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/adapters/substrate.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/session.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/worker.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/config.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/domain/manifest.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/domain/session.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/tests/codex_start.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "deploy/substrate.service"
+            },
+            {
+              "confidence": "inferred",
+              "path": "examples/codex.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "examples/config.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/Cargo.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/source.schema.json"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/types-report.json"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/Cargo.toml"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/source.schema.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types-report.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/manifest.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/orchestration.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/domains/session.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli/codex-start.yaml"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 3,
+      "artifacts": [
+        {
+          "id": "story:dual-agent-session-parity",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "inferred",
+              "path": ".engineering/planning/story/session-lifecycle.md"
+            },
+            {
+              "confidence": "inferred",
+              "path": ".engineering/planning/story/slice-evidence.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "Taskfile.yml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/attach.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/src/serve.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-launch/tests/agent_parity.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/session.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/terminal.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/tests/agent_parity.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "docs/evidence/agent-parity.md"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/Cargo.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/source.schema.json"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/types-report.json"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model/types.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/Cargo.toml"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/source.schema.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types-report.json"
+            },
+            {
+              "confidence": "cited",
+              "path": "generated/worker-model/types.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/domains/session.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli/agent-parity.yaml"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "collisions": [
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "AGENTS.md",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "README.md",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "crates/mantle-launch/src/cli.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "crates/mantle-launch/src/serve.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "crates/mantle/src/adapters/state.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "crates/mantle/src/adapters/substrate.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "crates/mantle/src/app/session.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "crates/mantle/src/domain/manifest.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "crates/mantle/src/domain/session.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "examples/codex.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "generated/worker-model/Cargo.toml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "generated/worker-model/source.schema.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "generated/worker-model/types-report.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "generated/worker-model/types.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "spec/domains/manifest.yaml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "spec/domains/orchestration.yaml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "spec/domains/session.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:codex-session-wiring",
+      "path": "spec/scenarios/cli/codex-start.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "README.md",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "Taskfile.yml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "crates/mantle-launch/src/serve.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "crates/mantle/src/app/session.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/session-model/Cargo.toml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/session-model/source.schema.json",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/session-model/types-report.json",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/session-model/types.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/Cargo.toml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/source.schema.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/types-report.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/types.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-interactive-start",
+      "b": "story:dual-agent-session-parity",
+      "path": "spec/domains/session.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-session-wiring",
+      "b": "story:dual-agent-session-parity",
+      "path": "README.md",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-session-wiring",
+      "b": "story:dual-agent-session-parity",
+      "path": "crates/mantle-launch/src/serve.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-session-wiring",
+      "b": "story:dual-agent-session-parity",
+      "path": "crates/mantle/src/app/session.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:codex-session-wiring",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/Cargo.toml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-session-wiring",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/source.schema.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-session-wiring",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/types-report.json",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-session-wiring",
+      "b": "story:dual-agent-session-parity",
+      "path": "generated/worker-model/types.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:codex-session-wiring",
+      "b": "story:dual-agent-session-parity",
+      "path": "spec/domains/session.yaml",
+      "confidence": "inferred"
+    }
+  ],
+  "unassessed": [
+    "story:bot-history-normalization"
+  ],
+  "cycles": []
+}

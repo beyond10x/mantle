@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:codex-session-wiring
 kind: story
-status: draft
+status: active
 title: Wire Codex sessions with private home and volatile runtime diagnostics
 relations:
 - decomposes: story:codex-interactive-start
@@ -120,7 +120,10 @@ scope:
   path: spec/scenarios/launch/private-path-initialization.yaml
 - confidence: cited
   path: spec/scenarios/launch/replay-policy-arguments.yaml
-revision: 45
+revision: 47
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-02T14:42:30Z", actor: "human:timo", revision: 46}
+- {from: "proposed", to: "active", at: "2026-10-02T14:42:30Z", actor: "human:timo", revision: 47}
 ---
 ## Context and parent boundary
 
