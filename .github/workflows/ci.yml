@@ -46,7 +46,7 @@ jobs:
           curl --fail --location --retry 3 -o aep.tar.gz https://github.com/beyond10x/aep/releases/download/0.68.0/aep-0.68.0-x86_64-unknown-linux-gnu.tar.gz
           echo '02bf6a2c4bc9a3ffd717edfb365f665491005004f159774a8847d3cbd18c5e91  aep.tar.gz' | sha256sum --check
           tar -xzf aep.tar.gz
-          install -m 755 ess aep "$HOME/.local/bin/"
+          install -m 755 ess-0.50.0-x86_64-unknown-linux-gnu/ess aep-0.68.0-x86_64-unknown-linux-gnu/aep "$HOME/.local/bin/"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
