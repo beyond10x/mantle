@@ -1874,6 +1874,7 @@ dependencies = [
  "mantle-egress",
  "mantle-worker",
  "rusqlite",
+ "rustix",
  "serde",
  "serde_json",
  "serde_yaml",

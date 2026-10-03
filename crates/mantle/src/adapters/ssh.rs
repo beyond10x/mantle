@@ -13,6 +13,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result, bail};
 
+#[cfg(test)]
 use crate::config::state_dir;
 
 pub const REMOTE_USER: &str = "ubuntu";
@@ -29,12 +30,12 @@ pub struct Ssh {
 impl Ssh {
     /// `instance` names the worker for host-key pinning; `proxy` is the whole
     /// ProxyCommand, in which ssh expands `%h` and `%p`.
-    pub fn new(instance: &str, proxy: String) -> Result<Self> {
-        let dir = state_dir()?;
+    pub fn new(instance: &str, proxy: String, dir: &Path) -> Result<Self> {
+        crate::profile::validate_state_path(dir)?;
         Ok(Self {
             instance: instance.to_owned(),
             proxy,
-            key: ensure_key(&dir)?,
+            key: ensure_key(dir)?,
             known_hosts: dir.join("known_hosts"),
         })
     }
@@ -46,7 +47,10 @@ impl Ssh {
             .arg(&self.key)
             .args(["-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes"])
             .arg("-o")
-            .arg(format!("UserKnownHostsFile={}", self.known_hosts.display()))
+            .arg(format!(
+                "UserKnownHostsFile=\"{}\"",
+                self.known_hosts.display()
+            ))
             .args([
                 "-o",
                 "StrictHostKeyChecking=accept-new",
@@ -252,8 +256,8 @@ fn ensure_key(dir: &Path) -> Result<PathBuf> {
     Ok(key)
 }
 
-pub fn public_key() -> Result<String> {
-    let key = ensure_key(&state_dir()?)?;
+pub fn public_key(dir: &Path) -> Result<String> {
+    let key = ensure_key(dir)?;
     let path = key.with_extension("pub");
     Ok(std::fs::read_to_string(&path)
         .with_context(|| format!("reading {}", path.display()))?
@@ -266,6 +270,30 @@ mod tests {
     use super::*;
     use std::os::unix::fs::MetadataExt;
     use std::os::unix::net::UnixListener;
+
+    #[test]
+    fn known_hosts_option_preserves_one_literal_path_in_openssh_parser() {
+        let ssh = fixture(Path::new("/tmp/profile # with spaces:λ"));
+        let mut command = ssh.command();
+        command.args(["-G", "fixture.invalid"]);
+        let output =
+            mantle_worker::run_bounded(&mut command, None, Duration::from_secs(5), 64 * 1024)
+                .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let printed = String::from_utf8(output.stdout).unwrap();
+        let line = printed
+            .lines()
+            .find(|line| line.starts_with("userknownhostsfile "))
+            .unwrap();
+        assert_eq!(
+            line,
+            "userknownhostsfile /tmp/profile # with spaces:λ/known_hosts"
+        );
+    }
 
     fn fixture(state: &Path) -> Ssh {
         Ssh {

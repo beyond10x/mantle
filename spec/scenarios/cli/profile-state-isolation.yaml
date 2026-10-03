@@ -1,0 +1,23 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.operator",
+  "scenario": "profile-state-isolation",
+  "summary": "Production local profile registry and explicit runtime selection",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:00Z",
+      "command": "mantle.operator.ProfileStateIsolation",
+      "input": {},
+      "outcome": "returned",
+      "response": {
+        "first_names": [
+          "one"
+        ],
+        "second_names": [
+          "two"
+        ],
+        "paths_distinct": true
+      }
+    }
+  ]
+}

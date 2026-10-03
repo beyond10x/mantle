@@ -12,6 +12,140 @@ use serde_json::{Value, json};
 use std::cell::{Cell, RefCell};
 use std::time::Duration;
 
+pub(super) fn operator(command: &str, input: &Value) -> Result<Reply> {
+    use crate::profile::{Profile, Registry, Selection};
+    use std::os::unix::fs::{PermissionsExt, symlink};
+    let temporary = tempfile::tempdir()?;
+    let home = temporary.path();
+    let registry = Registry::new(home);
+    let text = |key| input[key].as_str().unwrap_or("");
+    let flag = |key| input[key].as_bool().unwrap_or(false);
+    match command {
+        "mantle.operator.ProfileRegistry" => {
+            let profile = Profile {
+                name: text("name").into(),
+                config_path: if flag("relative") {
+                    text("config").into()
+                } else {
+                    home.join(text("config"))
+                },
+                state_dir: home.join(text("state")),
+            };
+            let path = home
+                .join(".config/mantle/profiles")
+                .join(format!("{}.toml", profile.name));
+            if flag("existing") {
+                registry.add(&profile)?;
+            }
+            let before = std::fs::read(&path).ok();
+            if flag("symlink") {
+                std::fs::remove_file(&path)?;
+                let target = home.join("sentinel");
+                std::fs::write(&target, b"fixture sentinel")?;
+                symlink(target, &path)?;
+            }
+            let mut observed = None;
+            let result = match text("action") {
+                "add" => registry.add(&profile),
+                "show" => registry.show(&profile.name).map(|p| {
+                    observed = Some(p);
+                }),
+                "list" => registry.list().map(|profiles| {
+                    observed = profiles.into_iter().next();
+                }),
+                other => bail!("unknown profile fixture action {other}"),
+            };
+            let profiles = registry.list().unwrap_or_default();
+            let paths_match = observed
+                .as_ref()
+                .or_else(|| profiles.first())
+                .is_some_and(|p| {
+                    p.name == profile.name
+                        && p.config_path == profile.config_path
+                        && p.state_dir == profile.state_dir
+                });
+            let private = path
+                .symlink_metadata()
+                .is_ok_and(|meta| meta.is_file() && meta.permissions().mode() & 0o077 == 0);
+            Ok(Reply::returned(
+                json!({"accepted":result.is_ok(),"count":profiles.len(),"paths_match":paths_match,"private":private,"state_created":profile.state_dir.exists(),"unchanged":before.is_some() && before == std::fs::read(&path).ok()}),
+            ))
+        }
+        "mantle.operator.SelectProfile" => {
+            for name in ["one", "two"] {
+                registry.add(&Profile {
+                    name: name.into(),
+                    config_path: home.join(format!("{name}.toml")),
+                    state_dir: home.join(name),
+                })?;
+            }
+            let nonempty = |key| (!text(key).is_empty()).then(|| text(key));
+            let result = Selection::resolve(
+                home,
+                nonempty("explicit"),
+                nonempty("environment"),
+                flag("legacy_config").then(|| home.join("legacy.toml").into_os_string()),
+                flag("legacy_state").then(|| home.join("legacy-state").into_os_string()),
+            );
+            let selected = result
+                .as_ref()
+                .ok()
+                .and_then(|s| s.profile.as_deref())
+                .unwrap_or("");
+            let paths_match = result.as_ref().is_ok_and(|s| {
+                let (config, state) = if let Some(name) = &s.profile {
+                    (format!("{name}.toml"), name.clone())
+                } else {
+                    (
+                        if flag("legacy_config") {
+                            "legacy.toml"
+                        } else {
+                            ".config/mantle/config.toml"
+                        }
+                        .into(),
+                        if flag("legacy_state") {
+                            "legacy-state"
+                        } else {
+                            ".local/state/mantle"
+                        }
+                        .into(),
+                    )
+                };
+                s.config_path == home.join(config) && s.state_dir == home.join(state)
+            });
+            Ok(Reply::returned(
+                json!({"accepted":result.is_ok(),"selected":selected,"paths_match":paths_match,"state_created":home.join("one").exists() || home.join("two").exists() || home.join("legacy-state").exists()}),
+            ))
+        }
+        "mantle.operator.ProfileStateIsolation" => {
+            let mut paths = Vec::new();
+            let mut stores = Vec::new();
+            for name in ["one", "two"] {
+                registry.add(&Profile {
+                    name: name.into(),
+                    config_path: home.join(format!("{name}.toml")),
+                    state_dir: home.join(name),
+                })?;
+                let selection = Selection::resolve(home, Some(name), None, None, None)?;
+                selection.prepare_state()?;
+                paths.push(selection.state_dir.join("state.db"));
+                let store = Store::open(paths.last().unwrap())?;
+                let mut row = record(SessionState::Running);
+                row.name = name.into();
+                store.insert_session(&row)?;
+                stores.push(store);
+            }
+            let names = |store: &Store| -> Result<Vec<String>> {
+                Ok(store.live_sessions()?.into_iter().map(|r| r.name).collect())
+            };
+            Ok(Reply::returned(
+                json!({"first_names":names(&stores[0])?,"second_names":names(&stores[1])?,"paths_distinct":paths[0] != paths[1]}),
+            ))
+        }
+        other => bail!("unsupported operator command {other}"),
+    }
+}
+
 struct Plane {
     input: Value,
     calls: RefCell<Vec<String>>,

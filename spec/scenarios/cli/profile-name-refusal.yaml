@@ -1,0 +1,30 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.operator",
+  "scenario": "profile-name-refusal",
+  "summary": "Production local profile registry and explicit runtime selection",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:00Z",
+      "command": "mantle.operator.ProfileRegistry",
+      "input": {
+        "action": "add",
+        "name": "../escape",
+        "config": "config.toml",
+        "state": "state",
+        "existing": false,
+        "symlink": false,
+        "relative": false
+      },
+      "outcome": "returned",
+      "response": {
+        "accepted": false,
+        "count": 0,
+        "paths_match": false,
+        "private": false,
+        "state_created": false,
+        "unchanged": false
+      }
+    }
+  ]
+}

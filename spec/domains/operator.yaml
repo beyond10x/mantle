@@ -55,3 +55,39 @@ types:
       - {name: exec_before, type: 'Optional<String>'}
       - {name: exec_after, type: 'Optional<String>'}
       - {name: observation, type: String}
+commands:
+  - name: mantle.operator.ProfileRegistry
+    input:
+      - {name: action, type: String, example: add}
+      - {name: name, type: String, example: local}
+      - {name: config, type: String, example: config.toml}
+      - {name: state, type: String, example: state}
+      - {name: existing, type: Boolean, example: false}
+      - {name: symlink, type: Boolean, example: false}
+      - {name: relative, type: Boolean, example: false}
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: count, type: Integer}
+      - {name: paths_match, type: Boolean}
+      - {name: private, type: Boolean}
+      - {name: state_created, type: Boolean}
+      - {name: unchanged, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.operator.SelectProfile
+    input:
+      - {name: explicit, type: String}
+      - {name: environment, type: String}
+      - {name: legacy_config, type: Boolean, example: false}
+      - {name: legacy_state, type: Boolean, example: false}
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: selected, type: String}
+      - {name: paths_match, type: Boolean}
+      - {name: state_created, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.operator.ProfileStateIsolation
+    response:
+      - {name: first_names, type: 'List<String>'}
+      - {name: second_names, type: 'List<String>'}
+      - {name: paths_distinct, type: Boolean}
+    outcomes: [{name: returned, returns: true}]

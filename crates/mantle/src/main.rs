@@ -11,6 +11,7 @@ mod app {
     pub mod worker;
 }
 mod config;
+mod profile;
 mod domain {
     pub mod manifest;
     pub mod session;
@@ -22,22 +23,30 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use crate::adapters::state::Store;
-use crate::config::{Config, state_dir};
+use crate::config::{Config, RuntimeContext};
 
 /// Portable cloud development sessions on Substrate.
 #[derive(Debug, Parser)]
 #[command(
     name = "mantle",
     version,
-    after_help = "MANTLE_CONFIG selects an absolute configuration file; MANTLE_STATE_DIR selects an absolute private state directory. Defaults: ~/.config/mantle/config.toml and ~/.local/state/mantle. READY denotes common confinement/toolchain readiness, not agent authentication."
+    after_help = "--profile overrides MANTLE_PROFILE; named selections refuse MANTLE_CONFIG and MANTLE_STATE_DIR. Without a profile, MANTLE_CONFIG selects an absolute configuration file; MANTLE_STATE_DIR selects an absolute private state directory. Defaults: ~/.config/mantle/config.toml and ~/.local/state/mantle. READY denotes common confinement/toolchain readiness, not agent authentication."
 )]
 struct Cli {
+    /// Select a named configuration and state directory (overrides MANTLE_PROFILE).
+    #[arg(long, global = true)]
+    profile: Option<String>,
     #[command(subcommand)]
     command: Command,
 }
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    /// Manage local named path references without contacting a provider.
+    Profile {
+        #[command(subcommand)]
+        command: ProfileCommand,
+    },
     /// Manage the EC2 worker.
     Worker {
         #[command(subcommand)]
@@ -66,6 +75,22 @@ enum Command {
         #[arg(last = true, required = true)]
         argv: Vec<String>,
     },
+}
+
+#[derive(Debug, Subcommand)]
+enum ProfileCommand {
+    /// Register absolute configuration and private state paths; existing names are refused.
+    Add {
+        name: String,
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        state_dir: PathBuf,
+    },
+    /// List registered names and paths without loading their configurations.
+    List,
+    /// Show one registered name and its paths.
+    Show { name: String },
 }
 
 #[derive(Debug, Subcommand)]
@@ -110,9 +135,63 @@ fn main() -> Result<std::process::ExitCode> {
 
 async fn run() -> Result<std::process::ExitCode> {
     let cli = Cli::parse();
-    let config = Config::load()?;
-    let store = Store::open(&state_dir()?.join("state.db"))?;
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .ok_or_else(|| anyhow::anyhow!("HOME is not set"))?;
+    if let Command::Profile { command } = cli.command {
+        let registry = profile::Registry::new(&home);
+        let profiles = match command {
+            ProfileCommand::Add {
+                name,
+                config,
+                state_dir,
+            } => {
+                let profile = profile::Profile {
+                    name,
+                    config_path: config,
+                    state_dir,
+                };
+                registry.add(&profile)?;
+                vec![profile]
+            }
+            ProfileCommand::List => registry.list()?,
+            ProfileCommand::Show { name } => vec![registry.show(&name)?],
+        };
+        for profile in profiles {
+            println!(
+                "{}\t{}\t{}",
+                profile.name,
+                profile.config_path.display(),
+                profile.state_dir.display()
+            );
+        }
+        return Ok(std::process::ExitCode::SUCCESS);
+    }
+    let environment = if cli.profile.is_some() {
+        None
+    } else {
+        std::env::var("MANTLE_PROFILE")
+            .map(Some)
+            .or_else(|error| match error {
+                std::env::VarError::NotPresent => Ok(None),
+                _ => Err(anyhow::anyhow!("MANTLE_PROFILE must be valid UTF-8")),
+            })?
+    };
+    let selection = profile::Selection::resolve(
+        &home,
+        cli.profile.as_deref(),
+        environment.as_deref(),
+        std::env::var_os("MANTLE_CONFIG"),
+        std::env::var_os("MANTLE_STATE_DIR"),
+    )?;
+    let config = RuntimeContext {
+        config: Config::load(&selection)?,
+        selection,
+    };
+    config.selection.prepare_state()?;
+    let store = Store::open(&config.selection.state_dir.join("state.db"))?;
     match cli.command {
+        Command::Profile { .. } => unreachable!("profile commands return before runtime selection"),
         Command::Worker { command } => match command {
             WorkerCommand::Up {
                 binaries,

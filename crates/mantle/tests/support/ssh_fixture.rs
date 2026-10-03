@@ -22,6 +22,9 @@ fn main() {
     };
     let socket = args[index + 1].split_once(':').unwrap().0;
     let root = PathBuf::from(std::env::var_os("MANTLE_SSH_FIXTURE").unwrap());
+    if root.ends_with("profile-inspect") {
+        fs::write(root.join("argv"), args.join("\n")).unwrap();
+    }
     let listener = UnixListener::bind(socket).unwrap();
     for index in 0..5 {
         let (mut stream, _) = listener.accept().unwrap();
@@ -52,7 +55,7 @@ fn main() {
         stream.read_exact(&mut body).unwrap();
         header.extend(body);
         fs::write(root.join(format!("request-{index}")), header).unwrap();
-        if root.ends_with("transport-failure") {
+        if root.ends_with("transport-failure") || root.ends_with("profile-inspect") {
             return; // Drop discovery's transport before any response bytes arrive.
         }
         stream

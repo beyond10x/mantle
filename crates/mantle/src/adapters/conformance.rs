@@ -44,6 +44,9 @@ fn query(store: &Store, view: &str) -> Result<Value> {
 }
 
 fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
+    if command.starts_with("mantle.operator.") {
+        return super::orchestration::operator(command, input);
+    }
     if command == "mantle.session.IdentityMigration" {
         return Ok(Reply::returned(identity_migration()?));
     }

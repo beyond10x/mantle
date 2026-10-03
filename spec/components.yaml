@@ -5,6 +5,9 @@ components:
       domains: [mantle.session, mantle.manifest, mantle.orchestration, mantle.operator]
     accepts:
       commands:
+        - mantle.operator.ProfileRegistry
+        - mantle.operator.SelectProfile
+        - mantle.operator.ProfileStateIsolation
         - mantle.session.IdentityMigration
         - mantle.orchestration.CodexPreflight
         - mantle.session.AssessSharedBinaryUpgrade
