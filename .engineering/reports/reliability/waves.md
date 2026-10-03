@@ -402,3 +402,18 @@ Docs now report the measured complete499 inventory. HD10's source mapping/counts
 HD11's decoded-envelope boundary remains explicit. The nine wider observation gaps remain proposed
 follow-up, not claimed fixed. No authenticated qualification, release or website publication ran.
 Agent token/tool counters are unavailable. Final publication, one PR and managed cleanup follow.
+
+Final delivery: signed source96b3a7a8c430eb274611dc7f3b9f5406393cbcce published with180 scanned
+commits and bot check https://github.com/beyond10x/mantle/runs/111259193045. Exactly one final PR,
+https://github.com/beyond10x/mantle/pull/8, was created by b10x-bot[bot]. Epic moved implemented
+on all seven completed stories, the measured gate and the existing PR. CI remains observable on
+that PR; no unobserved remote result is asserted here.
+
+Managed cleanup verified: mantle-agent-acceptance archived its ignored run/generated-state records
+under $HOME/.local/state/worktree/archives/mantle/mantle-agent-acceptance; both that unit and
+mantle-final-documentation then finished and passed exact-id GC dry-run/apply. Both source paths
+were removed, and their branches deleted only after ancestry to the advertised integration ref
+was proved. Their own leases and processes had ended. Exact assigned reproducible target/TMPDIR
+paths were removed; raw reports, regression logs and baseline executable remain in private scratch.
+The integration tree remains owned by codex-reliability-root through final CI, after which its
+ignored evidence will be archived and the published tree retired through the same managed path.
