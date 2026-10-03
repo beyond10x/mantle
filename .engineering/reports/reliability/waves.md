@@ -358,3 +358,17 @@ https://github.com/beyond10x/mantle/runs/111247513909 retain evidence. Fresh mai
 df32e9cc4876776aa46fee8c91c5d351d53f6650 already an ancestor. Local branches for the six completed
 units were deleted only after exact ancestry to the published integration ref was verified;
 their commits and retained evidence remain recoverable there.
+
+Unit7 adversary pass1 is recorded unchanged as review-result:reliability-wave7-adversary-pass1.
+Runner6→8, sevenpassed/onefailed; isolated failure101, isolated interruption/ownership case0,
+Clippy/fmt0. Source reporting erases a previously failed final destroy when explicit cleanup
+later succeeds. README297–299 promises the failure remains; ordinary transient destruction
+failure followed by documented cleanup reaches it without checkpoint edits. Root verified that
+runner.rs is an added file in7930ab1..3ce4d28, so routes it as introduced by this unit; the
+reviewer's immutable origin remains undecided. No broader failure is inferred.
+
+Root retained the two tests-only paths in bot a4f4ee3 after reviewer lease release, then ended
+its short integration lease. correctness_scope owns the same unit under codex-agent-acceptance-correction,
+scratch agent-acceptance/correction1, for the minimal correction and unchanged regression.
+No existing assertion or documented contract may be weakened. Source has not merged into integration;
+full gate and pass2 remain pending. This correction is within existing unit7 scope.
