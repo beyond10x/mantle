@@ -955,3 +955,63 @@ fn generation_reuse_checks_all_entry_locations_and_types() {
         assert_eq!(fs::read_link(&active).unwrap(), before, "{case}");
     }
 }
+
+#[test]
+fn adversary_exact_export_preserves_shared_blobs_and_per_path_modes() {
+    use std::os::unix::fs::PermissionsExt;
+    let source = tempfile::tempdir().unwrap();
+    let work = tempfile::tempdir().unwrap();
+    let git = |args: &[&str]| {
+        let result = Command::new("git")
+            .arg("-C")
+            .arg(source.path())
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(
+            result.status.success(),
+            "{}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        result.stdout
+    };
+    git(&["init", "--quiet"]);
+    let bytes = b"fn main() { println!(\"identical committed blob\"); }\n";
+    let files = [
+        ("nested dir/λ.rs", 0o644),
+        ("nested dir/tab\tname.rs", 0o755),
+        ("second/same.rs", 0o644),
+    ];
+    for (name, mode) in files {
+        let path = source.path().join(name);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(&path, bytes).unwrap();
+        fs::set_permissions(&path, fs::Permissions::from_mode(mode)).unwrap();
+    }
+    git(&["add", "."]);
+    git(&[
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "shared blob fixture",
+    ]);
+    let head = String::from_utf8(git(&["rev-parse", "HEAD"])).unwrap();
+    let export = work.path().join("export");
+    mantle_release::build::export_source(source.path(), head.trim(), &export).unwrap();
+    for (name, mode) in files {
+        let path = export.join(name);
+        assert_eq!(fs::read(&path).unwrap(), bytes, "{name}");
+        assert_eq!(
+            fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+            mode,
+            "{name}"
+        );
+    }
+    assert_eq!(fs::read_dir(&export).unwrap().count(), 2);
+    assert_eq!(fs::read_dir(export.join("nested dir")).unwrap().count(), 2);
+    assert_eq!(fs::read_dir(export.join("second")).unwrap().count(), 1);
+}
