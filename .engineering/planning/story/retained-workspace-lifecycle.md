@@ -34,6 +34,8 @@ scope:
   path: generated/session-model
 - confidence: inferred
   path: generated/worker-model
+- confidence: inferred
+  path: spec/components.yaml
 - confidence: cited
   path: spec/domains/orchestration.yaml
 - confidence: cited
@@ -44,7 +46,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 35
+revision: 37
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
 - {from: "proposed", to: "active", at: "2026-10-03T14:48:25Z", actor: "human:timo", revision: 30}
@@ -60,6 +62,8 @@ Named scenarios retain-stop, retain-repeat-stop, retain-interrupted-stop, retain
 Cited: domain/session.rs, app/session.rs, adapters/state.rs, Session ESS lifecycle, orchestration Stop command and native tests. Inferred: restart request context persistence/migration, CLI/help/docs and lifecycle cases. Serialized after earlier session/worker changes. No VM-loss recovery guarantee or agent-specific conversation-resume protocol.
 
 Implementation preparation adds inferred module boundaries crates/mantle/src/app/lifecycle.rs and crates/mantle/src/adapters/state/lifecycle.rs, with actual CLI fixtures in crates/mantle/tests/retained_workspaces.rs and crates/mantle/tests/support/lifecycle_ssh.rs. These separate lifecycle orchestration and atomic state claims from already substantial session.rs. Existing destructive Stop scenarios retain their purpose as explicit Destroy or legacy migration coverage; new Stop scenarios assert retention. No acceptance case is dropped by renaming the command.
+
+Inferred addition during ESS validation: spec/components.yaml must admit the renamed destructive Destroy command and new lifecycle commands. The previous admission reference to orchestration.Stop cannot be left after its destructive contract becomes Destroy.
 
 ## Migration and interrupted intent
 
