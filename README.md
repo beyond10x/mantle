@@ -33,7 +33,7 @@ mantle attach codex-example
 mantle status codex-example
 ```
 
-Worker provisioning installs and verifies the pinned Codex binary. Mantle 0.1.3 requires its
+Worker provisioning installs and verifies the pinned Codex binary. Mantle 0.1.4 requires its
 matching worker binaries and Substrate 0.7.10, plus the gateway allowlist including
 `auth.openai.com:443` and `chatgpt.com:443`. Follow the existing-worker guidance below before
 upgrading a running worker. Codex does not need a Claude
@@ -49,10 +49,15 @@ Local launcher, confinement and integration checks are recorded in the
 [qualification evidence](docs/evidence/codex-compatibility.md). Real device login, authenticated
 model/tool turns and token refresh have not yet been verified end to end.
 
-## Version 0.1.3
+## Version 0.1.4
+
+This patch release integrates the final release and acceptance records and updates the public
+documentation. Runtime behavior is unchanged from 0.1.3. The operator confirmed that attachment
+worked with the corrected CLI and worker profile; full authenticated lifecycle qualification
+remains incomplete.
 
 Build the laptop CLI and static worker binaries from the same
-[0.1.3 source tag](https://github.com/beyond10x/mantle/releases/tag/0.1.3). This version pairs
+[0.1.4 source tag](https://github.com/beyond10x/mantle/releases/tag/0.1.4). This version pairs
 Mantle's attachment-readiness handshake with Substrate 0.7.10's bounded output wait. Replay
 starts after the client is ready; a temporarily full output queue waits for its consumer for
 up to one second per frame. Queue and output limits remain in force, and a stalled consumer

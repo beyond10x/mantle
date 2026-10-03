@@ -1,5 +1,18 @@
 # Codex qualification under Substrate — 2026-10-02
 
+## Version 0.1.4 update — integrated acceptance records, 2026-10-03
+
+Version 0.1.4 includes the final release and acceptance records from PRs 4 and 5, plus refreshed
+release documentation. It retains the 0.1.3 runtime behavior, Codex 0.153.4 and Substrate 0.7.10.
+After receiving the corrected versioned CLI and isolated profile command, the operator confirmed
+that attachment worked. This supplements the measured transport tests below; it does not prove
+every authenticated model/tool, refresh or two-agent lifecycle scenario.
+
+A later read-only acceptance check could not reach the test worker over SSH despite Kubernetes
+reporting it Ready. No restart or credential inspection was performed. This later infrastructure
+observation does not invalidate the earlier successful attachment or establish a runtime regression.
+The remaining live qualification is recorded separately in `epic:codex-parity`.
+
 ## Version 0.1.3 update — attachment transport, 2026-10-03
 
 The production Codex attachment later failed with `session.output-backpressure`, even with a
