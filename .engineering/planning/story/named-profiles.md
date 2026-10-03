@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:named-profiles
 kind: story
-status: active
+status: implemented
 title: Select configuration and private state as one named profile
 relations:
 - decomposes: epic:reliability-and-usability
@@ -48,10 +48,11 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 29
+revision: 30
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 26}
 - {from: "proposed", to: "active", at: "2026-10-03T09:01:15Z", actor: "human:timo", revision: 27}
+- {from: "active", to: "implemented", at: "2026-10-03T09:45:04Z", actor: "human:timo", revision: 30, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}}
 ---
 ## Contract and design
 New values Profile and Selection have their typed home in spec/domains/operator.yaml. Inferred design: mantle profile add NAME --config ABS --state-dir ABS stores only these absolute path references under the owner's configuration directory, with strict names and private permissions. mantle profile list/show inspect those references without loading provider config or executing credential commands. No overwrite on duplicate name, no credential copy. Global --profile NAME (or MANTLE_PROFILE, explicit flag wins) selects both paths together. When a named profile is selected, legacy MANTLE_CONFIG/MANTLE_STATE_DIR overrides are refused to prevent mixing workers and state. Without profile selection, legacy environment/default behavior remains unchanged. No automatic active-profile migration is required.

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T09:45:04Z",
+  "actor": "human:timo",
+  "artifact": "story:named-profiles",
+  "kind": "story",
+  "revision": 29,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check, exit 0, integration efb4752f42720eeb76757f0660f0bae0cf7d343f; workspace fmt/clippy/tests, complete conformance, ESS/AEP and site build",
+    "reference": ".engineering/reports/reliability/wave2-complete-report.json"
+  }
+}
