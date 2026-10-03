@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:retained-workspace-lifecycle
 kind: story
-status: active
+status: implemented
 title: Stop agents while retaining workspaces and destroy only explicitly
 relations:
 - decomposes: epic:reliability-and-usability
@@ -46,10 +46,11 @@ scope:
   path: spec/scenarios/cli
 - confidence: cited
   path: website/index.html
-revision: 53
+revision: 55
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
 - {from: "proposed", to: "active", at: "2026-10-03T14:48:25Z", actor: "human:timo", revision: 30}
+- {from: "active", to: "implemented", at: "2026-10-03T16:17:26Z", actor: "human:timo", revision: 55, decided_on: {"recorded":{"test_result":1,"ess_conformance_coverage_v1":1}}}
 ---
 ## Outcome
 Separate process lifetime from workspace destruction using the existing mantle.session.Session entity and Workspace SDK handle. Extend ESS states/commands before implementation. Proposed CLI: stop NAME ends the agent but preserves files and login state; destroy NAME --yes is explicit irreversible deletion; restart NAME starts a fresh agent execution in a retained workspace without cloning over files. Do not call a fresh process a same-conversation resume. Reattach alone never restarts. Document the intentional stop-semantics compatibility change prominently.
@@ -108,3 +109,9 @@ Fixtures must cover interrupted retirement, initial materialization interleaving
 Bot source 8df716f6c53b56f62ba0ad5ebdfa75c97f859ddd, exact base e5624f2a907fb59d91c9e54a6680b64c2eee852a. Full implementation handoff and direct command ledger are .engineering/reports/reliability/wave6-implementation.md and wave6-implementation-status.json. Package tests64→67 and native CLI273→372 pass; authored ESS277→307 validates. Formatter, Clippy, generated drift, unchanged notices and exact-commit documentation build pass. The same actual CLI/filesystem fixture fails on the retained old binary because Stop deletes the workspace and passes on the candidate. A first malformed wire fixture failure is retained separately and excluded from causal evidence.
 
 The implementor released its lease and all commands ended. Independent adversary pass1 owns the unit tree/target now; the coordinator still owes its own baseline/treatment claim and complete integrated gate. No full-gate or implementation-complete status is claimed yet. Unsupported launch contexts, unqualified missing operations and unproven interrupted initialization remain explicit incomplete outcomes. No live worker/auth operation or public website deployment occurred.
+
+## Integrated verification
+
+Full task check at deb88905fc6f008f5a2bcbffff8711b9026442f2 exited 0. Complete ESS inventory: 490 passed; 0 failed, skipped, unsupported, outside or refused. Authored specification: 307 valid scenarios. Workspace formatting, Clippy, all tests, AEP validation and exact-source documentation build passed. Direct log/status: $HOME/.cache/mantle-reliability/integration/wave6-gate.log and wave6-gate.exit. Portable CLI report/suite and complete report are in .engineering/reports/reliability/wave6-*.json.
+
+Independent adversary pass1 found nothing and added two passing actual-CLI attacks, retained in fe0e72c. Root independently ran the unchanged original actual-CLI/filesystem claim against the old and candidate binaries: baseline101 deleted the workspace; treatment0 retained it and enforced explicit destruction. Claim VERIFIED, with raw baseline/treatment logs retained. No live authentication, worker operation or website publication was performed.

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T16:19:09Z",
+  "actor": "human:timo",
+  "artifact": "story:retained-workspace-lifecycle",
+  "kind": "story",
+  "revision": 55,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check at deb88905fc6f008f5a2bcbffff8711b9026442f2; exit 0",
+    "reference": "$HOME/.cache/mantle-reliability/integration/wave6-gate.log"
+  }
+}

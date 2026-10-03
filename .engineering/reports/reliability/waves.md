@@ -297,3 +297,23 @@ across crates, Cargo, generated and spec. Baseline exit101 asserts that Stop del
 files; candidate exit0 preserves them, checks explicit confirmation/identity refusals and destroys
 only when requested. Both logs and direct exits are retained under integration/wave6-claim-base.*
 and wave6-claim-treatment.*. Claim VERIFIED before integration; full gate still pending.
+
+Unit6 full gate at deb88905fc6f008f5a2bcbffff8711b9026442f2 exited0. Complete ESS490,
+CLI372 and authored307 pass; workspace checks, AEP and exact-source docs build pass.
+Direct output/status retained in integration/wave6-gate.log/.exit. Portable reports copied beside
+this record. Story moved implemented after the clean adversary and independently VERIFIED claim.
+The historical archived prose-review warning remains visible; validation reports valid.
+
+Unit7 replan is recorded in wave7-selection.json under standing approval, skill0.19.1.
+The retained-lifecycle dependency is implemented. Runtime owner correctness_scope uses
+mantle-agent-acceptance, branch unit/mantle-agent-acceptance, lease codex-agent-acceptance;
+documentation owner substrate_output_queue uses mantle-final-documentation and its recorded
+branch/lease. Both will start at this checkpoint's commit. Exact paths and storage are in their
+persisted briefs. They own disjoint files within the same accepted unit; docs merge into the unit
+before independent review. Existing GNU packaging will include the runner. No new roadmap item,
+live qualification, main merge, tag, release or website deployment is authorized by this dispatch.
+
+Checkpoint hook initially refused a personal absolute path in the new uncommitted gate evidence
+reference. Root preserved that unpublished record privately as integration/wave6-private-path-evidence.json
+and re-recorded the same observation through AEP with a portable $HOME reference. No finding was
+waived, source assertion changed or hook bypassed. This corrects publication metadata only.

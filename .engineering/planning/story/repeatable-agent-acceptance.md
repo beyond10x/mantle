@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:repeatable-agent-acceptance
 kind: story
-status: proposed
+status: active
 title: Run and record a bounded real-agent lifecycle acceptance suite
 relations:
 - decomposes: epic:reliability-and-usability
@@ -15,19 +15,37 @@ scope:
 - confidence: inferred
   path: README.md
 - confidence: inferred
+  path: THIRD_PARTY_LICENSES.html
+- confidence: inferred
   path: crates/mantle-acceptance
 - confidence: inferred
+  path: crates/mantle-artifact/src/lib.rs
+- confidence: inferred
   path: crates/mantle-conformance
+- confidence: inferred
+  path: crates/mantle-release/src/build.rs
+- confidence: inferred
+  path: crates/mantle-release/src/lib.rs
+- confidence: inferred
+  path: crates/mantle-release/tests/release.rs
+- confidence: inferred
+  path: crates/mantle/Cargo.toml
 - confidence: cited
   path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
   path: crates/mantle/src/adapters/state.rs
+- confidence: inferred
+  path: crates/mantle/src/app/metadata.rs
 - confidence: cited
   path: crates/mantle/src/app/session.rs
 - confidence: cited
   path: crates/mantle/src/main.rs
 - confidence: cited
   path: crates/mantle/tests/codex_preflight.rs
+- confidence: inferred
+  path: crates/mantle/tests/session_metadata.rs
+- confidence: inferred
+  path: crates/mantle/tests/support/metadata_ssh.rs
 - confidence: inferred
   path: docs/evidence
 - confidence: inferred
@@ -46,9 +64,10 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 28
+revision: 31
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
+- {from: "proposed", to: "active", at: "2026-10-03T16:18:01Z", actor: "human:timo", revision: 31}
 ---
 ## Outcome
 Provide a Rust/clap acceptance runner plus operator procedure for disposable Claude and Codex sessions through the installed Mantle CLI, not duplicated orchestration. AcceptanceResult is typed in spec/domains/operator.yaml. Bound duration/output/disk; keep only non-secret metadata, exact version/source identities and explicit case outcomes.
@@ -112,3 +131,9 @@ and name reuse. Use a bounded structured receipt tied to the successful creation
 immutable creation binding, and persist it before dependent mutation. A lost/interrupted receipt
 stays unresolved and never authorizes automatic cleanup of a subsequently discovered name. This
 refines the already accepted exact-owned-identity contract; it does not require live qualification.
+
+## Implementation and packaging boundaries
+
+Read-only implementor preparation identifies a shared versioned DTO library in crates/mantle-acceptance, early read-only app/metadata.rs, actual-CLI tests/session_metadata.rs and support/metadata_ssh.rs, and a crates/mantle/Cargo.toml dependency. These additions remain inferred until implementation confirms them.
+
+Include mantle-acceptance in the existing GNU candidate bundle beside mantle and mantle-release. This does not add a target, tag, release protocol or publication. Inferred paths: mantle-artifact/src/lib.rs binary inventory; mantle-release/src/build.rs packages; mantle-release/src/lib.rs exposed binaries; mantle-release/tests/release.rs synthetic bundle fixtures; THIRD_PARTY_LICENSES.html when notice generation changes. Preserve checksum, atomic install and failure-preservation tests. Source implementor excludes README.md, website/index.html and spec/README.md; a separate documentation delegate owns those three, and its branch joins the unit before adversarial review.
