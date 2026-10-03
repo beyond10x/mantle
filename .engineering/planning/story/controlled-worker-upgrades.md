@@ -28,8 +28,12 @@ scope:
   path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
   path: crates/mantle/src/adapters/ssh.rs
+- confidence: inferred
+  path: crates/mantle/src/app.rs
 - confidence: cited
   path: crates/mantle/src/app/worker.rs
+- confidence: inferred
+  path: crates/mantle/src/app/worker_upgrade.rs
 - confidence: inferred
   path: crates/mantle/src/main.rs
 - confidence: cited
@@ -48,7 +52,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 33
+revision: 35
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"review_outcome":2}}}
 - {from: "proposed", to: "active", at: "2026-10-03T12:22:48Z", actor: "human:timo", revision: 29, decided_on: {"recorded":{"review_outcome":2}}}
