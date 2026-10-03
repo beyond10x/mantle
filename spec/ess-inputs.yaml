@@ -8,6 +8,7 @@ specification:
   - domains/egress.yaml
   - domains/launch.yaml
   - domains/orchestration.yaml
+  - domains/operator.yaml
 scenarios:
   - scenarios/cli/manifest-defaults.yaml
   - scenarios/cli/manifest-zero-cpu-clamped.yaml

@@ -1,0 +1,14 @@
+## Wave execution record
+
+AEP implementing skill 0.19.1; interactive session with explicit standing approval (approval-record:reliability-standing-waves). Seven serial units: command-correctness, named-profiles, worker-doctor, prebuilt-release-artifacts, controlled-worker-upgrades, retained-workspace-lifecycle, repeatable-agent-acceptance. Each is reassessed after its predecessor lands. Upgrade acceptance/design remain unresolved after review round 2; no upgrade implementation dispatch until a concrete safe protocol exists. Other units are independently implementable.
+
+The complete initial computed waves/collisions/unassessed output is retained in waves-all.json beside this report, including unrelated backlog items that are not selected. No unrelated story is approved by this selection.
+
+Host could allocate only one new reusable agent. Four planning lenses ran sequentially on that agent; this is not independent panel review. Implementation runs on that worker, and coordinator performs a separate adversarial pass. No claim of native named agent-role dispatch.
+
+Measured integration build: cargo build --locked -p mantle, exit 0, 4m10.425s, target 2.1GiB. Root free space 18GiB, tmpfs 15GiB at preflight; floors 10GiB and 3GiB. N=1 also follows shared Cargo, CLI, ESS and documentation paths. Compiler cache is sccache, task-owned server port 43179, limit 1GiB. Unlimited model budget was explicitly granted; per-agent token counters are unavailable.
+
+Integration managed id mantle-reliability-integration; branch integration/mantle-reliability; lease codex-reliability-root. Checkout $HOME/.local/state/worktree/trees/b10x/mantle/mantle-reliability-integration; build $HOME/.cache/mantle-reliability/integration-target; scratch $HOME/.cache/mantle-reliability/integration.
+
+Unit 1 planned id mantle-command-correctness; branch unit/mantle-command-correctness; lease codex-command-correctness. Checkout $HOME/.local/state/worktree/trees/b10x/mantle/mantle-command-correctness; build /dev/shm/mantle-command-correctness-target; scratch $HOME/.cache/mantle-reliability/command-correctness. Later triples are recorded before dispatch. Every target is unique; external targets follow this repository's external-cache convention.
+

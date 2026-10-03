@@ -2,7 +2,7 @@ components:
   - component: mantle-cli
     summary: Local session record operations; AWS, KubeVirt and Substrate are external adapters.
     owns:
-      domains: [mantle.session, mantle.manifest, mantle.orchestration]
+      domains: [mantle.session, mantle.manifest, mantle.orchestration, mantle.operator]
     accepts:
       commands:
         - mantle.session.IdentityMigration

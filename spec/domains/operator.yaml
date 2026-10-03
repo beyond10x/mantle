@@ -1,0 +1,57 @@
+domain: mantle.operator
+summary: Proposed local named selection and read-only diagnostic values; no credentials or remote session ownership are stored here.
+types:
+  - name: mantle.operator.Profile
+    kind: struct
+    fields:
+      - {name: name, type: String}
+      - {name: config_path, type: String}
+      - {name: state_dir, type: String}
+  - name: mantle.operator.Selection
+    kind: struct
+    fields:
+      - {name: profile, type: 'Optional<String>'}
+      - {name: config_path, type: String}
+      - {name: state_dir, type: String}
+  - name: mantle.operator.DiagnosticCheck
+    kind: struct
+    fields:
+      - {name: stage, type: String}
+      - {name: status, type: String}
+      - {name: detail, type: String}
+  - name: mantle.operator.DiagnosticReport
+    kind: struct
+    fields:
+      - {name: selection, type: mantle.operator.Selection}
+      - {name: checks, type: 'List<mantle.operator.DiagnosticCheck>'}
+      - {name: healthy, type: Boolean}
+  - name: mantle.operator.ReleaseArtifact
+    kind: struct
+    fields:
+      - {name: name, type: String}
+      - {name: target, type: String}
+      - {name: sha256, type: String}
+      - {name: size_bytes, type: Integer}
+  - name: mantle.operator.ReleaseManifest
+    kind: struct
+    fields:
+      - {name: version, type: String}
+      - {name: source_commit, type: String}
+      - {name: substrate_version, type: String}
+      - {name: artifacts, type: 'List<mantle.operator.ReleaseArtifact>'}
+  - name: mantle.operator.UpgradeAssessment
+    kind: struct
+    fields:
+      - {name: applicable, type: Boolean}
+      - {name: active_execs, type: Integer}
+      - {name: diagnostic, type: String}
+  - name: mantle.operator.AcceptanceResult
+    kind: struct
+    fields:
+      - {name: scenario, type: String}
+      - {name: agent, type: String}
+      - {name: status, type: String}
+      - {name: observed_at, type: String}
+      - {name: exec_before, type: 'Optional<String>'}
+      - {name: exec_after, type: 'Optional<String>'}
+      - {name: observation, type: String}
