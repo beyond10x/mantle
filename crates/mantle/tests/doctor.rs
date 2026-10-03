@@ -335,3 +335,122 @@ fn doctor_observes_real_cli_wire_stages_and_preserves_current_wal_state() {
         }
     }
 }
+
+#[test]
+fn adversary_doctor_interruption_retires_tunnel_and_removes_owned_socket_directory() {
+    use std::os::unix::fs::symlink;
+    let root = tempfile::tempdir().unwrap();
+    let mut compiler = Command::new("rustc");
+    compiler
+        .args([
+            "--edition=2024",
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/support/doctor_fixture.rs"
+            ),
+            "-o",
+        ])
+        .arg(root.path().join("fixture"));
+    assert!(run(compiler).status.success());
+    for program in ["ssh", "kubectl"] {
+        symlink(root.path().join("fixture"), root.path().join(program)).unwrap();
+    }
+    let config = root.path().join("config.toml");
+    fs::write(&config, "provider='kubevirt'\nubuntu_serial='20260926'\n[kubevirt]\ncontext='fixture'\nnamespace='fixture'\ncpu=2\nmemory_gib=4\nroot_disk_gib=8\ndata_disk_gib=8\n").unwrap();
+    let state = root.path().join("state");
+    fs::create_dir(&state).unwrap();
+    let db = rusqlite::Connection::open(state.join("state.db")).unwrap();
+    db.execute_batch("CREATE TABLE workers(name TEXT PRIMARY KEY,instance TEXT,region TEXT,data_volume TEXT); INSERT INTO workers VALUES('default','worker-fixture','kubevirt/fixture/fixture',NULL)").unwrap();
+    for name in ["id_ed25519", "known_hosts"] {
+        fs::write(state.join(name), "synthetic fixture").unwrap();
+    }
+    fs::write(root.path().join("provider.json"), r#"{"metadata":{"uid":"worker-fixture"},"status":{"ready":true,"printableStatus":"Running"}}"#).unwrap();
+    fs::write(
+        root.path().join("versions"),
+        format!(
+            "mantle-worker {0}\nmantle-launch {0}\nmantle-egress {0}\n",
+            env!("CARGO_PKG_VERSION")
+        ),
+    )
+    .unwrap();
+    fs::write(root.path().join("failure"), "discovery-timeout").unwrap();
+    let mut command = Command::new(env!("CARGO_BIN_EXE_mantle"));
+    command
+        .env_clear()
+        .env("HOME", root.path())
+        .env("PATH", root.path())
+        .env("MANTLE_CONFIG", &config)
+        .env("MANTLE_STATE_DIR", &state)
+        .env("MANTLE_DOCTOR_FIXTURE", root.path())
+        .args(["doctor", "--json", "--timeout-secs", "10"])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    let mut doctor = command.spawn().unwrap();
+    let deadline = Instant::now() + Duration::from_secs(5);
+    let socket = loop {
+        if let Ok(args) = fs::read_to_string(root.path().join("ssh-argv")) {
+            let args: Vec<_> = args.lines().collect();
+            if let Some(index) = args.iter().position(|a| *a == "-L") {
+                let socket = std::path::PathBuf::from(args[index + 1].split_once(':').unwrap().0);
+                if socket.exists() && root.path().join("descendant").exists() {
+                    break socket;
+                }
+            }
+        }
+        if Instant::now() >= deadline {
+            let _ = doctor.kill();
+            let _ = doctor.wait();
+            panic!("doctor did not reach the controlled live tunnel");
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    };
+    let descendant = fs::read_to_string(root.path().join("descendant")).unwrap();
+    assert!(
+        Command::new("/usr/bin/kill")
+            .args(["-TERM", &doctor.id().to_string()])
+            .status()
+            .unwrap()
+            .success()
+    );
+    let deadline = Instant::now() + Duration::from_secs(3);
+    let status = loop {
+        if let Some(status) = doctor.try_wait().unwrap() {
+            break status;
+        }
+        if Instant::now() >= deadline {
+            let _ = doctor.kill();
+            let _ = doctor.wait();
+            panic!("interrupted doctor did not terminate within cleanup bound");
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    };
+    assert!(!status.success());
+    while fs::read_to_string(format!("/proc/{descendant}/stat"))
+        .is_ok_and(|s| !s.split(')').nth(1).unwrap_or("").starts_with(" Z"))
+    {
+        assert!(
+            Instant::now() < deadline,
+            "tunnel descendant survived interruption"
+        );
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    let directory = socket.parent().unwrap();
+    let leaked = directory.exists();
+    // Remove only this fixture's observed owned allocation after measuring the postcondition.
+    if leaked {
+        assert_eq!(directory.parent(), Some(Path::new("/tmp")));
+        assert!(
+            directory
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .starts_with("mantle-")
+        );
+        fs::remove_dir_all(directory).unwrap();
+    }
+    assert!(
+        !leaked,
+        "SIGTERM left the owned diagnostic socket directory behind after process cleanup"
+    );
+}
