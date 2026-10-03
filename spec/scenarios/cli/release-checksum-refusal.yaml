@@ -1,0 +1,1 @@
+{"type":"ess-scenario/4","domain":"mantle.operator","scenario":"release-checksum-refusal","summary":"Tampered payloads are refused by the production verifier","timeline":[{"at":"2026-10-03T00:00:00Z","command":"mantle.operator.VerifyRelease","input":{"alteration":"checksum"},"outcome":"returned","response":{"accepted":false,"payload_count":0,"source_matches":false}}]}

@@ -13,6 +13,9 @@ use std::cell::{Cell, RefCell};
 use std::time::Duration;
 
 pub(super) fn operator(command: &str, input: &Value) -> Result<Reply> {
+    if command == "mantle.operator.VerifyRelease" || command == "mantle.operator.InstallRelease" {
+        return release(command, input);
+    }
     if command == "mantle.operator.DiagnoseWorker" {
         return doctor(input);
     }
@@ -812,4 +815,97 @@ fn codex_preflight() -> Result<Reply> {
         "attach_has_secret":!attach["secret_slot"].is_null() || !attach["secret_fd"].is_null(),
         "request_has_secret":!request["secret_slot"].is_null() || !request["secret_fd"].is_null()
     })))
+}
+
+/// Native release scenarios run the production verifier and installer over real ELF fixtures.
+fn release(command: &str, input: &Value) -> Result<Reply> {
+    use mantle_artifact::{GNU, MUSL, Manifest};
+    use std::{collections::BTreeMap, fs, process::Command, sync::OnceLock};
+    static BINARIES: OnceLock<(tempfile::TempDir, Vec<u8>, Vec<u8>)> = OnceLock::new();
+    let binaries = BINARIES.get_or_init(|| {
+        let dir = tempfile::tempdir().unwrap();
+        let source = dir.path().join("fixture.rs");
+        fs::write(&source, "fn main() { println!(\"release fixture\"); }\n").unwrap();
+        let compile = |target: &str| {
+            let out = dir.path().join(target);
+            let output = mantle_worker::run_bounded(
+                Command::new("rustc")
+                    .arg(&source)
+                    .args(["--target", target, "-o"])
+                    .arg(&out),
+                None,
+                Duration::from_secs(30),
+                1024 * 1024,
+            )
+            .unwrap();
+            assert!(output.status.success());
+            fs::read(out).unwrap()
+        };
+        let gnu = compile(GNU);
+        let musl = compile(MUSL);
+        (dir, gnu, musl)
+    });
+    let temp = tempfile::tempdir()?;
+    let source = "1111111111111111111111111111111111111111";
+    let mut manifest = Manifest {
+        format: "mantle-release/1".into(),
+        version: "0.1.4".into(),
+        source_commit: source.into(),
+        substrate_revision: "65304edf6ebdf4a95f9c2c6138b0c20ea47d157e".into(),
+        substrate_version: "0.7.10".into(),
+        rustc: "rustc fixture".into(),
+        gnu_runtime: "glibc 2.42".into(),
+        musl_runtime: "1.2.5".into(),
+        artifacts: Vec::new(),
+    };
+    for (target, binary) in [(GNU, &binaries.1), (MUSL, &binaries.2)] {
+        let files: BTreeMap<_, _> = mantle_artifact::inventory(target)?
+            .keys()
+            .map(|path| {
+                (
+                    path.clone(),
+                    if path.starts_with("bin/") {
+                        binary.clone()
+                    } else {
+                        b"fixture notice\n".to_vec()
+                    },
+                )
+            })
+            .collect();
+        let (artifact, bytes) = mantle_release::build::archive(&files, target, "0.1.4")?;
+        fs::write(temp.path().join(&artifact.name), bytes)?;
+        manifest.artifacts.push(artifact);
+    }
+    match input["alteration"].as_str().unwrap_or("none") {
+        "none" => {}
+        "source" => manifest.source_commit = "invalid".into(),
+        "checksum" => {
+            fs::write(temp.path().join(&manifest.artifacts[0].name), b"tampered")?;
+        }
+        "target" => manifest.artifacts[0].target = "unsupported".into(),
+        "path" => manifest.artifacts[0].payloads[0].path = "../outside".into(),
+        other => bail!("unknown release fixture alteration {other}"),
+    }
+    let path = temp.path().join("manifest.json");
+    fs::write(&path, serde_json::to_vec(&manifest)?)?;
+    let verified = mantle_artifact::verify(&path);
+    if command == "mantle.operator.InstallRelease" {
+        let prefix = temp.path().join("prefix");
+        fs::create_dir(&prefix)?;
+        fs::create_dir(prefix.join("bin"))?;
+        if input["collision"].as_bool().unwrap_or(true) {
+            fs::write(prefix.join("bin/mantle"), b"previous unmanaged binary")?;
+        }
+        let outcome = mantle_release::install(&verified?, &prefix, GNU);
+        return Ok(Reply::returned(
+            json!({"accepted":outcome.is_ok(),"previous_preserved":fs::read(prefix.join("bin/mantle")).is_ok_and(|b|b==b"previous unmanaged binary")}),
+        ));
+    }
+    let payload_count = verified
+        .as_ref()
+        .map(|b| b.artifacts.values().map(|v| v.len()).sum::<usize>())
+        .unwrap_or(0);
+    Ok(Reply::returned(
+        json!({"accepted":verified.is_ok(),"payload_count":payload_count,"source_matches":verified.as_ref().is_ok_and(|b|b.manifest.source_commit==source)}),
+    ))
 }

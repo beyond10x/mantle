@@ -272,3 +272,9 @@ scenarios:
   - scenarios/cli/doctor-facts-missing.yaml
   - scenarios/cli/doctor-timeout.yaml
   - scenarios/cli/doctor-readonly.yaml
+  - scenarios/cli/release-package-layout.yaml
+  - scenarios/cli/release-manifest-identities.yaml
+  - scenarios/cli/release-checksum-refusal.yaml
+  - scenarios/cli/release-unsupported-target.yaml
+  - scenarios/cli/release-path-safety.yaml
+  - scenarios/cli/release-install-atomic.yaml
