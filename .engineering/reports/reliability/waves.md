@@ -222,3 +222,27 @@ For the next independent comparison, root retained the actual CLI produced by th
 6385e997a17bc333c87956819a3fd876c238508fdb180dd5c2e7e1de9d205e86. It is a private test baseline,
 not a release artifact. Native CLI report/suite and complete report were copied as wave5 evidence;
 final public native evidence reconciliation remains with the final unit.
+
+Checkpoint e5624f2a907fb59d91c9e54a6680b64c2eee852a passed common checks (152 scanned commits),
+retained signed integration/wave5-receipt.json and published through Gates to the one integration
+branch. Bot check run: https://github.com/beyond10x/mantle/runs/111225921090. The advertised ref was
+fetched and all wanted unit5/hardening commits were confirmed ancestors. Root archived ignored
+unit5 and mutation evidence, finished all three completed trees and reviewed exact-id GC dry-run;
+GC removed mantle-worker-upgrades, mantle-hardening-mutations and mantle-hardening-design.
+Design scratch reports remain retained outside its clean source tree. Archives are under
+$HOME/.local/state/worktree/archives/mantle for the two archived trees.
+
+After handoff and publication, root removed only the old unit5 compiler target (3.1GiB), its unused
+temporary directory (65MiB), and the retired tmpfs integration temporary directory (47MiB).
+The tool rejected a forced-remove spelling; the safer non-forced removal succeeded. Source trees
+were removed only by managed GC. Raw scratch logs, baseline binaries, current integration target,
+new main-filesystem temporary paths and shared compiler cache remain intact.
+
+Unit6 dispatch: active story:retained-workspace-lifecycle revision30, managed
+mantle-retained-workspaces, branch unit/mantle-retained-workspaces, exact published basee5624f2.
+Checkout $HOME/.local/state/worktree/trees/b10x/mantle/mantle-retained-workspaces; scratch
+$HOME/.cache/mantle-reliability/retained-workspaces; target
+$HOME/.cache/mantle-reliability/retained-workspaces-target; temporary
+$HOME/.cache/mantle-reliability/retained-workspaces-tmp. correctness_scope implements the complete
+current brief under codex-retained-workspaces, with no AEP or live-resource operations. The root
+retains orchestration/cleanup ownership; unit7 remains serially dependent on this unit's gate.
