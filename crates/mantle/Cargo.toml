@@ -17,6 +17,7 @@ serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
 mantle-worker = { path = "../mantle-worker" }
+mantle-artifact = { path = "../mantle-artifact" }
 aws-config = { version = "1", features = ["behavior-version-latest"] }
 aws-sdk-cloudwatch = "1"
 aws-sdk-ec2 = "1"
@@ -37,8 +38,8 @@ ulid = "1"
 workspace = true
 
 [dev-dependencies]
+tar = "0.4"
 mantle-release = { path = "../mantle-release" }
-mantle-artifact = { path = "../mantle-artifact" }
 mantle-egress = { path = "../mantle-egress" }
 mantle-conformance = { path = "../mantle-conformance" }
 tokio = { workspace = true, features = ["test-util"] }

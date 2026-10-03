@@ -278,3 +278,12 @@ scenarios:
   - scenarios/cli/release-unsupported-target.yaml
   - scenarios/cli/release-path-safety.yaml
   - scenarios/cli/release-install-atomic.yaml
+  - scenarios/cli/upgrade-current.yaml
+  - scenarios/cli/upgrade-plan.yaml
+  - scenarios/cli/upgrade-active-refusal.yaml
+  - scenarios/cli/upgrade-unknown-refusal.yaml
+  - scenarios/cli/upgrade-incompatible.yaml
+  - scenarios/cli/upgrade-tampered.yaml
+  - scenarios/cli/upgrade-apply.yaml
+  - scenarios/cli/upgrade-rollback.yaml
+  - scenarios/cli/upgrade-postcheck.yaml

@@ -4,7 +4,6 @@
 //! SSH connection — bootstrap, binaries, credential, daemon, readiness — is one code path, so the
 //! workers they produce are the same machine.
 
-use sha2::{Digest, Sha256};
 use std::path::Path;
 use std::time::Duration;
 
@@ -32,8 +31,7 @@ pub const RUST_CHANNEL: &str = "1.97";
 pub const CLAUDE_CODE_VERSION: &str = "2.1.287";
 
 const CLOUD_INIT: &str = include_str!("../../../../deploy/cloud-init.yaml");
-const SUBSTRATE_SERVICE: &str = include_str!("../../../../deploy/substrate.service");
-const EGRESS_SERVICE: &str = include_str!("../../../../deploy/mantle-egress.service");
+const EGRESS_SERVICE: &str = mantle_worker::maintenance::EGRESS_SERVICE;
 const BWRAP_APPARMOR: &str = include_str!("../../../../deploy/bwrap.apparmor");
 
 pub const SECRET_PATH: &str = "/var/lib/mantle/secrets/claude";
@@ -57,6 +55,12 @@ pub(crate) fn location(config: &RuntimeContext) -> Result<String> {
 
 /// The SSH channel to a recorded worker.
 pub fn ssh_for(config: &RuntimeContext, record: &WorkerRecord) -> Result<Ssh> {
+    ssh_for_mode(config, record, false)
+}
+pub fn ssh_readonly_for(config: &RuntimeContext, record: &WorkerRecord) -> Result<Ssh> {
+    ssh_for_mode(config, record, true)
+}
+fn ssh_for_mode(config: &RuntimeContext, record: &WorkerRecord, readonly: bool) -> Result<Ssh> {
     let expected = location(config)?;
     if record.region != expected {
         bail!(
@@ -70,7 +74,11 @@ pub fn ssh_for(config: &RuntimeContext, record: &WorkerRecord) -> Result<Ssh> {
             Kubevirt::new(config.kubevirt()?, &config.ubuntu_serial).proxy_command(WORKER)
         }
     };
-    Ssh::new(&record.instance, proxy, &config.selection.state_dir)
+    if readonly {
+        Ssh::readonly(&record.instance, proxy, &config.selection.state_dir)
+    } else {
+        Ssh::new(&record.instance, proxy, &config.selection.state_dir)
+    }
 }
 
 pub async fn up(config: &RuntimeContext, store: &Store, options: &UpOptions<'_>) -> Result<()> {
@@ -117,13 +125,12 @@ pub async fn up(config: &RuntimeContext, store: &Store, options: &UpOptions<'_>)
         Duration::from_secs(330),
     )
     .context("starting substrate.service")?;
-    let result = ssh.checked_bounded(
-        "sudo /opt/mantle/bin/mantle-worker install-codex",
-        None,
-        Duration::from_secs(210),
-    )?;
+    let agent_stage = super::worker_upgrade::Delivery::create(&ssh)?;
+    agent_stage.put("mantle-worker", &binaries.worker, true)?;
+    let result = agent_stage.install_codex()?;
+    agent_stage.close()?;
     let outcome: mantle_worker::InstallationOutcome =
-        serde_json::from_str(&result).context("reading Codex installation outcome")?;
+        serde_json::from_slice(&result).context("reading Codex installation outcome")?;
     println!("codex install {}", serde_json::to_string(&outcome)?);
     report_identity(&ssh)?;
     report_machine(&ssh).await
@@ -292,76 +299,26 @@ fn worker_binaries(dir: &Path) -> Result<WorkerBinaries> {
 }
 
 fn install_binaries(ssh: &Ssh, binaries: &WorkerBinaries) -> Result<()> {
-    let active = ssh
-        .bounded(
-            "systemctl is-active --quiet mantle-egress.service",
-            None,
-            Duration::from_secs(15),
-        )?
-        .status
-        .success();
-    let daemon_active = ssh
-        .bounded(
-            "systemctl is-active --quiet substrate.service",
-            None,
-            Duration::from_secs(15),
-        )?
-        .status
-        .success();
-    let mut pending = Vec::new();
+    // First adoption and managed-bundle updates share the worker's host lock. The helper
+    // checks the marker after locking, so an earlier observation cannot authorize a stale write.
+    let stage = super::worker_upgrade::Delivery::create(ssh)?;
     for (name, bytes) in [
+        ("mantle-worker", &binaries.worker),
         ("mantle-egress", &binaries.egress),
         ("mantle-launch", &binaries.launch),
-        ("mantle-worker", &binaries.worker),
     ] {
-        let digest = format!("{:x}", Sha256::digest(bytes));
-        let observed = ssh.bounded(
-            &format!("sha256sum /opt/mantle/bin/{name}"),
-            None,
-            Duration::from_secs(15),
-        )?;
-        let unchanged = observed.status.success()
-            && String::from_utf8_lossy(&observed.stdout)
-                .split_whitespace()
-                .next()
-                == Some(digest.as_str());
-        if unchanged {
-            continue;
-        }
-        let shared_active =
-            (name == "mantle-egress" && active) || (name == "mantle-launch" && daemon_active);
-        if mantle_worker::shared_upgrade_deferred(
-            shared_active,
-            observed.status.success() || (name == "mantle-egress" && active),
-            !unchanged,
-        ) {
-            println!(
-                "deferred    {name} upgrade: active shared service retained; schedule maintenance to apply changed bytes"
-            );
-            continue;
-        }
-        pending.push((name, bytes, digest));
+        stage.put(name, bytes, true)?;
     }
-    for (name, bytes, digest) in pending {
-        ssh.checked_bounded(
-            &format!(
-                "sudo install -d -m 0755 /opt/mantle/bin && sudo tee /opt/mantle/bin/{name}.new >/dev/null \
-                 && echo '{digest}  /opt/mantle/bin/{name}.new' | sha256sum -c - >/dev/null \
-                 && sudo chmod 0755 /opt/mantle/bin/{name}.new && sudo mv -f /opt/mantle/bin/{name}.new /opt/mantle/bin/{name}"
-            ),
-            Some(bytes), Duration::from_secs(90),
-        )
-        .with_context(|| format!("installing {name}"))?;
+    for name in stage.reconcile()? {
+        println!("deferred    {name}: active shared service retained");
     }
+    stage.close()?;
     ssh.checked_bounded(
-        "sudo systemctl enable mantle-egress.service >/dev/null 2>&1 && sudo systemctl start mantle-egress.service \
-         && systemctl is-active mantle-egress.service",
-        None, Duration::from_secs(30),
-    )
-    .context("starting mantle-egress")?;
-    println!(
-        "binaries    reconciled; active shared services retained (deferred upgrades listed above)"
-    );
+        "sudo systemctl enable mantle-egress.service >/dev/null 2>&1 && sudo systemctl start mantle-egress.service && systemctl is-active mantle-egress.service",
+        None,
+        Duration::from_secs(30),
+    ).context("starting mantle-egress")?;
+    println!("binaries    reconciled under the host installation lock");
     Ok(())
 }
 
@@ -524,23 +481,7 @@ pub fn ssh(config: &RuntimeContext, store: &Store) -> Result<()> {
 /// Substitutes the cloud-init template. A placeholder alone on a line is replaced by a whole file,
 /// indented to the placeholder's column; a placeholder inside a line is replaced by a value.
 fn render_user_data_for(public_key: &str, claude: bool) -> Result<String> {
-    let service = SUBSTRATE_SERVICE
-        .replace(
-            "{{CLAUDE_CONDITION}}",
-            if claude {
-                "ConditionFileNotEmpty=/var/lib/mantle/secrets/claude"
-            } else {
-                ""
-            },
-        )
-        .replace(
-            "{{CLAUDE_SLOT}}\n",
-            if claude {
-                "    --secret-slot claude=/var/lib/mantle/secrets/claude \\\n"
-            } else {
-                ""
-            },
-        );
+    let service = mantle_worker::maintenance::substrate_service(claude);
     let blocks = [
         ("{{SUBSTRATE_SERVICE}}", service.as_str()),
         ("{{EGRESS_SERVICE}}", EGRESS_SERVICE),

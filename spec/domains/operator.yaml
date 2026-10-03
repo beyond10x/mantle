@@ -56,8 +56,26 @@ types:
     kind: struct
     fields:
       - {name: applicable, type: Boolean}
-      - {name: active_execs, type: Integer}
+      - {name: boot_id, type: String}
+      - {name: observed_at, type: String}
+      - {name: units, type: 'List<mantle.operator.UpgradeUnitObservation>'}
+      - {name: jobs, type: String}
+      - {name: layout, type: String}
+      - {name: compatibility, type: String}
+      - {name: outcome, type: String}
       - {name: diagnostic, type: String}
+      - {name: candidate_source, type: String}
+      - {name: candidate_manifest, type: String}
+      - {name: installed_versions, type: 'List<String>'}
+  - name: mantle.operator.UpgradeUnitObservation
+    kind: struct
+    fields:
+      - {name: name, type: String}
+      - {name: state, type: String}
+      - {name: mask, type: String}
+      - {name: job, type: String}
+      - {name: pids, type: String}
+      - {name: cgroup, type: String}
   - name: mantle.operator.AcceptanceResult
     kind: struct
     fields:
@@ -69,6 +87,14 @@ types:
       - {name: exec_after, type: 'Optional<String>'}
       - {name: observation, type: String}
 commands:
+  - name: mantle.operator.UpgradeWorker
+    input:
+      - {name: case, type: String, example: plan}
+    response:
+      - {name: outcome, type: String}
+      - {name: previous_preserved, type: Boolean}
+      - {name: services_unchanged, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
   - name: mantle.operator.VerifyRelease
     input:
       - {name: alteration, type: String, example: none}

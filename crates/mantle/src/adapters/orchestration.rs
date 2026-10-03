@@ -12,7 +12,14 @@ use serde_json::{Value, json};
 use std::cell::{Cell, RefCell};
 use std::time::Duration;
 
+#[allow(dead_code)]
+#[path = "../../../mantle-worker/tests/support/upgrade.rs"]
+mod upgrade_fixture;
+
 pub(super) fn operator(command: &str, input: &Value) -> Result<Reply> {
+    if command == "mantle.operator.UpgradeWorker" {
+        return upgrade_worker(input);
+    }
     if command == "mantle.operator.VerifyRelease" || command == "mantle.operator.InstallRelease" {
         return release(command, input);
     }
@@ -150,6 +157,75 @@ pub(super) fn operator(command: &str, input: &Value) -> Result<Reply> {
         }
         other => bail!("unsupported operator command {other}"),
     }
+}
+
+fn upgrade_worker(input: &Value) -> Result<Reply> {
+    use mantle_worker::upgrade;
+    let f = upgrade_fixture::Fixture::new();
+    let before = f.snapshot();
+    let case = input["case"].as_str().context("upgrade case")?;
+    match case {
+        "active-refusal" => *f.host.fault.borrow_mut() = "active".into(),
+        "unknown-refusal" => *f.host.fault.borrow_mut() = "unknown".into(),
+        "incompatible" => *f.host.fault.borrow_mut() = "incompatible".into(),
+        "tampered" => {
+            let manifest: Value = serde_json::from_slice(&std::fs::read(&f.manifest)?)?;
+            let archive = manifest["artifacts"][0]["name"]
+                .as_str()
+                .context("archive")?;
+            std::fs::write(f.manifest.parent().unwrap().join(archive), b"tampered")?;
+        }
+        "plan" | "current" | "apply" | "rollback" | "postcheck" => {}
+        other => bail!("unsupported upgrade fixture {other}"),
+    }
+    struct Failure<'a>(&'a str);
+    impl upgrade::Hooks for Failure<'_> {
+        fn boundary(&self, name: &str) -> Result<()> {
+            anyhow::ensure!(
+                name != "postcheck" && !(self.0 == "postcheck" && name == "before-rollback"),
+                "controlled postcondition failure"
+            );
+            Ok(())
+        }
+    }
+    let result = match case {
+        "current" => {
+            upgrade::apply(&f.host, &f.root, &f.manifest, &())?;
+            upgrade::check(&f.host, &f.root, &f.manifest)
+        }
+        "rollback" | "postcheck" => upgrade::apply(&f.host, &f.root, &f.manifest, &Failure(case)),
+        "apply" | "tampered" => upgrade::apply(&f.host, &f.root, &f.manifest, &()),
+        _ => upgrade::check(&f.host, &f.root, &f.manifest),
+    };
+    let outcome = match result {
+        Ok(report) => report.outcome,
+        Err(_) if case == "tampered" => "refused".into(),
+        Err(error) => return Err(error),
+    };
+    let previous_preserved = f.snapshot() == before
+        || std::fs::read_dir(&f.root)?
+            .filter_map(Result::ok)
+            .any(|entry| {
+                entry.file_name().to_string_lossy().starts_with(".upgrade-")
+                    && before.iter().all(|(name, bytes)| {
+                        let path = entry.path().join("bin").join(name);
+                        if name == "codex" {
+                            std::fs::read_link(path)
+                                .is_ok_and(|p| p.as_os_str().as_encoded_bytes() == bytes)
+                        } else {
+                            std::fs::read(path).is_ok_and(|actual| actual == *bytes)
+                        }
+                    })
+            });
+    let services_unchanged = f.host.calls.borrow().iter().all(|c| {
+        !c.contains(" stop")
+            && !c.contains(" start")
+            && !c.contains(" mask")
+            && !c.contains(" restart")
+    });
+    Ok(Reply::returned(
+        json!({"outcome":outcome,"previous_preserved":previous_preserved,"services_unchanged":services_unchanged}),
+    ))
 }
 
 fn doctor(input: &Value) -> Result<Reply> {

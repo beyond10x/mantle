@@ -1,4 +1,6 @@
 //! One bounded, atomic pinned-agent installation transaction for every provider.
+pub mod maintenance;
+pub mod upgrade;
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
@@ -178,6 +180,8 @@ impl Installer {
             "Codex candidate supports x86_64 only; no download attempted"
         );
         let deadline = Instant::now() + TRANSACTION_TIMEOUT;
+        // Every writer takes the host lock before Codex's narrower agent lock.
+        let _host_lock = upgrade::HostLock::acquire(&self.root)?;
         create_trusted_dir(&self.root)?;
         create_trusted_dir(&self.root.join("agents"))?;
         create_trusted_dir(&self.agent_root())?;
@@ -1561,6 +1565,26 @@ mod tests {
             fs::read_link(installer.agent_root().join("current")).unwrap(),
             PathBuf::from(&installer.candidate.binary_sha256)
         );
+    }
+
+    #[test]
+    fn codex_installation_respects_host_upgrade_lock_before_fetching() {
+        if isolated_installer_test() {
+            return;
+        }
+        let (_dir, installer, archive) = fixture();
+        install_fixture(&installer, &archive).unwrap();
+        let before = installer.inspect().unwrap();
+        let _held = upgrade::HostLock::acquire(&installer.root).unwrap();
+        let error = installer
+            .install_with("x86_64", |_, _| panic!("host lock must preclude download"))
+            .unwrap_err();
+        assert!(
+            error
+                .to_string()
+                .contains("host installation lock unavailable")
+        );
+        assert_eq!(installer.inspect().unwrap(), before);
     }
 
     #[test]
