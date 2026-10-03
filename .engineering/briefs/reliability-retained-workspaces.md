@@ -49,3 +49,9 @@ scenario and concurrent/interrupted operations with SQLite reopen. No real crede
 Document the intentional stop compatibility change prominently in README and website, including
 command tables and troubleshooting. Clearly label historical 0.1.4 destructive-stop guidance so
 it cannot be mistaken for unreleased semantics. Return source/package evidence for separate review.
+
+Read the story's Durable completion and initialization ownership section. Persist terminal proof
+and retirement identity before retiring; missing execution alone is not proof. Initial ownership
+covers materialization executions. Fence completion writes as well as claims, version migrations
+and the launch-policy contract, and recover through Operation.resource plus get_exec. Preserve
+unknown outcomes rather than inventing a recoverable idle workspace.

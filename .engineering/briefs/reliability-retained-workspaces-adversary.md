@@ -25,3 +25,7 @@ the relevant suite, and preserve all existing assertions. Return the required he
 diff, portable full commands/output, reachable and attributed findings, every external path and
 the matching machine-readable findings block. The root records the report unchanged before
 routing. At most two attacks apply.
+
+Also attack crash after retirement but before local completion, stop interleaving with initial
+materialization, stale completion responses, repeated migration of new intents, and unsupported
+persisted launch-policy versions. The story records the exact source seams from preparation.

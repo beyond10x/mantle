@@ -8,6 +8,8 @@ relations:
 - decomposes: epic:reliability-and-usability
 - depends_on: story:prebuilt-release-artifacts
 scope:
+- confidence: cited
+  path: Cargo.lock
 - confidence: inferred
   path: README.md
 - confidence: inferred
@@ -20,6 +22,10 @@ scope:
   path: crates/mantle-worker/src/lib.rs
 - confidence: cited
   path: crates/mantle-worker/src/main.rs
+- confidence: cited
+  path: crates/mantle/Cargo.toml
+- confidence: cited
+  path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
   path: crates/mantle/src/adapters/ssh.rs
 - confidence: cited
@@ -42,7 +48,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 29
+revision: 33
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"review_outcome":2}}}
 - {from: "proposed", to: "active", at: "2026-10-03T12:22:48Z", actor: "human:timo", revision: 29, decided_on: {"recorded":{"review_outcome":2}}}
@@ -97,3 +103,7 @@ The completed package unit provides both verified archives, while existing fresh
 Document verification of the trusted complete bundle, extraction of only the three known static worker payloads from its verified musl archive into a fresh operator-owned local staging directory, and `mantle worker up --binaries <stage>/bin` for fresh provisioning. No new downloader, package manager or worker activation command is required for this handoff. Existing workers use the explicit offline upgrade path with its maintenance checks. Keep filenames and bounded delivery verification compatible.
 
 The implementation also needs to examine serialization of the current worker-up helper reconciliation with first adoption, not only the managed-marker happy path. A check made before acquiring the host lock must not authorize later overwrites after a bundle transaction commits. Preserve the accepted host-wide lock, managed-bundle refusal and exclusive operator-maintenance boundary; do not introduce a committed shell checker to work around missing old-helper commands.
+
+## Implementation scope refinement
+
+Implementor inspection at the published c63d5a6 base identified three additional cited seams: crates/mantle/src/adapters/orchestration.rs hosts the native ESS routing for the named upgrade cases; crates/mantle/Cargo.toml needs artifact verification as a production dependency; Cargo.lock records worker artifact/serde dependency edges. Typed scope now includes them. Shared unit rendering moves into the worker library and existing render_user_data_for reuses it. This is within the accepted offline upgrade behavior; implementation remains serial and does not overlap a second writing unit.

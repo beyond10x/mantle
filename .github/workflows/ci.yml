@@ -70,6 +70,7 @@ jobs:
             .engineering/drafts/mantle*-report.json
             .engineering/drafts/mantle*-run.json
             .engineering/drafts/mantle-results.json
+            .engineering/drafts/mantle-noop-audit.json
             .engineering/drafts/mantle-synthesis.txt
           retention-days: 30
           if-no-files-found: warn

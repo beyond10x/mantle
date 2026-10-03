@@ -34,7 +34,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 27
+revision: 28
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
 ---
@@ -68,3 +68,15 @@ Provide an optional expected-session-id guard on stop, restart and destroy so au
 ## Conflicting lifecycle commands
 
 Use atomic state/attempt claims for all lifecycle mutations, not only two restart callers. Stop or destroy must not act from a stale retained/running record while another caller admits a new exec for the same session id. A pending restart is reconciled before another destructive or retain transition proceeds; a pending stop/destroy prevents new restart admission. Re-read and compare the recorded generation/intent within the state transaction before remote work, without holding a SQLite transaction across network waits. Test stop-versus-restart and destroy-versus-restart using controlled interleavings and SQLite reopen; refusal or reconciliation must preserve the one recorded immutable attempt. Session-id guards protect name reuse, while durable intent protects concurrent operations on the same id. Keep interrupted initial starts honest too: no retained success when an admitted exec may be unrecorded and its termination cannot be observed.
+
+## Durable completion and initialization ownership
+
+Read-only preparation against c63d5a6 identified implementation details of the accepted concurrency/recovery contract. These are source observations, not reproduced findings or live qualification.
+
+1. Persist binding-checked terminal observation and retirement operation ID before retire_with_operation_id, and verify the returned absent bool. Current app/session.rs:723 retires before its SQLite completion and treats resource.not-found as retired; a crash loses terminal proof. Missing exec without durable proof remains unresolved. SDK65304edf lib.rs:1816 exposes idempotent retirement; use it without importing internals.
+2. Initial-start ownership covers materialization as well as agent admission. The row is visible at app/session.rs:106 before materialization at182; initialization at259 admits separate executions. A retain-stop cannot see agent_exec=None and succeed while the original caller may continue initialization/admission. Unproven interrupted initialization remains incomplete.
+3. Fence every completion mutation with the expected attempt/generation and verify affected rows. Existing adapters/state.rs:228 move_session reads then updates by ID only; set_agent_exec and set_workspace are also unconditional. Use short BEGIN IMMEDIATE transactions for atomic claims and completions, never across remote IO. Add an explicit migration version so legacy STOPPING conversion cannot repeat against newly written intent on reopen.
+4. Version the complete persisted launch contract: app/session.rs:842 rebuilding RunRequest and adapters/substrate.rs policy defaults can otherwise change the effective launch configuration. Persist effective settings or bind to an explicitly supported launch-policy version and refuse incompatible reconstruction.
+5. Recover via Operation.resource followed by get_exec, checking operation ID/kind/resource and exec ID/workspace binding. Operation.result is wire JSON; do not deserialize it as SDK ExecObservation whose derived enum names differ (SDK model.rs:602 and :195).
+
+Fixtures must cover interrupted retirement, initial materialization interleaving with stop, stale completion after a newer attempt, migration reopen and unsupported launch-policy versions, in addition to the already accepted restart-admission cases. No new Substrate capability or authenticated qualification requirement is introduced.
