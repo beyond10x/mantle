@@ -26,8 +26,10 @@ inferred from a version string. Keep these interfaces useful without the runner.
 
 Persist the run's exact owned identities before dependent work. All lifecycle mutations and
 cleanup pass expected-session-id guards; a name prefix is not ownership proof. Refuse reused
-names and leave unrelated sessions alone. The runner may start detached, discard human startup
-output, and obtain identities through structured metadata. Keep execution/output/time bounds and
+names and leave unrelated sessions alone. Start detached using a bounded structured creation
+receipt tied to the successful create, or another provable immutable creation binding; a later
+name-only metadata lookup is not that proof. Lost or interrupted receipts remain unresolved and
+cannot authorize cleanup. Keep human startup output out of reports. Keep execution/output/time bounds and
 owned temporary/process cleanup; no credential values, terminal transcripts or auth-cache scans.
 
 Login and the model/tool action run in the operator's terminal through the exact selected-profile

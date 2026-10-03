@@ -44,7 +44,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 25
+revision: 26
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
 ---
@@ -98,3 +98,12 @@ The brief already covers output-page avoidance, terminal-id lookup, guarded clea
 No additional SDK capability is required for these points. ExecObservation already exposes exec/workspace ids, observed_at, exit and refusal (SDK model.rs:234–247). Unit6's final ownership/terminal semantics remain the dependency for implementation; no new lifecycle protocol is proposed here.
 
 Outside file added: $HOME/.cache/mantle-reliability/hardening-design/acceptance-preparation.md only. This preparation is separate from HD-01–11 and supplies no new conformance result or runtime defect claim.
+
+## Creation ownership receipt
+
+The read-only preparation identifies an unsafe shortcut in the original brief: a successful
+detached start followed only by lookup-by-name cannot prove ownership across concurrent destruction
+and name reuse. Use a bounded structured receipt tied to the successful creation, or another proven
+immutable creation binding, and persist it before dependent mutation. A lost/interrupted receipt
+stays unresolved and never authorizes automatic cleanup of a subsequently discovered name. This
+refines the already accepted exact-owned-identity contract; it does not require live qualification.
