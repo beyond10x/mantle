@@ -11,6 +11,14 @@ scope:
 - confidence: inferred
   path: README.md
 - confidence: cited
+  path: crates/mantle/src/adapters/aws.rs
+- confidence: cited
+  path: crates/mantle/src/adapters/conformance.rs
+- confidence: cited
+  path: crates/mantle/src/adapters/kubevirt.rs
+- confidence: cited
+  path: crates/mantle/src/adapters/orchestration.rs
+- confidence: cited
   path: crates/mantle/src/adapters/ssh.rs
 - confidence: cited
   path: crates/mantle/src/adapters/state.rs
@@ -21,7 +29,11 @@ scope:
 - confidence: cited
   path: crates/mantle/src/app/worker.rs
 - confidence: cited
+  path: crates/mantle/src/config.rs
+- confidence: cited
   path: crates/mantle/src/main.rs
+- confidence: inferred
+  path: crates/mantle/tests/doctor.rs
 - confidence: inferred
   path: generated/worker-model
 - confidence: inferred
@@ -34,7 +46,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 21
+revision: 25
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 21, decided_on: {"recorded":{"review_outcome":1}}}
 ---
@@ -52,3 +64,7 @@ Cited: worker.rs status/report_machine/ssh_for, adapters/{ssh,state,substrate,ku
 Fixing acceptance review: require the compiled SDK's admitted wire contract (currently0.17) and its pinned runtime version SUBSTRATE_VERSION (currently0.7.10). Compare the live discovery Machine.driver_version and SDK handshake to those expectations; inspect installed worker launcher/worker/egress versions separately against the CLI version. An installed --version or bootstrap record cannot establish the daemon currently serving requests. A missing/ambiguous observation is failed/unknown, never healthy. Test matching disk version with stale live daemon explicitly.
 
 No agent credential command means never call Config::claude_token, execute its token_command, read Codex credentials or emit provider credential values. Normal configured provider authentication may be used for read-only provider observations, including existing auth plugins; its bounded failure must be reported without dumping plugin stderr. No privilege or credential-policy expansion is implied. The checker itself writes no profile/state/key/known-host data; temporary socket/process resources are bounded, owned and cleaned up.
+
+## Entry, failure and timeout boundaries
+
+Handle doctor before the ordinary mutating Config/Store initialization path. For --json, selection/configuration failures must still produce a structured failed report (ordinary clap usage errors are outside this runtime-report contract). A report whose selection could not be resolved must model that as absent, not invent selected paths; adjust the proposed DiagnosticReport selection field accordingly before implementation. Bound local file reads as well as external processes, so a FIFO or oversized malformed configuration/registry/database entry cannot hang diagnosis. Raw TOML parser excerpts, provider stderr, SSH output and credential-command text are not diagnostics: emit stable safe stage details and actionable remedies. Ensure failed early stages suppress downstream calls. Reuse the existing bounded process-group cleanup for provider/SSH subprocesses; an async timeout around a blocking child alone does not establish bounded cleanup. Temporary private SSH sockets retain the existing short-path behavior.

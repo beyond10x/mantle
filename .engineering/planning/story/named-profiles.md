@@ -14,6 +14,8 @@ scope:
   path: README.md
 - confidence: inferred
   path: crates/mantle/Cargo.toml
+- confidence: cited
+  path: crates/mantle/src/adapters/conformance.rs
 - confidence: inferred
   path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
@@ -46,7 +48,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 27
+revision: 28
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 26}
 - {from: "proposed", to: "active", at: "2026-10-03T09:01:15Z", actor: "human:timo", revision: 27}
