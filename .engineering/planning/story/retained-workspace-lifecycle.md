@@ -34,7 +34,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 25
+revision: 26
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
 ---
@@ -60,3 +60,7 @@ Read-only SDK/source assessment by substrate_output_queue found exec.start store
 ## Concurrent restart ownership
 
 Concurrent restart callers must claim the same pending attempt atomically in SQLite rather than minting independent operation ids. On interrupted recovery, observe that attempt; do not rebuild and resubmit its request with a refreshed capability snapshot. The SDK's internal byte-identical transport retry differs from reconstructing a builder after reconnect. Test that two callers cannot start two agents for one retained session and that missing/conflicting operation observations leave the recorded attempt unresolved.
+
+## Expected identity guards
+
+Provide an optional expected-session-id guard on stop, restart and destroy so automation can refuse a reused name before any remote mutation. Resolve a recorded session once, compare the expected immutable id, and carry that record's workspace/exec ids through the operation. Test stale-id refusal with zero remote mutation calls and preservation of a newer session using the same name. The acceptance runner requires these guards for all cleanup/mutation commands; a run-name prefix alone is not ownership proof.

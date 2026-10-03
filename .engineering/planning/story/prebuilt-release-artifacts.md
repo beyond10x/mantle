@@ -40,7 +40,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 24
+revision: 25
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 19}
 ---
@@ -72,3 +72,7 @@ The omitted SIMD license is available from the exact published source revision: 
 ## Source identity verification
 
 Version equality alone cannot bind an artifact to a source commit: current development and release binaries can both report 0.1.4. The packaging path must either build from the verified clean exact checkout itself and retain that provenance, or verify embedded build source identity in each supplied binary. Do not accept arbitrary supplied binaries and label them with the current Git HEAD merely because --version matches. Include a same-version/wrong-source fixture. Publication verifies manifest source against the exact tag and all payload checksums; it must never relabel an existing version or overwrite assets. Keep the shared artifact verifier below worker and release CLI dependencies, without creating a Mantle-worker-release dependency cycle.
+
+## Runtime license inputs
+
+The pinned Rust 1.97 installation includes share/doc/rust/COPYRIGHT-library.html (279302 bytes) under the sysroot reported by rustc --print sysroot. This is a concrete runtime notice input, separate from cargo-about's dependency graph; use the matching build toolchain's copy. The local musl package also provides /usr/share/licenses/musl/COPYRIGHT, but a host package text alone does not prove the version bundled in Rust's self-contained musl target. Resolve that target's actual musl/runtime provenance before claiming matching notices. Keep runtime notice source/version metadata with produced artifacts.

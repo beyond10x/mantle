@@ -19,6 +19,12 @@ scope:
 - confidence: inferred
   path: crates/mantle-conformance
 - confidence: cited
+  path: crates/mantle/src/adapters/orchestration.rs
+- confidence: cited
+  path: crates/mantle/src/adapters/state.rs
+- confidence: cited
+  path: crates/mantle/src/app/session.rs
+- confidence: cited
   path: crates/mantle/src/main.rs
 - confidence: cited
   path: crates/mantle/tests/codex_preflight.rs
@@ -36,7 +42,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 19
+revision: 21
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
 ---
@@ -48,3 +54,11 @@ Named scenarios acceptance-case-inventory, acceptance-real-command-path, accepta
 
 ## Scope
 Inferred: Rust acceptance crate/CLI, Cargo workspace/lock, ESS operator commands/scenarios, fixtures, docs and CI checks. Uses selected named profile; no new auth/agent protocol, no automated credential entry or API billing fallback. Does not claim missing old-epic live cases passed.
+
+## Metadata-only CLI observations
+
+Read-only assessment found current human status fetches and prints terminal stderr (app/session.rs), so the runner must never capture or parse that path. Add versioned metadata-only JSON status and list output, including lookup of a recorded terminal session by exact session id. Status reports recorded versus observed states, session/workspace/agent-exec identity, exit/refusal/connectivity status, source commits and observation time; it must never request terminal output pages or serialize raw diagnostic payloads. Unavailable observations remain explicit and cannot produce a successful acceptance case. Authentication method is not an authenticated-state observation.
+
+Reuse verified release manifest/install provenance where available; an unavailable source identity is unknown, never inferred from package version. Extend the existing AcceptanceResult ESS value with run/session/workspace identity, provenance and machine-versus-operator evidence origin before runtime implementation. The runner starts detached with a unique owned name, discards human startup output, records the resulting identity and uses the metadata path for subsequent checks.
+
+Login/model turns run through an exact printed attach command in the operator's own terminal, outside runner pipes. Resume takes explicit operator attestations for login, model/tool action and visual terminal behavior; label these distinctly from machine observations. Missing attestations remain incomplete. Existing codex_qualification example supplies useful bounded scratch/digest patterns but its direct SDK path does not qualify installed Mantle CLI behavior. No raw terminal payload is retained.
