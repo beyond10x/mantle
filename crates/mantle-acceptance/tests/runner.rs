@@ -456,3 +456,55 @@ fn adversary_interrupted_machine_phase_cleanup_keeps_incomplete_and_exact_owners
         }
     }
 }
+
+#[test]
+fn adversary_cleanup_retries_preserve_original_failure_evidence_and_remove_resources() {
+    let f = Fixture::new();
+    assert_eq!(f.run("", "claude-code").status.code(), Some(2));
+    let failed = bounded(
+        f.resume(&[
+            "--attest",
+            "login",
+            "--attest",
+            "model-tool",
+            "--attest",
+            "visual",
+        ])
+        .env("ACCEPTANCE_FIXTURE_MODE", "destroy-failure"),
+    );
+    assert_eq!(failed.status.code(), Some(1));
+    let original = f.read();
+    let row = &original["results"][9];
+    assert_eq!(row["case"], "destroy");
+    assert_eq!(row["status"], "failed");
+    assert_eq!(row["phase"], "destroy");
+    assert_eq!(row["exec_id"], "exec2");
+    assert_eq!(row["origin"], "machine");
+    assert!(!row["observed_at"].as_str().unwrap().is_empty());
+
+    // First recovery also fails, then recovery succeeds. Neither may rewrite the
+    // original measured result or the earlier operator attestations.
+    for mode in ["destroy-failure", ""] {
+        let out = bounded(
+            f.command()
+                .env("ACCEPTANCE_FIXTURE_MODE", mode)
+                .args(["cleanup", "--real", "--checkpoint"])
+                .arg(f.path()),
+        );
+        assert_eq!(out.status.code(), Some(1));
+        let current = f.read();
+        assert_eq!(current["phase"], "cleanup");
+        assert_eq!(current["results"], original["results"]);
+        assert_eq!(current["session"], original["session"]);
+        let state = fs::read_to_string(f.root.path().join("session")).unwrap();
+        assert!(state.ends_with(if mode.is_empty() {
+            "STOPPED"
+        } else {
+            "RUNNING"
+        }));
+    }
+    let out = bounded(f.command().args(["report", "--checkpoint"]).arg(f.path()));
+    assert_eq!(out.status.code(), Some(1));
+    let report: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(report["results"], original["results"]);
+}
