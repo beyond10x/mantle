@@ -615,3 +615,70 @@ fn missing_linked_fifo_and_oversized_inputs_and_unsupported_target_refuse() {
     assert!(!output.status.success());
     assert_eq!(fs::read_dir(prefix.path()).unwrap().count(), 0);
 }
+
+#[test]
+fn actual_git_archive_exports_exact_source_and_still_refuses_source_symlinks() {
+    let source = tempfile::tempdir().unwrap();
+    let work = tempfile::tempdir().unwrap();
+    let git = |args: &[&str]| {
+        Command::new("git")
+            .arg("-C")
+            .arg(source.path())
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    assert!(git(&["init", "--quiet"]).status.success());
+    let content = b"tracked exact source, same version 0.1.4\n";
+    fs::write(source.path().join("source.txt"), content).unwrap();
+    assert!(git(&["add", "source.txt"]).status.success());
+    assert!(
+        git(&[
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--quiet",
+            "-m",
+            "fixture"
+        ])
+        .status
+        .success()
+    );
+    let head = String::from_utf8(git(&["rev-parse", "HEAD"]).stdout).unwrap();
+    mantle_release::build::export_source(source.path(), head.trim(), &work.path().join("export"))
+        .unwrap();
+    assert_eq!(
+        fs::read(work.path().join("export/source.txt")).unwrap(),
+        content
+    );
+    assert!(!work.path().join("export/pax_global_header").exists());
+    std::os::unix::fs::symlink("/outside", source.path().join("link")).unwrap();
+    assert!(git(&["add", "link"]).status.success());
+    assert!(
+        git(&[
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--quiet",
+            "-m",
+            "link fixture"
+        ])
+        .status
+        .success()
+    );
+    let head = String::from_utf8(git(&["rev-parse", "HEAD"]).stdout).unwrap();
+    assert!(
+        mantle_release::build::export_source(
+            source.path(),
+            head.trim(),
+            &work.path().join("refused")
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("unsupported links")
+    );
+}

@@ -71,6 +71,50 @@ pub fn archive(
         bytes,
     ))
 }
+pub fn export_source(source: &Path, revision: &str, export: &Path) -> Result<()> {
+    let source_commit = source_identity(source, revision)?;
+    fs::create_dir(export)?;
+    let bytes = command(
+        Command::new("git")
+            .arg("-C")
+            .arg(source)
+            .args(["archive", "--format=tar", &source_commit]),
+        30,
+        64 * 1024 * 1024,
+    )?;
+    let mut source_tar = tar::Archive::new(Cursor::new(bytes));
+    let mut provenance = false;
+    for entry in source_tar.entries()? {
+        let mut entry = entry?;
+        if entry.header().entry_type().is_pax_global_extensions() {
+            ensure!(
+                !provenance && entry.size() <= 4096,
+                "invalid Git archive provenance header"
+            );
+            let extensions = entry.pax_extensions()?.context("Git archive provenance")?;
+            let mut count = 0;
+            for extension in extensions {
+                let extension = extension?;
+                ensure!(
+                    extension.key()? == "comment" && extension.value()? == source_commit,
+                    "Git archive source identity mismatch"
+                );
+                count += 1;
+            }
+            ensure!(count == 1, "Git archive must carry one source identity");
+            provenance = true;
+            continue;
+        }
+        ensure!(provenance, "Git archive has no source identity");
+        ensure!(
+            entry.header().entry_type().is_dir() || entry.header().entry_type().is_file(),
+            "source export contains unsupported links"
+        );
+        ensure!(entry.unpack_in(export)?, "source export escaped root");
+    }
+    ensure!(provenance, "Git archive has no source identity");
+    Ok(())
+}
 pub fn build(source: &Path, revision: &str, output: &Path, work: &Path) -> Result<()> {
     let source = source.canonicalize()?;
     let source_commit = source_identity(&source, revision)?;
@@ -85,25 +129,7 @@ pub fn build(source: &Path, revision: &str, output: &Path, work: &Path) -> Resul
     fs::create_dir(work)?;
     let export = work.join("source");
     let target = work.join("target");
-    fs::create_dir(&export)?;
-    let bytes = command(
-        Command::new("git").arg("-C").arg(&source).args([
-            "archive",
-            "--format=tar",
-            &source_commit,
-        ]),
-        30,
-        64 * 1024 * 1024,
-    )?;
-    let mut source_tar = tar::Archive::new(Cursor::new(bytes));
-    for entry in source_tar.entries()? {
-        let mut entry = entry?;
-        ensure!(
-            entry.header().entry_type().is_dir() || entry.header().entry_type().is_file(),
-            "source export contains unsupported links"
-        );
-        ensure!(entry.unpack_in(&export)?, "source export escaped root");
-    }
+    export_source(&source, revision, &export)?;
     let workspace: toml::Value = toml::from_str(&fs::read_to_string(export.join("Cargo.toml"))?)?;
     let version = workspace["workspace"]["package"]["version"]
         .as_str()
