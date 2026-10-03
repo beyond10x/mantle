@@ -28,6 +28,8 @@ scope:
   path: crates/mantle-release/src/lib.rs
 - confidence: inferred
   path: crates/mantle-release/tests/release.rs
+- confidence: cited
+  path: crates/mantle-worker/src/lib.rs
 - confidence: inferred
   path: crates/mantle/Cargo.toml
 - confidence: cited
@@ -64,7 +66,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 32
+revision: 34
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
 - {from: "proposed", to: "active", at: "2026-10-03T16:18:01Z", actor: "human:timo", revision: 31}
@@ -141,3 +143,7 @@ Include mantle-acceptance in the existing GNU candidate bundle beside mantle and
 ## Exact-owned attach and exec
 
 The acceptance runner performs PTY attach and marker writes through the installed CLI. Inference from those accepted ownership requirements: add optional expected-session-id guards to attach and exec in already scoped main.rs/app/session.rs, alongside unit6's existing stop/restart/destroy guards. Resolve once and carry that immutable selected record through remote work; reject a reused name before remote effects. A metadata preflight alone cannot close name reuse between observation and invocation. No new command family or agent protocol is introduced.
+
+## Owned PTY process seam
+
+Cited preparation: crates/mantle-worker/src/lib.rs:631 BoundedProcess::spawn currently replaces all stdio with null. Add a bounded variant accepting caller-owned PTY slave descriptors, while retaining the existing process registry, deadline and descendant cleanup and leaving spawn's current null-stream behavior unchanged. This reuses the existing process owner for accepted PTY controls rather than creating another process lifecycle. Cover descriptor ownership/timeout cleanup in the acceptance fixtures. No worker installation policy change.
