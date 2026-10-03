@@ -1,0 +1,21 @@
+---
+format: aep.planning-md/3
+id: task:reliability-hardening-design
+kind: task
+status: active
+title: Harden the green reliability specification against accepted design
+relations:
+- delivers: epic:reliability-and-usability
+revision: 3
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-03T13:50:43Z", actor: "human:timo", revision: 2}
+- {from: "proposed", to: "active", at: "2026-10-03T13:50:43Z", actor: "human:timo", revision: 3}
+---
+## Outcome
+Run ESS hardening design/spec review of the already-green reliability slice, explicitly requested by the operator during implementation. Use the accepted command-correctness, named-profiles, worker-doctor and prebuilt-release-artifacts stories as the design contracts, their documented current behavior, and spec/README.md as the existing mapping. Broader architecture proposals are context, not silently promoted into current deliverables. Worker upgrades, retained lifecycle and acceptance remain governed by their own delivery reviews.
+
+## Acceptance
+Validate the pinned specification, demonstrate the review catches a deliberately deleted declared rule on an isolated copy with both design and spec citations, restore and review the genuine baseline. Return findings classified missing/contradicts/stale mapping/spec-only/unclear with both citations, separately label spec gaps/implementation defects/technique false positives, and list unreviewed sections. No clean-review claim without the planted failure. Root records and routes findings before final PR. This task adds verification, not a new product capability or extra PR.
+
+## Scope
+Read-only review on a managed exact integration checkpoint with source equivalent to the last green381-case gate. All mutations occur only on scratch copies. No live resources, auth data, AEP writes, implementation edits or publication. Report and small machine-readable evidence are integrated by root.
