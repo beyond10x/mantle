@@ -1,0 +1,27 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.operator",
+  "scenario": "doctor-readonly",
+  "summary": "Read-only production doctor orchestration with bounded probe observations",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:00Z",
+      "command": "mantle.operator.DiagnoseWorker",
+      "input": {
+        "failure": "none"
+      },
+      "outcome": "returned",
+      "response": {
+        "healthy": true,
+        "failed_stage": "",
+        "called": [
+          "provider",
+          "ssh",
+          "service",
+          "compatibility"
+        ],
+        "state_unchanged": true
+      }
+    }
+  ]
+}

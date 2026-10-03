@@ -8,3 +8,4 @@ domains:
   - mantle.egress
   - mantle.launch
   - mantle.orchestration
+  - mantle.operator

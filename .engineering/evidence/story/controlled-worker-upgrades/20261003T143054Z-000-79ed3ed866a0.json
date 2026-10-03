@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T14:30:54Z",
+  "actor": "human:timo",
+  "artifact": "story:controlled-worker-upgrades",
+  "kind": "story",
+  "revision": 40,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "VERIFIED: same actual_old_worker_check_observes_offline_facts_without_upload_or_state_writes case; source-bound107f9c8 baseline CLI exits101 (upgrade absent), reviewed a7ac0ca CLI exits0 with offline observations/refusal and unchanged state/no upload. Baseline SHA256178a5ff40c6991d3253aab11bae36223e0427e5f00242384151276e0d7d5ec1f; production source equivalent to premerge integration, whose later code changes are test-only.",
+    "reference": "$HOME/.cache/mantle-reliability/integration/wave5-claim-base.log vs wave5-claim-treatment.log"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T09:01:15Z",
+  "actor": "human:timo",
+  "artifact": "story:command-correctness",
+  "kind": "story",
+  "revision": 21,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check, exit 0, integration 8022fec plus planning-only clarifications",
+    "reference": ".engineering/reports/reliability/wave1-complete-report.json"
+  }
+}

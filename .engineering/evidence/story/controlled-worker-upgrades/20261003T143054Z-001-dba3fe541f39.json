@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T14:30:54Z",
+  "actor": "human:timo",
+  "artifact": "story:controlled-worker-upgrades",
+  "kind": "story",
+  "revision": 40,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Final adversary pass2 worker48 passed exit0; both new cases passed individually; carried0/new0/resolved1 in complete findings comparison",
+    "reference": ".engineering/planning/review-result/reliability-wave5-adversary-pass2.md"
+  }
+}

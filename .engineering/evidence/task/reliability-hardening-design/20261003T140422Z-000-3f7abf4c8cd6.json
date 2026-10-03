@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T14:04:22Z",
+  "actor": "human:timo",
+  "artifact": "task:reliability-hardening-design",
+  "kind": "task",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "Technique8 missing source_commit negative control detected as HD-C01; ESS validate alone stayed green, restored locator and exact directory comparison passed. Genuine baseline has9 spec gaps,1 stale mapping,1 ambiguity; no runtime defect established.",
+    "reference": ".engineering/planning/review-result/reliability-hardening-design.md"
+  }
+}

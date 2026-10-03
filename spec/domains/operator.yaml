@@ -1,0 +1,216 @@
+domain: mantle.operator
+summary: Proposed local named selection and read-only diagnostic values; no credentials or remote session ownership are stored here.
+types:
+  - name: mantle.operator.Profile
+    kind: struct
+    fields:
+      - {name: name, type: String}
+      - {name: config_path, type: String}
+      - {name: state_dir, type: String}
+  - name: mantle.operator.Selection
+    kind: struct
+    fields:
+      - {name: profile, type: 'Optional<String>'}
+      - {name: config_path, type: String}
+      - {name: state_dir, type: String}
+  - name: mantle.operator.DiagnosticCheck
+    kind: struct
+    fields:
+      - {name: stage, type: String}
+      - {name: status, type: String}
+      - {name: detail, type: String}
+  - name: mantle.operator.DiagnosticReport
+    kind: struct
+    fields:
+      - {name: selection, type: 'Optional<mantle.operator.Selection>'}
+      - {name: checks, type: 'List<mantle.operator.DiagnosticCheck>'}
+      - {name: healthy, type: Boolean}
+  - name: mantle.operator.ReleasePayload
+    kind: struct
+    fields:
+      - {name: path, type: String}
+      - {name: sha256, type: String}
+      - {name: size_bytes, type: Integer}
+      - {name: mode, type: Integer}
+  - name: mantle.operator.ReleaseArtifact
+    kind: struct
+    fields:
+      - {name: name, type: String}
+      - {name: target, type: String}
+      - {name: sha256, type: String}
+      - {name: size_bytes, type: Integer}
+      - {name: payloads, type: 'List<mantle.operator.ReleasePayload>'}
+  - name: mantle.operator.ReleaseManifest
+    kind: struct
+    fields:
+      - {name: format, type: String}
+      - {name: version, type: String}
+      - {name: source_commit, type: String}
+      - {name: substrate_revision, type: String}
+      - {name: substrate_version, type: String}
+      - {name: rustc, type: String}
+      - {name: gnu_runtime, type: String}
+      - {name: musl_runtime, type: String}
+      - {name: artifacts, type: 'List<mantle.operator.ReleaseArtifact>'}
+  - name: mantle.operator.UpgradeAssessment
+    kind: struct
+    fields:
+      - {name: applicable, type: Boolean}
+      - {name: boot_id, type: String}
+      - {name: observed_at, type: String}
+      - {name: units, type: 'List<mantle.operator.UpgradeUnitObservation>'}
+      - {name: jobs, type: String}
+      - {name: layout, type: String}
+      - {name: compatibility, type: String}
+      - {name: outcome, type: String}
+      - {name: diagnostic, type: String}
+      - {name: candidate_source, type: String}
+      - {name: candidate_manifest, type: String}
+      - {name: installed_versions, type: 'List<String>'}
+  - name: mantle.operator.UpgradeUnitObservation
+    kind: struct
+    fields:
+      - {name: name, type: String}
+      - {name: state, type: String}
+      - {name: mask, type: String}
+      - {name: job, type: String}
+      - {name: pids, type: String}
+      - {name: cgroup, type: String}
+  - name: mantle.operator.SelectionBinding
+    kind: struct
+    fields:
+      - {name: profile, type: 'Optional<String>'}
+      - {name: config_path, type: String}
+      - {name: state_dir, type: String}
+      - {name: config_sha256, type: String}
+  - name: mantle.operator.SessionMetadata
+    kind: struct
+    fields:
+      - {name: id, type: String}
+      - {name: name, type: String}
+      - {name: agent, type: String}
+      - {name: authentication, type: String}
+      - {name: recorded_state, type: String}
+      - {name: generation, type: Integer}
+      - {name: workspace_id, type: 'Optional<String>'}
+      - {name: exec_id, type: 'Optional<String>'}
+      - {name: source_commits, type: 'List<String>'}
+      - {name: observed, type: 'Optional<mantle.operator.SessionObservation>'}
+  - name: mantle.operator.SessionObservation
+    kind: struct
+    fields:
+      - {name: workspace_state, type: 'Optional<String>'}
+      - {name: exec_state, type: 'Optional<String>'}
+      - {name: exit_code, type: 'Optional<Integer>'}
+      - {name: exit_signal, type: 'Optional<String>'}
+      - {name: refused, type: Boolean}
+  - name: mantle.operator.MetadataReport
+    kind: struct
+    fields:
+      - {name: format, type: String}
+      - {name: selection, type: 'Optional<mantle.operator.SelectionBinding>'}
+      - {name: outcome, type: String}
+      - {name: observed_at, type: String}
+      - {name: sessions, type: 'List<mantle.operator.SessionMetadata>'}
+  - name: mantle.operator.CreationReceipt
+    kind: struct
+    fields:
+      - {name: format, type: String}
+      - {name: selection, type: mantle.operator.SelectionBinding}
+      - {name: session, type: mantle.operator.SessionMetadata}
+      - {name: created_at, type: String}
+  - name: mantle.operator.AcceptanceResult
+    kind: struct
+    fields:
+      - {name: scenario, type: String}
+      - {name: agent, type: String}
+      - {name: status, type: String}
+      - {name: observed_at, type: String}
+      - {name: exec_before, type: 'Optional<String>'}
+      - {name: exec_after, type: 'Optional<String>'}
+      - {name: observation, type: String}
+      - {name: run_id, type: String}
+      - {name: session_id, type: 'Optional<String>'}
+      - {name: workspace_id, type: 'Optional<String>'}
+      - {name: source_commit, type: 'Optional<String>'}
+      - {name: executable_sha256, type: String}
+      - {name: executable_version, type: String}
+      - {name: evidence_origin, type: String}
+      - {name: phase, type: String}
+commands:
+  - name: mantle.operator.AssessAcceptance
+    input:
+      - {name: case, type: String, example: inventory}
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: complete, type: Boolean}
+      - {name: count, type: Integer}
+      - {name: private, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.operator.UpgradeWorker
+    input:
+      - {name: case, type: String, example: plan}
+    response:
+      - {name: outcome, type: String}
+      - {name: previous_preserved, type: Boolean}
+      - {name: services_unchanged, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.operator.VerifyRelease
+    input:
+      - {name: alteration, type: String, example: none}
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: payload_count, type: Integer}
+      - {name: source_matches, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.operator.InstallRelease
+    input:
+      - {name: collision, type: Boolean, example: true}
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: previous_preserved, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.operator.ProfileRegistry
+    input:
+      - {name: action, type: String, example: add}
+      - {name: name, type: String, example: local}
+      - {name: config, type: String, example: config.toml}
+      - {name: state, type: String, example: state}
+      - {name: existing, type: Boolean, example: false}
+      - {name: symlink, type: Boolean, example: false}
+      - {name: relative, type: Boolean, example: false}
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: count, type: Integer}
+      - {name: paths_match, type: Boolean}
+      - {name: private, type: Boolean}
+      - {name: state_created, type: Boolean}
+      - {name: unchanged, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.operator.SelectProfile
+    input:
+      - {name: explicit, type: String}
+      - {name: environment, type: String}
+      - {name: legacy_config, type: Boolean, example: false}
+      - {name: legacy_state, type: Boolean, example: false}
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: selected, type: String}
+      - {name: paths_match, type: Boolean}
+      - {name: state_created, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.operator.ProfileStateIsolation
+    response:
+      - {name: first_names, type: 'List<String>'}
+      - {name: second_names, type: 'List<String>'}
+      - {name: paths_distinct, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.operator.DiagnoseWorker
+    input:
+      - {name: failure, type: String, example: none}
+    response:
+      - {name: healthy, type: Boolean}
+      - {name: failed_stage, type: String}
+      - {name: called, type: 'List<String>'}
+      - {name: state_unchanged, type: Boolean}
+    outcomes: [{name: returned, returns: true}]

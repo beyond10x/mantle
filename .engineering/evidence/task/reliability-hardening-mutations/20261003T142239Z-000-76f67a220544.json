@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-03T14:22:39Z",
+  "actor": "human:timo",
+  "artifact": "task:reliability-hardening-mutations",
+  "kind": "task",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:reliability-hardening-mutations",
+    "reference": "30d5709: retained same-length TAR padding corruption in named ESS checksum fixture and native CLI regression; mutant red, restored green",
+    "review": "review-result:reliability-hardening-mutations",
+    "outcome": "fixed"
+  }
+}

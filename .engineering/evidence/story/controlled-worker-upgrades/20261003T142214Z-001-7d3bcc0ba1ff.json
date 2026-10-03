@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T14:22:14Z",
+  "actor": "human:timo",
+  "artifact": "story:controlled-worker-upgrades",
+  "kind": "story",
+  "revision": 40,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Correction worker46, Mantle64/native273, format, clippy, musl and exact-commit docs exit0; original reviewer assertion byte-identical; source a7ac0ca",
+    "reference": ".engineering/reports/reliability/wave5-correction-status.json"
+  }
+}

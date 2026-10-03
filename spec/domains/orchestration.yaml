@@ -58,6 +58,8 @@
     }
   ],
   "commands": [
+{"name":"mantle.orchestration.ExecOutcome","input":[{"name":"state","type":"String","example":"Exited"},{"name":"code_json","type":"String","example":"0"},{"name":"signal_json","type":"String","example":"null"},{"name":"missing_exit","type":"Boolean"},{"name":"refused","type":"Boolean"},{"name":"stdout","type":"String"},{"name":"stderr","type":"String"}],"response":[{"name":"exit_code","type":"Integer"},{"name":"known","type":"Boolean"},{"name":"stdout","type":"String"},{"name":"stderr_preserved","type":"Boolean"}],"outcomes":[{"name":"returned","returns":true}]},
+{"name":"mantle.orchestration.SourceResolution","input":[{"name":"reference","type":"String"}],"response":[{"name":"succeeded","type":"Boolean"},{"name":"agent_started","type":"Boolean"},{"name":"source_count","type":"Integer"},{"name":"commit_matches","type":"Boolean"},{"name":"declared_matches","type":"Boolean"}],"outcomes":[{"name":"returned","returns":true}]},
     {
       "name": "mantle.orchestration.CodexPreflight",
       "response": [
@@ -133,7 +135,7 @@
       ]
     },
     {
-      "name": "mantle.orchestration.Stop",
+      "name": "mantle.orchestration.Destroy",
       "input": [
         {
           "name": "state",

@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-03T17:41:37Z",
+  "actor": "human:timo",
+  "artifact": "story:repeatable-agent-acceptance",
+  "kind": "story",
+  "revision": 36,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:reliability-wave7-adversary-pass1",
+    "review": "review-result:reliability-wave7-adversary-pass1",
+    "outcome": "fixed"
+  }
+}

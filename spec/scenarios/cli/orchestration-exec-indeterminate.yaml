@@ -1,0 +1,208 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "exec-indeterminate",
+  "summary": "Production command outcome and real Git reference acceptance",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:07Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Accepted",
+        "code_json": "0",
+        "signal_json": "null",
+        "missing_exit": false,
+        "refused": false,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 1,
+        "known": false,
+        "stdout": "out\n",
+        "stderr_preserved": true
+      }
+    },
+    {
+      "at": "2026-10-03T00:00:08Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Running",
+        "code_json": "0",
+        "signal_json": "null",
+        "missing_exit": false,
+        "refused": false,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 1,
+        "known": false,
+        "stdout": "out\n",
+        "stderr_preserved": true
+      }
+    },
+    {
+      "at": "2026-10-03T00:00:09Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Unknown",
+        "code_json": "0",
+        "signal_json": "null",
+        "missing_exit": false,
+        "refused": false,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 1,
+        "known": false,
+        "stdout": "out\n",
+        "stderr_preserved": true
+      }
+    },
+    {
+      "at": "2026-10-03T00:00:10Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Cancelled",
+        "code_json": "0",
+        "signal_json": "null",
+        "missing_exit": false,
+        "refused": false,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 1,
+        "known": false,
+        "stdout": "out\n",
+        "stderr_preserved": true
+      }
+    },
+    {
+      "at": "2026-10-03T00:00:11Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Expired",
+        "code_json": "0",
+        "signal_json": "null",
+        "missing_exit": false,
+        "refused": false,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 1,
+        "known": false,
+        "stdout": "out\n",
+        "stderr_preserved": true
+      }
+    },
+    {
+      "at": "2026-10-03T00:00:12Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Exited",
+        "code_json": "0",
+        "signal_json": "null",
+        "missing_exit": true,
+        "refused": false,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 1,
+        "known": false,
+        "stdout": "out\n",
+        "stderr_preserved": true
+      }
+    },
+    {
+      "at": "2026-10-03T00:00:13Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Exited",
+        "code_json": "null",
+        "signal_json": "null",
+        "missing_exit": false,
+        "refused": false,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 1,
+        "known": false,
+        "stdout": "out\n",
+        "stderr_preserved": true
+      }
+    },
+    {
+      "at": "2026-10-03T00:00:14Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Exited",
+        "code_json": "0",
+        "signal_json": "\"Interrupt\"",
+        "missing_exit": false,
+        "refused": false,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 1,
+        "known": false,
+        "stdout": "out\n",
+        "stderr_preserved": true
+      }
+    },
+    {
+      "at": "2026-10-03T00:00:15Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Exited",
+        "code_json": "0",
+        "signal_json": "null",
+        "missing_exit": false,
+        "refused": true,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 1,
+        "known": false,
+        "stdout": "out\n",
+        "stderr_preserved": true
+      }
+    },
+    {
+      "at": "2026-10-03T00:00:16Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Exited",
+        "code_json": "256",
+        "signal_json": "null",
+        "missing_exit": false,
+        "refused": false,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 1,
+        "known": false,
+        "stdout": "",
+        "stderr_preserved": false
+      }
+    }
+  ]
+}

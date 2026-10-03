@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T17:58:04Z",
+  "actor": "human:timo",
+  "artifact": "epic:reliability-and-usability",
+  "kind": "epic",
+  "revision": 8,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Full task check at dee44cf83d2dafc18d447b82674424893f1c916f: exit 0, 499 conformance scenarios; final docs tests 2/2 and validation exit 0",
+    "reference": "https://github.com/beyond10x/mantle/pull/8"
+  }
+}

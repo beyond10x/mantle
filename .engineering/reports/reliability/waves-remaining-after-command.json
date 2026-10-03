@@ -1,0 +1,1146 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "artifacts": [
+        {
+          "id": "story:named-profiles",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "inferred",
+              "path": "Cargo.lock"
+            },
+            {
+              "confidence": "inferred",
+              "path": "README.md"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/Cargo.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/adapters/orchestration.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/ssh.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/session.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/app/worker.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/config.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/main.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/profile.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/tests/profiles.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/tests/support/ssh_fixture.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "examples"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/worker-model"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/components.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/domains/operator.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/ess-inputs.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli"
+            },
+            {
+              "confidence": "inferred",
+              "path": "website/index.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 2,
+      "artifacts": [
+        {
+          "id": "story:worker-doctor",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "inferred",
+              "path": "README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/ssh.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/state.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/substrate.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/app/doctor.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/app/worker.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/main.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/worker-model"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/components.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/domains/operator.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/ess-inputs.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli"
+            },
+            {
+              "confidence": "inferred",
+              "path": "website/index.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 3,
+      "artifacts": [
+        {
+          "id": "story:prebuilt-release-artifacts",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "inferred",
+              "path": ".github/workflows"
+            },
+            {
+              "confidence": "cited",
+              "path": ".github/workflows/ci.yml"
+            },
+            {
+              "confidence": "cited",
+              "path": "Cargo.lock"
+            },
+            {
+              "confidence": "cited",
+              "path": "Cargo.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "README.md"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-conformance"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-release"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/worker-model"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/components.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/operator.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/ess-inputs.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli"
+            },
+            {
+              "confidence": "inferred",
+              "path": "website/index.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 4,
+      "artifacts": [
+        {
+          "id": "story:controlled-worker-upgrades",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "inferred",
+              "path": "README.md"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-release"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-worker"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-worker/src/lib.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle-worker/src/main.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/ssh.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/app/worker.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle/src/main.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "deploy/mantle-egress.service"
+            },
+            {
+              "confidence": "cited",
+              "path": "deploy/substrate.service"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/worker-model"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/components.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/domains/operator.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/ess-inputs.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli"
+            },
+            {
+              "confidence": "inferred",
+              "path": "website/index.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 5,
+      "artifacts": [
+        {
+          "id": "story:retained-workspace-lifecycle",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "inferred",
+              "path": "README.md"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/orchestration.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/adapters/state.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/app/session.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/domain/session.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/main.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/session-model"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/worker-model"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/orchestration.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/session.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/ess-inputs.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli"
+            },
+            {
+              "confidence": "inferred",
+              "path": "website/index.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave": 6,
+      "artifacts": [
+        {
+          "id": "story:repeatable-agent-acceptance",
+          "inferred": true,
+          "scope": [
+            {
+              "confidence": "cited",
+              "path": "Cargo.lock"
+            },
+            {
+              "confidence": "cited",
+              "path": "Cargo.toml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "README.md"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-acceptance"
+            },
+            {
+              "confidence": "inferred",
+              "path": "crates/mantle-conformance"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/src/main.rs"
+            },
+            {
+              "confidence": "cited",
+              "path": "crates/mantle/tests/codex_preflight.rs"
+            },
+            {
+              "confidence": "inferred",
+              "path": "docs/evidence"
+            },
+            {
+              "confidence": "inferred",
+              "path": "generated/worker-model"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/components.yaml"
+            },
+            {
+              "confidence": "cited",
+              "path": "spec/domains/operator.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/ess-inputs.yaml"
+            },
+            {
+              "confidence": "inferred",
+              "path": "spec/scenarios/cli"
+            },
+            {
+              "confidence": "inferred",
+              "path": "website/index.html"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "collisions": [
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:named-profiles",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:named-profiles",
+      "path": "crates/mantle/src/adapters/ssh.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:named-profiles",
+      "path": "crates/mantle/src/app/worker.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:named-profiles",
+      "path": "crates/mantle/src/main.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:named-profiles",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:named-profiles",
+      "path": "spec/components.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:named-profiles",
+      "path": "spec/domains/operator.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:named-profiles",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:named-profiles",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:named-profiles",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "crates/mantle-release",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "spec/components.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "spec/domains/operator.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "crates/mantle/src/main.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/components.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/domains/operator.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "crates/mantle/src/main.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:worker-doctor",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:worker-doctor",
+      "path": "crates/mantle/src/adapters/ssh.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:worker-doctor",
+      "path": "crates/mantle/src/app/worker.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:worker-doctor",
+      "path": "crates/mantle/src/main.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:worker-doctor",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:worker-doctor",
+      "path": "spec/components.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:worker-doctor",
+      "path": "spec/domains/operator.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:worker-doctor",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:worker-doctor",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:controlled-worker-upgrades",
+      "b": "story:worker-doctor",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "Cargo.lock",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "spec/components.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "spec/domains/operator.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:prebuilt-release-artifacts",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "Cargo.lock",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "crates/mantle/src/main.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/components.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/domains/operator.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "crates/mantle/src/adapters/orchestration.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "crates/mantle/src/app/session.rs",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "crates/mantle/src/main.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:worker-doctor",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:worker-doctor",
+      "path": "crates/mantle/src/adapters/ssh.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:worker-doctor",
+      "path": "crates/mantle/src/app/worker.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:worker-doctor",
+      "path": "crates/mantle/src/main.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:worker-doctor",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:worker-doctor",
+      "path": "spec/components.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:worker-doctor",
+      "path": "spec/domains/operator.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:worker-doctor",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:worker-doctor",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:named-profiles",
+      "b": "story:worker-doctor",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "Cargo.lock",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "Cargo.toml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "crates/mantle-conformance",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/components.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/domains/operator.yaml",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:repeatable-agent-acceptance",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:worker-doctor",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:worker-doctor",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:worker-doctor",
+      "path": "spec/components.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:worker-doctor",
+      "path": "spec/domains/operator.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:worker-doctor",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:worker-doctor",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:prebuilt-release-artifacts",
+      "b": "story:worker-doctor",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "crates/mantle/src/main.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:retained-workspace-lifecycle",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:worker-doctor",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:worker-doctor",
+      "path": "crates/mantle/src/main.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:worker-doctor",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:worker-doctor",
+      "path": "spec/components.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:worker-doctor",
+      "path": "spec/domains/operator.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:worker-doctor",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:worker-doctor",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:repeatable-agent-acceptance",
+      "b": "story:worker-doctor",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:retained-workspace-lifecycle",
+      "b": "story:worker-doctor",
+      "path": "README.md",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:retained-workspace-lifecycle",
+      "b": "story:worker-doctor",
+      "path": "crates/mantle/src/adapters/state.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:retained-workspace-lifecycle",
+      "b": "story:worker-doctor",
+      "path": "crates/mantle/src/main.rs",
+      "confidence": "cited"
+    },
+    {
+      "a": "story:retained-workspace-lifecycle",
+      "b": "story:worker-doctor",
+      "path": "generated/worker-model",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:retained-workspace-lifecycle",
+      "b": "story:worker-doctor",
+      "path": "spec/ess-inputs.yaml",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:retained-workspace-lifecycle",
+      "b": "story:worker-doctor",
+      "path": "spec/scenarios/cli",
+      "confidence": "inferred"
+    },
+    {
+      "a": "story:retained-workspace-lifecycle",
+      "b": "story:worker-doctor",
+      "path": "website/index.html",
+      "confidence": "inferred"
+    }
+  ],
+  "unassessed": [],
+  "cycles": []
+}

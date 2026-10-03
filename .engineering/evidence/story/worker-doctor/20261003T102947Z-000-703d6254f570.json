@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T10:29:47Z",
+  "actor": "human:timo",
+  "artifact": "story:worker-doctor",
+  "kind": "story",
+  "revision": 32,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check, exit 0, integration 1a4c91e8fb876cba6dd5588d349eb7c8130e4127; workspace fmt/clippy/tests, complete conformance, ESS/AEP and site build",
+    "reference": ".engineering/reports/reliability/wave3-complete-report.json"
+  }
+}

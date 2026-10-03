@@ -13,6 +13,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result, bail};
 
+#[cfg(test)]
 use crate::config::state_dir;
 
 pub const REMOTE_USER: &str = "ubuntu";
@@ -24,18 +25,35 @@ pub struct Ssh {
     proxy: String,
     key: PathBuf,
     known_hosts: PathBuf,
+    strict: bool,
 }
 
 impl Ssh {
     /// `instance` names the worker for host-key pinning; `proxy` is the whole
     /// ProxyCommand, in which ssh expands `%h` and `%p`.
-    pub fn new(instance: &str, proxy: String) -> Result<Self> {
-        let dir = state_dir()?;
+    pub fn new(instance: &str, proxy: String, dir: &Path) -> Result<Self> {
+        crate::profile::validate_state_path(dir)?;
         Ok(Self {
             instance: instance.to_owned(),
             proxy,
-            key: ensure_key(&dir)?,
+            key: ensure_key(dir)?,
             known_hosts: dir.join("known_hosts"),
+            strict: false,
+        })
+    }
+
+    pub fn readonly(instance: &str, proxy: String, dir: &Path) -> Result<Self> {
+        crate::profile::validate_state_path(dir)?;
+        let key = dir.join("id_ed25519");
+        let known_hosts = dir.join("known_hosts");
+        crate::profile::inspect_regular(&key, 1024 * 1024)?;
+        crate::profile::inspect_regular(&known_hosts, 4 * 1024 * 1024)?;
+        Ok(Self {
+            instance: instance.into(),
+            proxy,
+            key,
+            known_hosts,
+            strict: true,
         })
     }
 
@@ -46,10 +64,17 @@ impl Ssh {
             .arg(&self.key)
             .args(["-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes"])
             .arg("-o")
-            .arg(format!("UserKnownHostsFile={}", self.known_hosts.display()))
+            .arg(format!(
+                "UserKnownHostsFile=\"{}\"",
+                self.known_hosts.display()
+            ))
             .args([
                 "-o",
-                "StrictHostKeyChecking=accept-new",
+                if self.strict {
+                    "StrictHostKeyChecking=yes"
+                } else {
+                    "StrictHostKeyChecking=accept-new"
+                },
                 "-o",
                 "ServerAliveInterval=30",
                 "-o",
@@ -63,7 +88,45 @@ impl Ssh {
             .arg(format!("ProxyCommand={}", self.proxy))
             .arg("-o")
             .arg(format!("HostKeyAlias={}", self.instance));
+        if self.strict {
+            command.args([
+                "-o",
+                "UpdateHostKeys=no",
+                "-o",
+                "GlobalKnownHostsFile=/dev/null",
+                "-o",
+                "IdentityAgent=none",
+            ]);
+        }
         command
+    }
+
+    pub fn diagnostic_tunnel(&self, timeout: Duration) -> Result<DiagnosticTunnel> {
+        let allocation = self.allocate_tunnel_socket()?;
+        let mut command = self.command();
+        command
+            .args([
+                "-N",
+                "-o",
+                "ExitOnForwardFailure=yes",
+                "-o",
+                "StreamLocalBindMask=0177",
+            ])
+            .arg("-L")
+            .arg(format!(
+                "{}:{REMOTE_SUBSTRATE_SOCKET}",
+                allocation.local.display()
+            ))
+            .arg(self.target());
+        let child = mantle_worker::BoundedProcess::spawn(&mut command, timeout)?;
+        let tunnel = DiagnosticTunnel { child, allocation };
+        loop {
+            tunnel.child.check_running()?;
+            if tunnel.allocation.local.exists() {
+                return Ok(tunnel);
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
     }
 
     fn target(&self) -> String {
@@ -211,6 +274,24 @@ impl Ssh {
     }
 }
 
+/// ProxyCommand is interpreted twice: OpenSSH percent expansion, then the local shell.
+pub fn proxy_argument(value: &str) -> String {
+    format!("'{}'", value.replace('%', "%%").replace('\'', "'\\''"))
+}
+
+pub struct DiagnosticTunnel {
+    child: mantle_worker::BoundedProcess,
+    allocation: SocketAllocation,
+}
+impl DiagnosticTunnel {
+    pub fn socket(&self) -> &Path {
+        &self.allocation.local
+    }
+    pub fn finish(self) -> Result<()> {
+        self.child.finish()
+    }
+}
+
 pub struct Tunnel {
     child: Child,
     local: PathBuf,
@@ -252,8 +333,8 @@ fn ensure_key(dir: &Path) -> Result<PathBuf> {
     Ok(key)
 }
 
-pub fn public_key() -> Result<String> {
-    let key = ensure_key(&state_dir()?)?;
+pub fn public_key(dir: &Path) -> Result<String> {
+    let key = ensure_key(dir)?;
     let path = key.with_extension("pub");
     Ok(std::fs::read_to_string(&path)
         .with_context(|| format!("reading {}", path.display()))?
@@ -267,12 +348,130 @@ mod tests {
     use std::os::unix::fs::MetadataExt;
     use std::os::unix::net::UnixListener;
 
+    #[test]
+    fn proxy_commands_preserve_literals_through_real_openssh_and_shell_parsing() {
+        use std::os::unix::fs::symlink;
+        let root = tempfile::tempdir().unwrap();
+        let compiled = mantle_worker::run_bounded(
+            Command::new("rustc")
+                .args([
+                    "--edition=2024",
+                    concat!(
+                        env!("CARGO_MANIFEST_DIR"),
+                        "/tests/support/doctor_fixture.rs"
+                    ),
+                    "-o",
+                ])
+                .arg(root.path().join("fixture")),
+            None,
+            Duration::from_secs(10),
+            65536,
+        )
+        .unwrap();
+        assert!(compiled.status.success());
+        for name in ["aws", "virtctl"] {
+            symlink(root.path().join("fixture"), root.path().join(name)).unwrap();
+        }
+        std::fs::write(root.path().join("provider.json"), "{}").unwrap();
+        let literal = "name with spaces' ;$(printf PRIVATE_CANARY)%h";
+        let other = "region %p and \"quotes\"";
+        let aws = crate::config::AwsConfig {
+            profile: literal.into(),
+            region: other.into(),
+            vpc: "fixture".into(),
+            subnet: "fixture".into(),
+            instance_type: "fixture".into(),
+            root_volume_gib: 1,
+            data_volume_gib: 1,
+        };
+        let kube = crate::config::KubevirtConfig {
+            context: literal.into(),
+            namespace: other.into(),
+            cpu: 1,
+            memory_gib: 1,
+            root_disk_gib: 1,
+            data_disk_gib: 1,
+        };
+        let proxies = [
+            crate::adapters::aws::proxy_command(&aws),
+            crate::adapters::kubevirt::Kubevirt::new(&kube, "20260926").proxy_command("default"),
+        ];
+        for (index, proxy) in proxies.into_iter().enumerate() {
+            let mut command = Command::new("/usr/bin/ssh");
+            command
+                .env_clear()
+                .env("HOME", root.path())
+                .env("PATH", root.path())
+                .env("MANTLE_DOCTOR_FIXTURE", root.path())
+                .args([
+                    "-F",
+                    "/dev/null",
+                    "-o",
+                    "IdentityAgent=none",
+                    "-o",
+                    "PubkeyAuthentication=no",
+                    "-o",
+                    "PasswordAuthentication=no",
+                    "-o",
+                ])
+                .arg(format!("ProxyCommand={proxy}"))
+                .arg("fixture.invalid");
+            let output =
+                mantle_worker::run_bounded(&mut command, None, Duration::from_secs(3), 65536)
+                    .unwrap();
+            assert!(
+                !output.status.success(),
+                "fixture deliberately closes before SSH handshake"
+            );
+            let args = std::fs::read_to_string(root.path().join("provider-argv")).unwrap();
+            let args: Vec<_> = args.lines().collect();
+            let key = if index == 0 { "--profile" } else { "--context" };
+            assert_eq!(
+                args[args.iter().position(|a| *a == key).unwrap() + 1],
+                literal
+            );
+            if index == 0 {
+                assert_eq!(
+                    args[args.iter().position(|a| *a == "--region").unwrap() + 1],
+                    other
+                );
+            } else {
+                assert!(args.contains(&format!("vmi/mantle-default/{other}").as_str()));
+            }
+        }
+    }
+
+    #[test]
+    fn known_hosts_option_preserves_one_literal_path_in_openssh_parser() {
+        let ssh = fixture(Path::new("/tmp/profile # with spaces:λ"));
+        let mut command = ssh.command();
+        command.args(["-G", "fixture.invalid"]);
+        let output =
+            mantle_worker::run_bounded(&mut command, None, Duration::from_secs(5), 64 * 1024)
+                .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let printed = String::from_utf8(output.stdout).unwrap();
+        let line = printed
+            .lines()
+            .find(|line| line.starts_with("userknownhostsfile "))
+            .unwrap();
+        assert_eq!(
+            line,
+            "userknownhostsfile /tmp/profile # with spaces:λ/known_hosts"
+        );
+    }
+
     fn fixture(state: &Path) -> Ssh {
         Ssh {
             instance: "21c01ed2-df0f-4ff1-a79a-0c397c186073".into(),
             proxy: "fixture".into(),
             key: state.join("id_ed25519"),
             known_hosts: state.join("known_hosts"),
+            strict: false,
         }
     }
 

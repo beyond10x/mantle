@@ -1,0 +1,100 @@
+{
+  "format": "mantle-release/1",
+  "version": "0.1.4",
+  "source_commit": "107f9c8bbdc9062cc24e54ac69e753d0f9e7fb68",
+  "substrate_revision": "65304edf6ebdf4a95f9c2c6138b0c20ea47d157e",
+  "substrate_version": "0.7.10",
+  "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6",
+  "gnu_runtime": "glibc 2.44",
+  "musl_runtime": "1.2.5",
+  "artifacts": [
+    {
+      "name": "mantle-0.1.4-x86_64-unknown-linux-gnu.tar",
+      "target": "x86_64-unknown-linux-gnu",
+      "sha256": "6e8fc4526b1fe9addb3fe3e05705aa8b04c0f86d7408ee1e59cd9afea67a2e77",
+      "size_bytes": 29387776,
+      "payloads": [
+        {
+          "path": "LICENSE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "size_bytes": 11358,
+          "mode": 420
+        },
+        {
+          "path": "RUST_RUNTIME_LICENSE.html",
+          "sha256": "0a65bb747c49c7bb816cbc7188319bd6e4e8d08091c1190b8a3c0971c47968ed",
+          "size_bytes": 279302,
+          "mode": 420
+        },
+        {
+          "path": "THIRD_PARTY_LICENSES.html",
+          "sha256": "c7618fec47b36cdee299c967f0464b88d4665ac17063e85f4e8cc3bc754ac97b",
+          "size_bytes": 463849,
+          "mode": 420
+        },
+        {
+          "path": "bin/mantle",
+          "sha256": "178a5ff40c6991d3253aab11bae36223e0427e5f00242384151276e0d7d5ec1f",
+          "size_bytes": 26511240,
+          "mode": 493
+        },
+        {
+          "path": "bin/mantle-release",
+          "sha256": "5c41e48011f9c384860316cfaff05bc7adea054ebda1b7ab6bbf729d620a5dc9",
+          "size_bytes": 2117192,
+          "mode": 493
+        }
+      ]
+    },
+    {
+      "name": "mantle-0.1.4-x86_64-unknown-linux-musl.tar",
+      "target": "x86_64-unknown-linux-musl",
+      "sha256": "20bea8cb729822101a5e9c2ae9e584c872cc934467c4841197d23ee7ec8a4bb5",
+      "size_bytes": 7073280,
+      "payloads": [
+        {
+          "path": "LICENSE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "size_bytes": 11358,
+          "mode": 420
+        },
+        {
+          "path": "MUSL_COPYRIGHT",
+          "sha256": "f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af",
+          "size_bytes": 6204,
+          "mode": 420
+        },
+        {
+          "path": "RUST_RUNTIME_LICENSE.html",
+          "sha256": "0a65bb747c49c7bb816cbc7188319bd6e4e8d08091c1190b8a3c0971c47968ed",
+          "size_bytes": 279302,
+          "mode": 420
+        },
+        {
+          "path": "THIRD_PARTY_LICENSES.html",
+          "sha256": "c7618fec47b36cdee299c967f0464b88d4665ac17063e85f4e8cc3bc754ac97b",
+          "size_bytes": 463849,
+          "mode": 420
+        },
+        {
+          "path": "bin/mantle-egress",
+          "sha256": "e9e5ca3b79b5994295151560f6db525e29ee31dde543bfc2cdc0bea715f0d081",
+          "size_bytes": 1528672,
+          "mode": 493
+        },
+        {
+          "path": "bin/mantle-launch",
+          "sha256": "38fe2a5c201c2d19afee302b5fe1380b678601e12b1fcedb8a7802cd02675ee6",
+          "size_bytes": 1221344,
+          "mode": 493
+        },
+        {
+          "path": "bin/mantle-worker",
+          "sha256": "f32614a25aea15dd9307ec3ffc466fec1297a4f51fc55378288ade5cf47d8749",
+          "size_bytes": 3556192,
+          "mode": 493
+        }
+      ]
+    }
+  ]
+}

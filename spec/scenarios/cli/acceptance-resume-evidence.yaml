@@ -1,0 +1,1 @@
+{"type":"ess-scenario/4","domain":"mantle.operator","scenario":"acceptance-resume-evidence","summary":"Production acceptance boundary: resume","timeline":[{"at":"2026-10-03T00:00:00Z","command":"mantle.operator.AssessAcceptance","input":{"case":"resume"},"outcome":"returned","response":{"accepted":true,"complete":true,"count":10,"private":true}}]}

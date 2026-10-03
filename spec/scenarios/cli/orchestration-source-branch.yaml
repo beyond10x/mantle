@@ -1,0 +1,23 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "source-branch",
+  "summary": "Production command outcome and real Git reference acceptance",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:00Z",
+      "command": "mantle.orchestration.SourceResolution",
+      "input": {
+        "reference": "main"
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": true,
+        "agent_started": true,
+        "source_count": 1,
+        "commit_matches": true,
+        "declared_matches": true
+      }
+    }
+  ]
+}

@@ -1,19 +1,19 @@
 {
-  "completed_at": 1790937869849,
+  "completed_at": 1791049620243,
   "conformance_status": "passed",
   "counts": {
     "error": 0,
     "failed": 0,
-    "passed": 66,
+    "passed": 69,
     "skipped": 0,
-    "total": 66,
+    "total": 69,
     "unsupported": 0
   },
   "coverage": {
     "counts": {
-      "authored": 60,
+      "authored": 63,
       "generated": 6,
-      "outside": 82,
+      "outside": 178,
       "refused": 0
     },
     "knowledge": "complete_inventory",
@@ -31,7 +31,7 @@
   },
   "execution_status": "passed",
   "format": "ess-conformance-report/2",
-  "implementation": "mantle-native 0.1.0",
+  "implementation": "mantle-native 0.1.4",
   "outcomes": {
     "error": [],
     "failed": [],
@@ -83,6 +83,9 @@
       "mantle.egress/authored/bad-header",
       "mantle.egress/authored/bad-version",
       "mantle.egress/authored/closed-incomplete",
+      "mantle.egress/authored/codex-connect-destinations",
+      "mantle.egress/authored/codex-default-destinations",
+      "mantle.egress/authored/codex-destination-refusals",
       "mantle.egress/authored/connect-failure",
       "mantle.egress/authored/connect-opaque-bytes",
       "mantle.egress/authored/connect-timeout",
@@ -108,10 +111,10 @@
   },
   "policy": "complete-selection/1",
   "producer_profile": "rust-scenario-status/1",
-  "spec_digest": "8336f2747da565d5095d1469d79302729d8f9583382a012cdef92b09840e9ece",
+  "spec_digest": "40dc7bfa7a332091e37575b2bb7fe04934452aa6054539b46dae37a4ae141f5d",
   "specification": "mantle/v1",
   "suite": {
-    "digest": "sha256:454df943e2a755fc513f7025b4625a0a887d63cde52578f2c21f401d571a4266",
+    "digest": "sha256:a6534acc14e11be207647d959e7c3c44a695add03895b50e86fb8c63e567090b",
     "digest_profile": "sha256-json-bytes/1",
     "version": "ess-conformance/29"
   }

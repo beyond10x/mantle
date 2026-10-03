@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-03T08:29:51Z",
+  "actor": "human:timo",
+  "artifact": "story:controlled-worker-upgrades",
+  "kind": "story",
+  "revision": 15,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:reliability-acceptance-r2",
+    "reference": ".engineering/planning/story/controlled-worker-upgrades.md",
+    "review": "review-result:reliability-acceptance-r2",
+    "outcome": "fixed"
+  }
+}

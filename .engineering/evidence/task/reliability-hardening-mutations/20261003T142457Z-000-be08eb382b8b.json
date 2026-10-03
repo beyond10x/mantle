@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T14:24:57Z",
+  "actor": "human:timo",
+  "artifact": "task:reliability-hardening-mutations",
+  "kind": "task",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "Coordinator inspected exact test-only patch and restored-production diff, then ran same_length_archive_padding_corruption_is_refused on merged1aabc06;1 passed, exit0. Full integration gate will also run with unit5.",
+    "reference": "$HOME/.cache/mantle-reliability/integration/hardening-merged-case.log"
+  }
+}

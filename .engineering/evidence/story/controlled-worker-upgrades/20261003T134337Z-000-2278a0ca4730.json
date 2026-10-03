@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T13:43:37Z",
+  "actor": "human:timo",
+  "artifact": "story:controlled-worker-upgrades",
+  "kind": "story",
+  "revision": 40,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Affected packages at ac534be9bfe3ca4a274fe5d53b06ca3822a18ba5 exited 0; worker42 Mantle64 release15 CLI273",
+    "reference": ".engineering/reports/reliability/wave5-implementation-status.json"
+  }
+}

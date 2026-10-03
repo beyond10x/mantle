@@ -1,0 +1,19 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.session",
+  "scenario": "retain-initial-materialization",
+  "summary": "Production retained-workspace lifecycle with controlled IO and durable SQLite ownership",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:00Z",
+      "command": "mantle.session.RetainedLifecycle",
+      "input": {
+        "case": "retain-initial-materialization"
+      },
+      "outcome": "returned",
+      "response": {
+        "verified": true
+      }
+    }
+  ]
+}

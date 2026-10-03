@@ -1,0 +1,21 @@
+{
+  "artifact": "story:controlled-worker-upgrades",
+  "reviews": 4,
+  "from": "review-result:reliability-wave5-adversary-pass1",
+  "from_reviewer": "unattributed",
+  "to": "review-result:reliability-wave5-adversary-pass2",
+  "to_reviewer": "unattributed",
+  "carried": [],
+  "new": [],
+  "resolved": [
+    {
+      "file": "crates/mantle-worker/src/upgrade.rs",
+      "line": 510,
+      "category": "acceptance",
+      "severity": "blocker",
+      "verdict": "CONFIRMED",
+      "origin": "undecided",
+      "message": "Retrying a completed helper upgrade after the first supported Codex installation removes bin/codex while reporting applied-restart-required."
+    }
+  ]
+}

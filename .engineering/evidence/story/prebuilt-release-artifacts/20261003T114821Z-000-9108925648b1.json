@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-03T11:48:21Z",
+  "actor": "human:timo",
+  "artifact": "story:prebuilt-release-artifacts",
+  "kind": "story",
+  "revision": 34,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:prebuilt-release-adversary-1",
+    "reference": "107f9c8bbdc9062cc24e54ac69e753d0f9e7fb68; source-export identity regression retained and passed",
+    "review": "review-result:prebuilt-release-adversary-1",
+    "outcome": "fixed"
+  }
+}

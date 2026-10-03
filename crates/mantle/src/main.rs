@@ -6,11 +6,16 @@ mod adapters {
     pub mod substrate;
 }
 mod app {
+    pub mod doctor;
+    pub mod lifecycle;
+    pub mod metadata;
     pub mod session;
     pub mod terminal;
     pub mod worker;
+    pub mod worker_upgrade;
 }
 mod config;
+mod profile;
 mod domain {
     pub mod manifest;
     pub mod session;
@@ -22,22 +27,38 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use crate::adapters::state::Store;
-use crate::config::{Config, state_dir};
+use crate::config::{Config, RuntimeContext};
 
 /// Portable cloud development sessions on Substrate.
 #[derive(Debug, Parser)]
 #[command(
     name = "mantle",
     version,
-    after_help = "MANTLE_CONFIG selects an absolute configuration file; MANTLE_STATE_DIR selects an absolute private state directory. Defaults: ~/.config/mantle/config.toml and ~/.local/state/mantle. READY denotes common confinement/toolchain readiness, not agent authentication."
+    after_help = "--profile overrides MANTLE_PROFILE; named selections refuse MANTLE_CONFIG and MANTLE_STATE_DIR. Without a profile, MANTLE_CONFIG selects an absolute configuration file; MANTLE_STATE_DIR selects an absolute private state directory. Defaults: ~/.config/mantle/config.toml and ~/.local/state/mantle. READY denotes common confinement/toolchain readiness, not agent authentication."
 )]
 struct Cli {
+    /// Select a named configuration and state directory (overrides MANTLE_PROFILE).
+    #[arg(long, global = true)]
+    profile: Option<String>,
     #[command(subcommand)]
     command: Command,
 }
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    /// Diagnose existing worker readiness without provisioning or changing application state.
+    Doctor {
+        #[arg(long)]
+        json: bool,
+        /// Deadline for each external probe; timed-out subprocess groups are retired.
+        #[arg(long, default_value_t = 10, value_parser = clap::value_parser!(u64).range(1..=120))]
+        timeout_secs: u64,
+    },
+    /// Manage local named path references without contacting a provider.
+    Profile {
+        #[command(subcommand)]
+        command: ProfileCommand,
+    },
     /// Manage the EC2 worker.
     Worker {
         #[command(subcommand)]
@@ -51,25 +72,90 @@ enum Command {
         /// Start the agent without attaching the terminal.
         #[arg(long)]
         detached: bool,
+        /// Atomically write a private creation receipt after a successful detached start.
+        #[arg(long, requires = "detached")]
+        receipt: Option<PathBuf>,
     },
     /// Attach the terminal to a running session (Ctrl-] d detaches).
-    Attach { name: String },
+    Attach {
+        name: String,
+        #[arg(long)]
+        expected_session_id: Option<String>,
+    },
     /// List live sessions as recorded locally.
-    List,
+    List {
+        #[arg(long)]
+        json: bool,
+    },
     /// Show a session: recorded intent, then what Substrate observes now.
-    Status { name: String },
-    /// Stop the agent and destroy the session's workspace.
-    Stop { name: String },
+    #[command(group(clap::ArgGroup::new("identity").required(true).args(["name", "session_id"])))]
+    Status {
+        name: Option<String>,
+        #[arg(long, requires = "json")]
+        session_id: Option<String>,
+        #[arg(long)]
+        json: bool,
+        #[arg(long, default_value_t = 10, value_parser = clap::value_parser!(u64).range(1..=120))]
+        timeout_secs: u64,
+    },
+    /// Stop the agent and retain its workspace and private login state (unreleased semantics).
+    Stop {
+        name: String,
+        #[arg(long)]
+        expected_session_id: Option<String>,
+    },
+    /// Start a fresh agent process in a retained workspace; does not resume a conversation.
+    Restart {
+        name: String,
+        #[arg(long)]
+        expected_session_id: Option<String>,
+    },
+    /// Permanently destroy a session workspace, including private login state.
+    Destroy {
+        name: String,
+        #[arg(long, required = true)]
+        yes: bool,
+        #[arg(long)]
+        expected_session_id: Option<String>,
+    },
     /// Run one command in a session's workspace under the agent's confinement, without its credential.
     Exec {
         name: String,
+        #[arg(long)]
+        expected_session_id: Option<String>,
         #[arg(last = true, required = true)]
         argv: Vec<String>,
     },
 }
 
 #[derive(Debug, Subcommand)]
+enum ProfileCommand {
+    /// Register absolute configuration and private state paths; existing names are refused.
+    Add {
+        name: String,
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        state_dir: PathBuf,
+    },
+    /// List registered names and paths without loading their configurations.
+    List,
+    /// Show one registered name and its paths.
+    Show { name: String },
+}
+
+#[derive(Debug, Subcommand)]
 enum WorkerCommand {
+    /// Check or apply a verified helper bundle during explicit offline maintenance.
+    #[command(group(clap::ArgGroup::new("mode").required(true).args(["check", "apply"])))]
+    Upgrade {
+        #[arg(long)]
+        check: bool,
+        #[arg(long)]
+        apply: bool,
+        #[arg(long)]
+        manifest: PathBuf,
+    },
     /// Create or start the worker, install Mantle's binaries, and check Substrate's facts.
     Up {
         /// Directory holding static `mantle-egress`, `mantle-launch`, and `mantle-worker` binaries.
@@ -100,7 +186,7 @@ fn default_worker_binaries() -> PathBuf {
     target.join("x86_64-unknown-linux-musl/release")
 }
 
-fn main() -> Result<()> {
+fn main() -> Result<std::process::ExitCode> {
     mantle_worker::initialize_transport_signals()?;
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -108,12 +194,113 @@ fn main() -> Result<()> {
         .block_on(run())
 }
 
-async fn run() -> Result<()> {
+async fn run() -> Result<std::process::ExitCode> {
     let cli = Cli::parse();
-    let config = Config::load()?;
-    let store = Store::open(&state_dir()?.join("state.db"))?;
+    let metadata = match &cli.command {
+        Command::List { json: true } => Some((None, None, 10)),
+        Command::Status {
+            name,
+            session_id,
+            json: true,
+            timeout_secs,
+        } => Some((name.as_deref(), session_id.as_deref(), *timeout_secs)),
+        _ => None,
+    };
+    if let Some((name, id, timeout)) = metadata {
+        let report = app::metadata::report(
+            resolve_selection(cli.profile.as_deref()),
+            name,
+            id,
+            std::time::Duration::from_secs(timeout),
+        )
+        .await;
+        let success = matches!(report.outcome.as_str(), "recorded" | "observed");
+        println!(
+            "{}",
+            String::from_utf8(mantle_acceptance::encoded(&report)?)?
+        );
+        return Ok(if success {
+            std::process::ExitCode::SUCCESS
+        } else {
+            std::process::ExitCode::FAILURE
+        });
+    }
+    if let Command::Doctor { json, timeout_secs } = cli.command {
+        let report = app::doctor::diagnose(
+            resolve_selection(cli.profile.as_deref()),
+            &app::doctor::SystemProbes,
+            std::time::Duration::from_secs(timeout_secs),
+        )
+        .await;
+        if json {
+            println!("{}", serde_json::to_string(&report)?);
+        } else {
+            print!("{}", report.human());
+        }
+        return Ok(if report.healthy {
+            std::process::ExitCode::SUCCESS
+        } else {
+            std::process::ExitCode::FAILURE
+        });
+    }
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .ok_or_else(|| anyhow::anyhow!("HOME is not set"))?;
+    if let Command::Profile { command } = cli.command {
+        let registry = profile::Registry::new(&home);
+        let profiles = match command {
+            ProfileCommand::Add {
+                name,
+                config,
+                state_dir,
+            } => {
+                let profile = profile::Profile {
+                    name,
+                    config_path: config,
+                    state_dir,
+                };
+                registry.add(&profile)?;
+                vec![profile]
+            }
+            ProfileCommand::List => registry.list()?,
+            ProfileCommand::Show { name } => vec![registry.show(&name)?],
+        };
+        for profile in profiles {
+            println!(
+                "{}\t{}\t{}",
+                profile.name,
+                profile.config_path.display(),
+                profile.state_dir.display()
+            );
+        }
+        return Ok(std::process::ExitCode::SUCCESS);
+    }
+    if let Command::Worker {
+        command: WorkerCommand::Upgrade {
+            manifest, apply, ..
+        },
+    } = &cli.command
+    {
+        return app::worker_upgrade::run(
+            resolve_selection(cli.profile.as_deref())?,
+            manifest,
+            *apply,
+        );
+    }
+    let selection = resolve_selection(cli.profile.as_deref())?;
+    let config = RuntimeContext {
+        config: Config::load(&selection)?,
+        selection,
+    };
+    config.selection.prepare_state()?;
+    let store = Store::open(&config.selection.state_dir.join("state.db"))?;
     match cli.command {
+        Command::Doctor { .. } => unreachable!("doctor returns before ordinary initialization"),
+        Command::Profile { .. } => unreachable!("profile commands return before runtime selection"),
         Command::Worker { command } => match command {
+            WorkerCommand::Upgrade { .. } => {
+                unreachable!("upgrade returns before ordinary initialization")
+            }
             WorkerCommand::Up {
                 binaries,
                 no_idle_stop,
@@ -132,13 +319,114 @@ async fn run() -> Result<()> {
             WorkerCommand::Status => app::worker::status(&config, &store).await,
             WorkerCommand::Ssh => app::worker::ssh(&config, &store),
         },
-        Command::Start { manifest, detached } => {
-            app::session::start(&config, &store, &manifest, !detached).await
+        Command::Start {
+            manifest,
+            detached,
+            receipt,
+        } => {
+            app::session::start_with_receipt(
+                &config,
+                &store,
+                &manifest,
+                !detached,
+                receipt.as_deref(),
+            )
+            .await
         }
-        Command::Attach { name } => app::session::attach(&config, &store, &name).await,
-        Command::List => app::session::list(&store),
-        Command::Status { name } => app::session::status(&config, &store, &name).await,
-        Command::Stop { name } => app::session::stop(&config, &store, &name).await,
-        Command::Exec { name, argv } => app::session::exec(&config, &store, &name, &argv).await,
-    }
+        Command::Attach {
+            name,
+            expected_session_id,
+        } => {
+            app::session::attach_guarded(&config, &store, &name, expected_session_id.as_deref())
+                .await
+        }
+        Command::List { .. } => app::session::list(&store),
+        Command::Status { name, .. } => {
+            app::session::status(
+                &config,
+                &store,
+                name.as_deref().expect("human status requires name"),
+            )
+            .await
+        }
+        Command::Stop {
+            name,
+            expected_session_id,
+        } => {
+            app::session::lifecycle(
+                &config,
+                &store,
+                &name,
+                expected_session_id.as_deref(),
+                "retain",
+            )
+            .await
+        }
+        Command::Restart {
+            name,
+            expected_session_id,
+        } => {
+            app::session::lifecycle(
+                &config,
+                &store,
+                &name,
+                expected_session_id.as_deref(),
+                "admit",
+            )
+            .await
+        }
+        Command::Destroy {
+            name,
+            expected_session_id,
+            ..
+        } => {
+            app::session::lifecycle(
+                &config,
+                &store,
+                &name,
+                expected_session_id.as_deref(),
+                "destroy",
+            )
+            .await
+        }
+        Command::Exec {
+            name,
+            argv,
+            expected_session_id,
+        } => {
+            return app::session::exec_guarded(
+                &config,
+                &store,
+                &name,
+                &argv,
+                expected_session_id.as_deref(),
+            )
+            .await
+            .map(std::process::ExitCode::from);
+        }
+    }?;
+    Ok(std::process::ExitCode::SUCCESS)
+}
+
+fn resolve_selection(explicit: Option<&str>) -> Result<profile::Selection> {
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .ok_or_else(|| anyhow::anyhow!("HOME is not set"))?;
+    let environment = if explicit.is_some() {
+        None
+    } else {
+        std::env::var("MANTLE_PROFILE")
+            .map(Some)
+            .or_else(|error| match error {
+                std::env::VarError::NotPresent => Ok(None),
+                _ => Err(anyhow::anyhow!("MANTLE_PROFILE must be valid UTF-8")),
+            })?
+    };
+    profile::Selection::resolve(
+        &home,
+        explicit,
+        environment.as_deref(),
+        std::env::var_os("MANTLE_CONFIG"),
+        std::env::var_os("MANTLE_STATE_DIR"),
+    )
 }

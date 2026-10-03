@@ -1,0 +1,30 @@
+{
+  "artifact": "story:prebuilt-release-artifacts",
+  "reviews": 2,
+  "from": "review-result:prebuilt-release-adversary-1",
+  "from_reviewer": "unattributed",
+  "to": "review-result:prebuilt-release-adversary-2",
+  "to_reviewer": "unattributed",
+  "carried": [],
+  "new": [],
+  "resolved": [
+    {
+      "file": "crates/mantle-release/src/build.rs",
+      "line": 81,
+      "category": "acceptance",
+      "severity": "blocker",
+      "verdict": "CONFIRMED",
+      "origin": "undecided",
+      "message": "Untracked Git export attributes can change committed Rust bytes while the release builder accepts the checkout and labels the export with its exact source commit."
+    },
+    {
+      "file": "crates/mantle-release/src/lib.rs",
+      "line": 164,
+      "category": "contract-drift",
+      "severity": "warning",
+      "verdict": "CONFIRMED",
+      "origin": "undecided",
+      "message": "Reinstall accepts an existing generation containing an extra unmanaged payload despite the documented refusal of modified generations."
+    }
+  ]
+}

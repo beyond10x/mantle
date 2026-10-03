@@ -50,20 +50,30 @@ pub enum SessionState {
     Stopped,
     FailedMaterialization,
     FailedAgentStart,
+    Retaining,
+    Retained,
+    Restarting,
+    Destroying,
 }
 
 impl SessionState {
     pub fn can_move_to(self, next: Self) -> bool {
-        use SessionState::{
-            FailedAgentStart, FailedMaterialization, Materializing, Running, Starting, Stopped,
-            Stopping,
-        };
+        use SessionState::*;
         matches!(
             (self, next),
             (Materializing, Starting | FailedMaterialization | Stopping)
                 | (Starting, Running | FailedAgentStart | Stopping)
                 | (Running | FailedMaterialization | FailedAgentStart, Stopping)
                 | (Stopping, Stopped)
+                | (Running | FailedAgentStart | Retained, Retaining)
+                | (Retaining, Retained)
+                | (Retained, Restarting)
+                | (Restarting, Running)
+                | (
+                    Running | Retained | FailedMaterialization | FailedAgentStart | Stopping,
+                    Destroying
+                )
+                | (Destroying, Stopped)
         )
     }
 
@@ -86,6 +96,10 @@ impl fmt::Display for SessionState {
             Self::Stopped => "STOPPED",
             Self::FailedMaterialization => "FAILED_MATERIALIZATION",
             Self::FailedAgentStart => "FAILED_AGENT_START",
+            Self::Retaining => "RETAINING",
+            Self::Retained => "RETAINED",
+            Self::Restarting => "RESTARTING",
+            Self::Destroying => "DESTROYING",
         })
     }
 }
@@ -102,6 +116,10 @@ impl FromStr for SessionState {
             "STOPPED" => Self::Stopped,
             "FAILED_MATERIALIZATION" => Self::FailedMaterialization,
             "FAILED_AGENT_START" => Self::FailedAgentStart,
+            "RETAINING" => Self::Retaining,
+            "RETAINED" => Self::Retained,
+            "RESTARTING" => Self::Restarting,
+            "DESTROYING" => Self::Destroying,
             other => bail!("unknown session state {other:?} in the state database"),
         })
     }

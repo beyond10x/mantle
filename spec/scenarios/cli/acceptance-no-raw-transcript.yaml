@@ -1,0 +1,1 @@
+{"type":"ess-scenario/4","domain":"mantle.operator","scenario":"acceptance-no-raw-transcript","summary":"Production acceptance boundary: no-transcript","timeline":[{"at":"2026-10-03T00:00:00Z","command":"mantle.operator.AssessAcceptance","input":{"case":"no-transcript"},"outcome":"returned","response":{"accepted":true,"complete":false,"count":10,"private":true}}]}

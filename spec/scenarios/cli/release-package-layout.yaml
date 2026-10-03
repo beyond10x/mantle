@@ -1,0 +1,1 @@
+{"type":"ess-scenario/4","domain":"mantle.operator","scenario":"release-package-layout","summary":"Strict production verifier accepts the exact supported inventory","timeline":[{"at":"2026-10-03T00:00:00Z","command":"mantle.operator.VerifyRelease","input":{"alteration":"none"},"outcome":"returned","response":{"accepted":true,"payload_count":13,"source_matches":true}}]}

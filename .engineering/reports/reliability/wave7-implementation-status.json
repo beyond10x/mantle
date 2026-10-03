@@ -1,0 +1,23 @@
+{
+  "check-initial.exit": 0,
+  "claim-base.exit": 101,
+  "claim-treatment.exit": 0,
+  "clippy-final.exit": 0,
+  "clippy.exit": 0,
+  "commit.exit": 0,
+  "drift.exit": 0,
+  "fixture-fmt.exit": 0,
+  "fmt.exit": 0,
+  "metadata-2.exit": 101,
+  "metadata-3.exit": 0,
+  "metadata.exit": 101,
+  "model.exit": 0,
+  "notices-check.exit": 0,
+  "notices.exit": 0,
+  "packages-2.exit": 101,
+  "packages-final.exit": 0,
+  "packages-first.exit": 101,
+  "red-metadata.exit": 101,
+  "runner-first.exit": 101,
+  "spec-final.exit": 0
+}

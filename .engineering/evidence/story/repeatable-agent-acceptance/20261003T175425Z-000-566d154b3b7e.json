@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T17:54:25Z",
+  "actor": "human:timo",
+  "artifact": "story:repeatable-agent-acceptance",
+  "kind": "story",
+  "revision": 36,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check at dee44cf83d2dafc18d447b82674424893f1c916f: exit 0; complete ESS 499/499, CLI 381/381; all package tests, clippy, fmt, spec, plan and docs passed",
+    "reference": "$HOME/.cache/mantle-reliability/integration/wave7-gate.log"
+  }
+}

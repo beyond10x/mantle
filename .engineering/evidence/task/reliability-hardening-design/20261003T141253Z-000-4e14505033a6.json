@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-03T14:12:53Z",
+  "actor": "human:timo",
+  "artifact": "task:reliability-hardening-design",
+  "kind": "task",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:reliability-hardening-design-structured",
+    "reference": "HD-11: command-correctness Hardening contract clarification and README; valid SDK decode precedes byte preservation",
+    "review": "review-result:reliability-hardening-design-structured",
+    "outcome": "fixed"
+  }
+}

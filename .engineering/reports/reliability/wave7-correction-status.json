@@ -1,0 +1,9 @@
+{
+  "clippy.exit": 0,
+  "commit.exit": 0,
+  "diff-check.exit": 0,
+  "fmt.exit": 0,
+  "isolated.exit": 0,
+  "package.exit": 0,
+  "red.exit": 101
+}

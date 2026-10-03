@@ -7,6 +7,8 @@ use std::path::Path;
 use anyhow::{Context, Result, bail};
 use rusqlite::{Connection, OptionalExtension as _, params};
 
+pub(crate) mod lifecycle;
+
 use crate::domain::session::{
     AgentKind, AuthenticationMethod, SessionState, agent_name, auth_name, resolve_identity,
     validate_identity,
@@ -16,7 +18,7 @@ pub struct Store {
     connection: Connection,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct WorkerRecord {
     pub name: String,
     pub instance: String,
@@ -26,6 +28,7 @@ pub struct WorkerRecord {
 
 #[derive(Debug, Clone)]
 pub struct SessionRecord {
+    pub generation: i64,
     pub id: String,
     pub name: String,
     pub worker: String,
@@ -81,6 +84,39 @@ CREATE TABLE IF NOT EXISTS sources (
 ";
 
 impl Store {
+    /// Diagnostics use SQLite's supported current committed view, including WAL. This permits
+    /// ordinary SQLite lock/SHM coordination, but neither schema nor application writes.
+    pub fn open_readonly(path: &Path) -> Result<Self> {
+        let _file = crate::profile::inspect_regular(path, 64 * 1024 * 1024)?;
+        for suffix in ["-wal", "-shm", "-journal"] {
+            let mut name = path.as_os_str().to_os_string();
+            name.push(suffix);
+            let sidecar = std::path::PathBuf::from(name);
+            match std::fs::symlink_metadata(&sidecar) {
+                Ok(_) => {
+                    crate::profile::inspect_regular(&sidecar, 64 * 1024 * 1024)?;
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error.into()),
+            }
+        }
+        let connection = Connection::open_with_flags(
+            path,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NOFOLLOW,
+        )?;
+        connection.busy_timeout(std::time::Duration::from_millis(250))?;
+        let deadline = std::time::Instant::now() + std::time::Duration::from_millis(250);
+        connection.progress_handler(1000, Some(move || std::time::Instant::now() >= deadline));
+        connection.pragma_update(None, "query_only", true)?;
+        let kind: String = connection.query_row(
+            "SELECT type FROM sqlite_schema WHERE name='workers'",
+            [],
+            |row| row.get(0),
+        )?;
+        anyhow::ensure!(kind == "table", "worker records must be a table");
+        Ok(Self { connection })
+    }
+
     pub fn open(path: &Path) -> Result<Self> {
         let mut connection =
             Connection::open(path).with_context(|| format!("opening {}", path.display()))?;
@@ -89,7 +125,8 @@ impl Store {
     }
 
     fn initialize(connection: &mut Connection) -> Result<()> {
-        let tx = connection.transaction()?;
+        connection.busy_timeout(std::time::Duration::from_secs(5))?;
+        let tx = connection.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
         tx.execute_batch(SCHEMA)
             .context("creating the state schema")?;
         let columns = tx
@@ -112,6 +149,7 @@ impl Store {
                     .context("invalid session identity in state database")?;
             }
         }
+        lifecycle::migrate(&tx)?;
         tx.commit()?;
         Ok(())
     }
@@ -193,18 +231,25 @@ impl Store {
     }
 
     /// Moves a session, refusing a transition the lifecycle does not allow.
+    #[cfg_attr(not(test), allow(dead_code))] // Retained ESS local-store command boundary.
     pub fn move_session(&self, id: &str, next: SessionState, failure: Option<&str>) -> Result<()> {
+        let tx = rusqlite::Transaction::new_unchecked(
+            &self.connection,
+            rusqlite::TransactionBehavior::Immediate,
+        )?;
         let current = self
             .session_by_id(id)?
             .context("the session record vanished")?;
         current.state.checked_move(next)?;
-        self.connection.execute(
-            "UPDATE sessions SET state = ?2, failure = COALESCE(?3, failure) WHERE id = ?1",
-            params![id, next.to_string(), failure],
-        )?;
+        anyhow::ensure!(tx.execute(
+            "UPDATE sessions SET state = ?2, failure = COALESCE(?3, failure) WHERE id = ?1 AND state=?4",
+            params![id, next.to_string(), failure,current.state.to_string()],
+        )?==1,"stale session transition");
+        tx.commit()?;
         Ok(())
     }
 
+    #[cfg_attr(not(test), allow(dead_code))] // Retained ESS legacy local-store command boundary.
     pub fn set_workspace(&self, id: &str, workspace: &str) -> Result<()> {
         self.connection.execute(
             "UPDATE sessions SET workspace = ?2 WHERE id = ?1",
@@ -213,6 +258,7 @@ impl Store {
         Ok(())
     }
 
+    #[cfg_attr(not(test), allow(dead_code))] // Runtime completions use lifecycle_write with a fence.
     pub fn set_agent_exec(&self, id: &str, exec: &str) -> Result<()> {
         self.connection.execute(
             "UPDATE sessions SET agent_exec = ?2 WHERE id = ?1",
@@ -259,7 +305,7 @@ impl Store {
         self.one_session("WHERE name = ?1 AND state <> 'STOPPED'", name)
     }
 
-    fn session_by_id(&self, id: &str) -> Result<Option<SessionRecord>> {
+    pub(crate) fn session_by_id(&self, id: &str) -> Result<Option<SessionRecord>> {
         self.one_session("WHERE id = ?1", id)
     }
 
@@ -278,11 +324,23 @@ impl Store {
         let rows = statement.query_map([], read_session)?;
         rows.map(|row| finish_session(row?)).collect()
     }
+
+    pub(crate) fn metadata_sessions(&self) -> Result<Vec<SessionRecord>> {
+        let sql = format!("{SESSION_COLUMNS} ORDER BY created_at, id LIMIT 1001");
+        let mut statement = self.connection.prepare(&sql)?;
+        let rows = statement.query_map([], read_session)?;
+        let records: Vec<_> = rows
+            .map(|row| finish_session(row?))
+            .collect::<Result<_>>()?;
+        anyhow::ensure!(records.len() <= 1000, "metadata record bound exceeded");
+        Ok(records)
+    }
 }
 
 const SESSION_COLUMNS: &str =
     "SELECT id, name, worker, state, manifest_digest, workspace, agent_exec,
-        requested_json, created_at, failure, agent_kind, authentication FROM sessions";
+        requested_json, created_at, failure, agent_kind, authentication,
+        COALESCE((SELECT generation FROM session_lifecycle WHERE session_id=sessions.id),0) FROM sessions";
 
 type RawSession = (
     String,
@@ -297,6 +355,7 @@ type RawSession = (
     Option<String>,
     String,
     String,
+    i64,
 );
 
 fn read_session(row: &rusqlite::Row<'_>) -> rusqlite::Result<RawSession> {
@@ -313,6 +372,7 @@ fn read_session(row: &rusqlite::Row<'_>) -> rusqlite::Result<RawSession> {
         row.get(9)?,
         row.get(10)?,
         row.get(11)?,
+        row.get(12)?,
     ))
 }
 
@@ -330,10 +390,12 @@ fn finish_session(raw: RawSession) -> Result<SessionRecord> {
         failure,
         agent,
         auth,
+        generation,
     ) = raw;
     let (agent_kind, authentication) = resolve_identity(&agent, Some(&auth))
         .context("invalid session identity in state database")?;
     Ok(SessionRecord {
+        generation,
         id,
         name,
         worker,
@@ -353,8 +415,45 @@ fn finish_session(raw: RawSession) -> Result<SessionRecord> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn readonly_diagnostics_observe_wal_and_refuse_writes_without_migrating_legacy_schema() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("state.db");
+        assert!(Store::open_readonly(&path).is_err());
+        assert!(!path.exists());
+        let writer = Connection::open(&path).unwrap();
+        writer.execute_batch("CREATE TABLE workers(name TEXT PRIMARY KEY,instance TEXT,region TEXT,data_volume TEXT); PRAGMA journal_mode=WAL; INSERT INTO workers VALUES('default','fresh-wal','kubevirt/fixture/fixture',NULL)").unwrap();
+        let store = Store::open_readonly(&path).unwrap();
+        assert_eq!(
+            store.worker("default").unwrap().unwrap().instance,
+            "fresh-wal"
+        );
+        assert!(
+            store
+                .connection
+                .execute("UPDATE workers SET instance='changed'", [])
+                .is_err()
+        );
+        assert!(
+            store
+                .connection
+                .execute("CREATE TABLE forbidden(value TEXT)", [])
+                .is_err()
+        );
+        assert_eq!(writer.query_row("SELECT COUNT(*) FROM sqlite_master WHERE name IN ('sessions','sources','forbidden')",[],|r|r.get::<_,i64>(0)).unwrap(),0);
+        assert_eq!(
+            writer
+                .query_row("SELECT instance FROM workers", [], |r| r
+                    .get::<_, String>(0))
+                .unwrap(),
+            "fresh-wal"
+        );
+        assert!(store.connection.query_row("WITH RECURSIVE x(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM x) SELECT sum(n) FROM x",[],|r|r.get::<_,i64>(0)).is_err(),"query VM budget must interrupt unbounded read");
+    }
+
     fn session(id: &str, name: &str) -> SessionRecord {
         SessionRecord {
+            generation: 0,
             id: id.to_owned(),
             name: name.to_owned(),
             worker: "default".to_owned(),

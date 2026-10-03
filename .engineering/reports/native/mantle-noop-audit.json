@@ -10,6 +10,6 @@
     "mantle.manifest.ValidateRetention/outcome/accepted",
     "mantle.orchestration.WorkerRecords/outcome/returned"
   ],
-  "scenarios": 304,
-  "spec_digest": "8336f2747da565d5095d1469d79302729d8f9583382a012cdef92b09840e9ece"
+  "scenarios": 499,
+  "spec_digest": "40dc7bfa7a332091e37575b2bb7fe04934452aa6054539b46dae37a4ae141f5d"
 }

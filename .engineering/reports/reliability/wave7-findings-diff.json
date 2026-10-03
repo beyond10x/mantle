@@ -1,0 +1,21 @@
+{
+  "artifact": "story:repeatable-agent-acceptance",
+  "reviews": 2,
+  "from": "review-result:reliability-wave7-adversary-pass1",
+  "from_reviewer": "unattributed",
+  "to": "review-result:reliability-wave7-adversary-pass2",
+  "to_reviewer": "unattributed",
+  "carried": [],
+  "new": [],
+  "resolved": [
+    {
+      "file": "crates/mantle-acceptance/src/runner.rs",
+      "line": 458,
+      "category": "contract-drift",
+      "severity": "blocker",
+      "verdict": "CONFIRMED",
+      "origin": "undecided",
+      "message": "Successful cleanup overwrites a previously failed destroy qualification case, causing cleanup and offline report to return success instead of preserving the measured failure."
+    }
+  ]
+}

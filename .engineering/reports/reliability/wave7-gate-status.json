@@ -1,0 +1,33 @@
+{
+  "source": "dee44cf83d2dafc18d447b82674424893f1c916f",
+  "command": "task check",
+  "exit": 0,
+  "counts": {
+    "error": 0,
+    "failed": 0,
+    "passed": 499,
+    "skipped": 0,
+    "total": 499,
+    "unsupported": 0
+  },
+  "spec_digest": "40dc7bfa7a332091e37575b2bb7fe04934452aa6054539b46dae37a4ae141f5d",
+  "coverage": {
+    "counts": {
+      "authored": 315,
+      "generated": 184,
+      "outside": 0,
+      "refused": 0
+    },
+    "knowledge": "complete_inventory",
+    "refused": [],
+    "selection": {
+      "filter": {
+        "kind": "all"
+      },
+      "origins": "generated_and_authored",
+      "scope": {
+        "kind": "system"
+      }
+    }
+  }
+}

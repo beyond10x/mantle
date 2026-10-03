@@ -1,0 +1,1 @@
+{"type":"ess-scenario/4","domain":"mantle.operator","scenario":"acceptance-auth-required","summary":"Production acceptance boundary: auth-required","timeline":[{"at":"2026-10-03T00:00:00Z","command":"mantle.operator.AssessAcceptance","input":{"case":"auth-required"},"outcome":"returned","response":{"accepted":true,"complete":false,"count":10,"private":true}}]}

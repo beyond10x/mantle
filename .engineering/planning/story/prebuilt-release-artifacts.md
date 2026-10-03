@@ -1,0 +1,106 @@
+---
+format: aep.planning-md/3
+id: story:prebuilt-release-artifacts
+kind: story
+status: implemented
+title: Produce verified installable CLI and worker release artifacts
+relations:
+- decomposes: epic:reliability-and-usability
+- depends_on: story:worker-doctor
+scope:
+- confidence: inferred
+  path: .github/workflows
+- confidence: cited
+  path: .github/workflows/ci.yml
+- confidence: cited
+  path: Cargo.lock
+- confidence: cited
+  path: Cargo.toml
+- confidence: inferred
+  path: LICENSE
+- confidence: inferred
+  path: README.md
+- confidence: inferred
+  path: THIRD_PARTY_LICENSES.html
+- confidence: inferred
+  path: about.toml
+- confidence: inferred
+  path: crates/mantle-artifact
+- confidence: inferred
+  path: crates/mantle-conformance
+- confidence: inferred
+  path: crates/mantle-release
+- confidence: inferred
+  path: crates/mantle/Cargo.toml
+- confidence: inferred
+  path: crates/mantle/src/adapters/orchestration.rs
+- confidence: inferred
+  path: generated/worker-model
+- confidence: inferred
+  path: spec/components.yaml
+- confidence: cited
+  path: spec/domains/operator.yaml
+- confidence: inferred
+  path: spec/ess-inputs.yaml
+- confidence: inferred
+  path: spec/scenarios/cli
+- confidence: inferred
+  path: website/index.html
+revision: 36
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 19}
+- {from: "proposed", to: "active", at: "2026-10-03T10:29:47Z", actor: "human:timo", revision: 30}
+- {from: "active", to: "implemented", at: "2026-10-03T12:22:10Z", actor: "human:timo", revision: 36, decided_on: {"recorded":{"test_result":1,"review_outcome":2,"verification":1,"ess_conformance_coverage_v1":1}}}
+---
+## Outcome
+Build reproducible packaging and publishing support for Linux x86_64 laptop CLI and static x86_64 musl worker binaries, matching the existing supported worker architecture. Do not claim untested macOS/ARM packages. Typed ReleaseManifest/ReleaseArtifact values are declared in spec/domains/operator.yaml; all committed running tooling is Rust with clap.
+
+## Acceptance
+Named ESS cases release-package-layout, release-manifest-identities, release-checksum-refusal, release-unsupported-target, release-path-safety and release-install-atomic. A Rust packaging/checking command produces versioned archives, SHA256 checksums and a strict manifest bound to source revision and Substrate pin; archive contains documented installation layout and licenses/notices required by shipped dependencies. Verify extracted version and static worker compatibility in CI. Provide a checksum-verifying install path with no blind pipe-to-shell, atomic replacement and no credential/config overwrite. CI builds and retains candidate artifacts on PR without publication; tag publishing uses bot App authority, immutable action pins and least permissions. Never publish artifacts from a different commit or overwrite an existing immutable version. Test tampered/missing/path-traversal archives and interrupted installation with small executable fixtures. Actual new tagged release is outside this one-PR task.
+
+## Scope
+Inferred: new Rust release tooling crate or existing suitable crate; Cargo.toml/lock; .github/workflows release and CI; operator ESS commands/scenarios; generated provenance; README/site. Preserve fixed upstream identity and repository Gates conventions. Inspect current bot-authenticated gh capability for binary asset upload; never use personal gh writes.
+
+## Publication authority
+
+Read-only preflight found Mantle exposes only the B10X_GATES_POLICY repository secret; no bot App publishing credential is configured there. Do not copy private App keys into Mantle or silently publish as github-actions. CI builds and retains immutable candidate/tag artifacts without publishing credentials. Provide an operator-invoked Rust release command which verifies the exact tag/source/version/artifact manifest and invokes the locally installed b10x-gates gh wrapper for release creation/upload; wrapper source confines the bot token to gh's child environment and supports release commands. No clobber/overwrite. The command and documentation complete the supported publication path; no new release is executed in this task. If later CI publishing is enabled, it must use an explicitly configured bot App route with immutable action pins and least permissions.
+
+## Packaging and license inputs
+
+Read-only preflight by attach_readiness_impl found root LICENSE absent although workspace metadata declares Apache-2.0. cargo-about 0.9.1 using Substrate's existing configuration, --workspace --locked --offline --fail and both supported Linux targets refused three entries: generated mantle-worker-model has no license metadata/file, minicbor 2.3.0 needs BlueOak-1.0.0, and webpki-roots 1.0.9 needs CDLA-Permissive-2.0. Add the root license and inspect actual dependency texts. Preserve generated-model ownership: ESS 0.50 has no license generation flag; use a checked cargo-about clarification referring to ../../LICENSE from the generated crate instead of hand-editing generated Cargo.toml. Substrate's standard Apache LICENSE hashes cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30; verify exact bytes before using that clarification.
+
+Use the Rust notice approach in substrate/xtask/src/licenses.rs as a reference, including composite aws-lc-sys/ring notices. Registry archives for base64-simd/vsimd 0.8.0 omit their license files; their recorded upstream commit is d74c030d9dc4f3cae02146d1f497ff62726ef09a. Obtain and pin the actual upstream text rather than silently relying on a generic fallback. Account for distributed Rust runtime and musl texts too. License generation/checking is Rust; CI may invoke pinned cargo-about but must not commit scripts.
+
+Prefer one library/CLI crate for deterministic packaging, strict verification, installation and operator publication. Archive path whitelist, bounded expansion, duplicate/link refusal, exact version and static ELF checks are implementation boundaries. Source archives and license inputs do not authorize publishing an actual release in this task.
+
+## Verified upstream license input
+
+The omitted SIMD license is available from the exact published source revision: https://raw.githubusercontent.com/Nugine/simd/d74c030d9dc4f3cae02146d1f497ff62726ef09a/LICENSE. Retrieved bytes have SHA256 71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d and identify the MIT grant with Copyright (c) 2021 Nugine. Retained local input: $HOME/.cache/mantle-reliability/release-preflight/simd-d74c030-LICENSE. Include the actual grant and attribution in distribution notices, with source/hash provenance; do not change generated crates or registry files.
+
+## Source identity verification
+
+Version equality alone cannot bind an artifact to a source commit: current development and release binaries can both report 0.1.4. The packaging path must either build from the verified clean exact checkout itself and retain that provenance, or verify embedded build source identity in each supplied binary. Do not accept arbitrary supplied binaries and label them with the current Git HEAD merely because --version matches. Include a same-version/wrong-source fixture. Publication verifies manifest source against the exact tag and all payload checksums; it must never relabel an existing version or overwrite assets. Keep the shared artifact verifier below worker and release CLI dependencies, without creating a Mantle-worker-release dependency cycle.
+
+## Runtime license inputs
+
+The pinned Rust 1.97 installation includes share/doc/rust/COPYRIGHT-library.html (279302 bytes) under the sysroot reported by rustc --print sysroot. This is a concrete runtime notice input, separate from cargo-about's dependency graph; use the matching build toolchain's copy. Inspecting version.lo in the target's lib/self-contained/libc.a with ar and strings identifies the bundled musl as 1.2.5. The matching upstream notice was retrieved from https://git.musl-libc.org/cgit/musl/plain/COPYRIGHT?h=v1.2.5, 6204 bytes, SHA256 f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af. It includes the whole-library MIT grant and component-specific notices; retain the complete file. Local source input: $HOME/.cache/mantle-reliability/release-preflight/musl-1.2.5-COPYRIGHT. The host musl package notice is not a substitute for matching the built target's runtime. Keep runtime notice source/version metadata with produced artifacts, and refuse unrecognized build-runtime provenance rather than reuse this version's text silently.
+
+## Prebuilt installer bootstrap
+
+Include the Rust verifier/installer executable in the GNU CLI artifact alongside mantle. Document the initial trusted-manifest checksum verification and extraction before invoking that tool. The supported prebuilt installation path must not require compiling the installer from source. The manifest's payload inventory and fixed archive whitelist include that executable; worker archives retain the three existing worker filenames. Neither an archive checksum nor its adjacent manifest independently proves publisher authenticity.
+
+## Shared verifier dependency layout
+
+Read-only implementation preparation identified a concrete dependency cycle if the shared verifier remains in mantle-release: release commands need mantle-worker's existing bounded subprocess ownership, while worker upgrades need the verifier. Put strict manifest/archive/ELF verification in a small leaf crate crates/mantle-artifact, with no dependency on the application or worker. mantle-release depends on mantle-artifact plus mantle-worker; the later upgrade makes mantle-worker depend on mantle-artifact. Reuse the existing process owner instead of copying it or extracting a second orchestration library. This models existing ReleaseManifest/ReleaseArtifact values and does not introduce a new product noun.
+
+## CLI installation and worker activation
+
+The release install command atomically installs the GNU CLI bundle. Worker bundles are verified and staged for fresh worker delivery or the following explicit offline upgrade transaction. Do not offer an unguarded command that replaces helpers on an existing worker outside that transaction, and do not replace /opt/mantle/bin with a generation symlink: the existing Codex installation requires a real bin directory. The shared verifier has no activation-layout assumptions. Fresh CLI prefixes may use their own immutable-generation/current-pointer scheme.
+
+## Adversary routing
+
+Pass 1 is retained unchanged as review-result:prebuilt-release-adversary-1. Both cases failed alone and then in the 12-case release suite: 10 original passed, 2 added failed, exit 101. The actual build CLI accepts a clean checkout affected by ordinary .git/info/attributes; the export source bytes then differ from the declared commit. The actual installer accepts an extra unmanaged file in an existing generation on reinstall. The reviewer classifies source provenance as blocker and extra inventory as warning, without claiming that the extra file is executed.
+
+Coordinator attribution: both are introduced by this unit. `git ls-tree -r 70033de298405e7a28eaad9eaa9b0bb5ea0d8c44 -- crates/mantle-release` returned no entries; the base-to-6f4303 diff adds the complete implicated build.rs and lib.rs implementations (260 and 224 lines). This source comparison resolves the report's conservative undecided origins; no executable base comparison is claimed. Both findings return to the same implementor with their unchanged failing tests. Their outcomes remain pending until corrections land. No merge or implemented move occurs while the blocker stands.
+
+Correction 107f9c8bbdc9062cc24e54ac69e753d0f9e7fb68 retained both regressions unchanged and passed them with 14 release tests total. It validates complete archive contents against raw committed Git tree/blob objects with replacement refs disabled and validates exact existing generation inventory/types before reuse. One fixed review outcome is recorded per finding. The fresh production build from that source exited 0; installer qualification and the second adversary handoff follow. The initial pending outcome above records the routing decision at pass 1, not the present correction state.

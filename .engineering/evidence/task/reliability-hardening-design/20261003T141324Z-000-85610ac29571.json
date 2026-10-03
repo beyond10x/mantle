@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-03T14:13:24Z",
+  "actor": "human:timo",
+  "artifact": "task:reliability-hardening-design",
+  "kind": "task",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:reliability-hardening-design-structured",
+    "reference": "HD-01 remains open in task:reliability-conformance-boundary-expansion; specification observation gap with existing package coverage, no runtime defect established",
+    "review": "review-result:reliability-hardening-design-structured",
+    "outcome": "escalated"
+  }
+}

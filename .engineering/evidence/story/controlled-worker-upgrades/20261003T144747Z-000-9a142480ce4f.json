@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T14:47:47Z",
+  "actor": "human:timo",
+  "artifact": "story:controlled-worker-upgrades",
+  "kind": "story",
+  "revision": 40,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check at19c817f exited0 with main-filesystem TMPDIR: full391 complete ESS cases, nativeCLI273, authored277, workspace tests/clippy/fmt/AEP/docs passed. Prior tmpfs run exited201 after release tests reported disk quota122; retained without relabeling as green.",
+    "reference": "$HOME/.cache/mantle-reliability/integration/wave5-gate-retry.log"
+  }
+}
