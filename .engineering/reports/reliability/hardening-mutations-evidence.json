@@ -1,0 +1,334 @@
+{
+  "format": "mantle-reliability-mutation-evidence/1",
+  "source_commit": "ab4d3f9bc81d3b3e1a3c9557f08fa4543bf62d60",
+  "scope": "Native CLI ESS component (263 scenarios); selected exec/profile/doctor/release integration suites. Units 1–4 only; no full 381-scenario integration gate claim.",
+  "method": "ESS hardening technique 1 manual implementation mutations. Existing native runner synthesizes hardcoded authored suites and has no emitted-suite/report input seam.",
+  "ir": {
+    "command": "ess specify compile --path spec --format json --out \"$HOME/.cache/mantle-reliability/hardening-mutations/ir.json\"",
+    "sha256": "98c0dc6b990be11014b12754a9acda159638e7d8eeca2f152aaa1ec47d580053",
+    "exit": 0
+  },
+  "environment": "export PATH=\"$HOME/.cache/aap-ess-upgrade/ess-0.50/bin:$PATH\" CARGO_TARGET_DIR=\"$HOME/.cache/mantle-reliability/hardening-mutations-target\" TMPDIR=/dev/shm/mantle-hardening-mutations-tmp CARGO_BUILD_JOBS=2 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 RUST_TEST_THREADS=1 RUSTC_WRAPPER=/usr/bin/sccache SCCACHE_SERVER_PORT=43179 SCCACHE_DIR=/dev/shm/mantle-reliability-compiler-cache SCCACHE_CACHE_SIZE=1G SCCACHE_IDLE_TIMEOUT=0; ",
+  "baseline": {
+    "ess": {
+      "command": "cargo test --locked -p mantle --bin mantle ess_generated_local_conformance -- --nocapture",
+      "passed": 263,
+      "exit": 0
+    },
+    "native": {
+      "cli": 11,
+      "release": 15,
+      "exit": 0
+    }
+  },
+  "mutants": [
+    {
+      "id": "m1-exec-nonterminal",
+      "rule": "mantle.orchestration.ExecOutcome",
+      "path": "crates/mantle/src/app/session.rs",
+      "removed": "if observed.state != ExecState::Exited || observed.refusal.is_some() {",
+      "planted": "if observed.refusal.is_some() {",
+      "patch": "m1-exec-nonterminal.patch",
+      "known_kill_control": true,
+      "commands": {
+        "ess": "cargo test --locked -p mantle --bin mantle ess_generated_local_conformance -- --nocapture",
+        "native": "cargo test --locked -p mantle --test command_correctness"
+      },
+      "initial_result": "detected",
+      "initial_ess": {
+        "exit": 101,
+        "error": 0,
+        "failed": 1,
+        "passed": 262,
+        "skipped": 0,
+        "total": 263,
+        "unsupported": 0,
+        "nonpasses": [
+          {
+            "scenario": "mantle.orchestration/authored/exec-indeterminate",
+            "status": "failed"
+          }
+        ]
+      },
+      "initial_native": {
+        "exit": 101,
+        "executed": 1,
+        "failed": 1
+      },
+      "restored": {
+        "ess_passed": 263,
+        "native_passed": 1,
+        "ess_exit": 0,
+        "native_exit": 0
+      },
+      "evidence_prefix": "m1-exec-nonterminal"
+    },
+    {
+      "id": "m2-profile-override",
+      "rule": "mantle.operator.SelectProfile",
+      "path": "crates/mantle/src/profile.rs",
+      "removed": "config.is_none() && state.is_none(),",
+      "planted": "config.is_none() || state.is_none(),",
+      "patch": "m2-profile-override.patch",
+      "known_kill_control": false,
+      "commands": {
+        "ess": "cargo test --locked -p mantle --bin mantle ess_generated_local_conformance -- --nocapture",
+        "native": "cargo test --locked -p mantle --test profiles"
+      },
+      "initial_result": "detected",
+      "initial_ess": {
+        "exit": 101,
+        "error": 0,
+        "failed": 1,
+        "passed": 262,
+        "skipped": 0,
+        "total": 263,
+        "unsupported": 0,
+        "nonpasses": [
+          {
+            "scenario": "mantle.operator/authored/profile-env-conflict",
+            "status": "failed"
+          }
+        ]
+      },
+      "initial_native": {
+        "exit": 101,
+        "executed": 6,
+        "failed": 1
+      },
+      "restored": {
+        "ess_passed": 263,
+        "native_passed": 6,
+        "ess_exit": 0,
+        "native_exit": 0
+      },
+      "evidence_prefix": "m2-profile-override"
+    },
+    {
+      "id": "m3-profile-isolation",
+      "rule": "mantle.operator.ProfileStateIsolation",
+      "path": "crates/mantle/src/profile.rs",
+      "removed": "state_dir: profile.state_dir,",
+      "planted": "state_dir: home.join(\"one\"),",
+      "patch": "m3-profile-isolation.patch",
+      "known_kill_control": false,
+      "commands": {
+        "ess": "cargo test --locked -p mantle --bin mantle ess_generated_local_conformance -- --nocapture",
+        "native": "cargo test --locked -p mantle --test profiles"
+      },
+      "initial_result": "detected",
+      "initial_ess": {
+        "exit": 101,
+        "error": 2,
+        "failed": 0,
+        "passed": 261,
+        "skipped": 0,
+        "total": 263,
+        "unsupported": 0,
+        "nonpasses": [
+          {
+            "scenario": "mantle.operator.ProfileStateIsolation/outcome/returned",
+            "status": "error"
+          },
+          {
+            "scenario": "mantle.operator/authored/profile-state-isolation",
+            "status": "error"
+          }
+        ]
+      },
+      "initial_native": {
+        "exit": 101,
+        "executed": 6,
+        "failed": 3
+      },
+      "restored": {
+        "ess_passed": 263,
+        "native_passed": 6,
+        "ess_exit": 0,
+        "native_exit": 0
+      },
+      "evidence_prefix": "m3-profile-isolation"
+    },
+    {
+      "id": "m4-doctor-initializes-state",
+      "rule": "mantle.operator.DiagnoseWorker",
+      "path": "crates/mantle/src/app/doctor.rs",
+      "removed": "let context = RuntimeContext { config, selection };",
+      "planted": "let context = RuntimeContext { config, selection };\n    let _ = context.selection.prepare_state();",
+      "patch": "m4-doctor-initializes-state.patch",
+      "known_kill_control": false,
+      "commands": {
+        "ess": "cargo test --locked -p mantle --bin mantle ess_generated_local_conformance -- --nocapture",
+        "native": "cargo test --locked -p mantle --test doctor"
+      },
+      "initial_result": "detected",
+      "initial_ess": {
+        "exit": 101,
+        "error": 0,
+        "failed": 1,
+        "passed": 262,
+        "skipped": 0,
+        "total": 263,
+        "unsupported": 0,
+        "nonpasses": [
+          {
+            "scenario": "mantle.operator/authored/doctor-state-missing",
+            "status": "failed"
+          }
+        ]
+      },
+      "initial_native": {
+        "exit": 101,
+        "executed": 4,
+        "failed": 1
+      },
+      "restored": {
+        "ess_passed": 263,
+        "native_passed": 4,
+        "ess_exit": 0,
+        "native_exit": 0
+      },
+      "evidence_prefix": "m4-doctor-initializes-state"
+    },
+    {
+      "id": "m5-release-archive-digest",
+      "rule": "mantle.operator.VerifyRelease",
+      "path": "crates/mantle-artifact/src/lib.rs",
+      "removed": "bytes.len() as u64 == artifact.size_bytes && sha256(bytes) == artifact.sha256,",
+      "planted": "bytes.len() as u64 == artifact.size_bytes,",
+      "patch": "m5-release-archive-digest.patch",
+      "known_kill_control": false,
+      "commands": {
+        "ess": "cargo test --locked -p mantle --bin mantle ess_generated_local_conformance -- --nocapture",
+        "native": "cargo test --locked -p mantle-release --test release"
+      },
+      "initial_result": "survived",
+      "initial_ess": {
+        "exit": 0,
+        "error": 0,
+        "failed": 0,
+        "passed": 263,
+        "skipped": 0,
+        "total": 263,
+        "unsupported": 0,
+        "nonpasses": []
+      },
+      "initial_native": {
+        "exit": 0,
+        "executed": 15,
+        "failed": 0
+      },
+      "restored": {
+        "ess_passed": 263,
+        "native_passed": 16,
+        "ess_exit": 0,
+        "native_exit": 0
+      },
+      "evidence_prefix": "m5-release-archive-digest"
+    }
+  ],
+  "finding": {
+    "id": "MUT-001",
+    "classification": "missing scenario / insufficient fixture",
+    "origin": "Introduced within current unreleased packaging unit in 617c89bcfcf4caffa769ecdc9a10ec426d8c8cb5; present at hardening baseline ab4d3f9. Release crates absent in 617c89b parent. No claim about shipped 0.1.4 behavior.",
+    "description": "Archive hash deletion survived 263 ESS scenarios and 15 release integration tests because tampered archives also changed size.",
+    "resolution": "Existing ESS release-checksum-refusal fixture flips one TAR padding byte without changing archive length, member metadata or payload bytes; new native same_length_archive_padding_corruption_is_refused preserves existing truncation test.",
+    "retest": {
+      "ess_failed": [
+        "mantle.operator/authored/release-checksum-refusal"
+      ],
+      "ess_exit": 101,
+      "native_failed": [
+        "same_length_archive_padding_corruption_is_refused"
+      ],
+      "native_command": "cargo test --locked -p mantle-release --test release same_length_archive_padding_corruption_is_refused",
+      "native_exit": 101,
+      "evidence_prefix": "m5-release-archive-digest-strengthened",
+      "restored_ess_passed": 263,
+      "restored_native_passed": 16,
+      "restored_exits": [
+        0,
+        0
+      ]
+    }
+  },
+  "survivors": {
+    "initial": 1,
+    "remaining_after_test_hardening": 0
+  },
+  "retained_patch": "tests-only.patch",
+  "production_restored": true,
+  "specification_unchanged": true,
+  "checks": {
+    "fmt": 0,
+    "clippy": 0,
+    "final_ess": {
+      "passed": 263,
+      "exit": 0
+    },
+    "production_restore": 0,
+    "cleanup": 0
+  },
+  "not_run": [
+    "2 random command sequences",
+    "3 real-caller replay",
+    "4 determinism",
+    "5 metamorphic relations",
+    "6 exhaustive guard analysis",
+    "7 spec diff gate",
+    "8 design review"
+  ],
+  "limits": [
+    "Five selected implementation rules only; no exhaustive mutation score.",
+    "Profile isolation mutation yielded two ESS error statuses, not failed assertions; three real CLI tests also failed. Those errors are not counted as unknown/zero-execution kills.",
+    "Native mutation emit/collect was not used; no interpreted-model result was substituted.",
+    "Initial incorrect --lib probe exited101 because Mantle is a binary target; preserved in preflight-wrong-target.*, excluded from technique evidence.",
+    "Final Clippy initially rejected the test fixture's modulo spelling (exit101); changed to is_multiple_of, then formatting/Clippy/263 ESS passed. Both lint outputs retained."
+  ],
+  "lease": {
+    "session": "codex-hardening-mutations",
+    "status": "released",
+    "remaining_live_leases": 0
+  },
+  "storage": {
+    "retained_scratch": "$HOME/.cache/mantle-reliability/hardening-mutations",
+    "scratch_bytes_observed": 3907774,
+    "retained_ignored_generated_drafts": {
+      "path": "$HOME/.local/state/worktree/trees/b10x/mantle/mantle-hardening-mutations/.engineering/drafts",
+      "bytes": 1617655
+    },
+    "removed": [
+      {
+        "path": "$HOME/.cache/mantle-reliability/hardening-mutations-target",
+        "bytes_before_removal": 3044045408
+      },
+      {
+        "path": "/dev/shm/mantle-hardening-mutations-tmp",
+        "bytes_before_removal": 150862815
+      }
+    ],
+    "shared_cache": "untouched; existing sccache server port43179 remains running",
+    "free_space_after": "root17GiB, tmpfs13GiB"
+  },
+  "retained_patch_sha256": "f24c2900c0bde116d6fc8f89b9040d6b66af8a14b9636ac71ef60738a867e7df",
+  "findings": [
+    {
+      "file": "crates/mantle/src/adapters/orchestration.rs",
+      "line": 883,
+      "category": "mutant",
+      "severity": "warning",
+      "verdict": "CONFIRMED",
+      "origin": "introduced",
+      "message": "MUT-001: At hardening baseline ab4d3f9, deleting whole-archive digest verification survived all 263 CLI ESS scenarios and 15 release tests because the checksum fixtures also changed archive size; this coverage gap was introduced within the current unreleased packaging unit."
+    }
+  ],
+  "final_source_edits": "is_multiple_of spelling in cfg(test) checksum fixture; production mutations all reverted, retained diff only two test files",
+  "final_checks": {
+    "fmt_exit": 0,
+    "clippy_exit": 0,
+    "ess_exit": 0,
+    "ess_passed": 263,
+    "release_exit": 0,
+    "release_passed": 16
+  }
+}

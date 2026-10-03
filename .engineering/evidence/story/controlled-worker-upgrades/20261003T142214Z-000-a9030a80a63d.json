@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-03T14:22:14Z",
+  "actor": "human:timo",
+  "artifact": "story:controlled-worker-upgrades",
+  "kind": "story",
+  "revision": 40,
+  "change": {
+    "change": "evidence",
+    "kind": "review_outcome",
+    "source": "review-result:reliability-wave5-adversary-pass1",
+    "reference": "a7ac0ca5c46a72a91e834d18b5cb01962563b800; unchanged regression green, completed journals observed read-only, unfinished journals exclude Installer",
+    "review": "review-result:reliability-wave5-adversary-pass1",
+    "outcome": "fixed"
+  }
+}

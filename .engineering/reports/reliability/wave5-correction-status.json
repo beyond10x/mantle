@@ -1,0 +1,20 @@
+{
+  "format": "mantle-unit-check-status/1",
+  "evidence": "Direct unified-exec completion statuses, not inferred from log tails.",
+  "checks": [
+    {"log":"correction-red.log","command":"cargo test --locked -p mantle-worker --test offline_upgrade adversary_completed_upgrade_retry_preserves_later_codex_installation -- --exact","exit":101,"passed":0,"failed":1,"session":74101},
+    {"log":"correction-class-red.log","command":"cargo test --locked -p mantle-worker --test offline_upgrade terminal_journal","exit":101,"passed":0,"failed":2,"session":67855},
+    {"log":"correction-case.log","command":"cargo test --locked -p mantle-worker --test offline_upgrade adversary_completed_upgrade_retry_preserves_later_codex_installation -- --exact","exit":0,"executed":1,"session":97411},
+    {"log":"correction-writer-red.log","command":"cargo test --locked -p mantle-worker --lib upgrade::tests::pending_helper_transaction_excludes_codex_writer_before_fetch_or_agent_paths -- --exact","exit":101,"passed":0,"failed":1},
+    {"log":"correction-worker.log","command":"cargo test --locked -p mantle-worker","exit":0,"library":31,"transaction":14,"cli":1,"total":46,"session":74358},
+    {"log":"correction-fmt.log","command":"cargo fmt --check","exit":0},
+    {"log":"correction-assertions-unchanged.log","command":"cmp extracted retained adversary function with original case.patch function","exit":0},
+    {"log":"correction-mantle.log","command":"cargo test --locked -p mantle","exit":0,"total":64,"cli_native":273,"session":27713},
+    {"log":"correction-clippy.log","command":"cargo clippy --locked -p mantle-worker -p mantle --all-targets -- -D warnings","exit":0,"session":82901},
+    {"log":"correction-musl.log","command":"cargo check --locked -p mantle-worker --target x86_64-unknown-linux-musl","exit":0},
+    {"log":"correction-commit.log","command":"b10x-gates bot -- commit -m fix(worker): preserve agent installs after completed upgrades","exit":1,"session":54895,"diagnostic":"GitHub request failed; sensitive response withheld","head_unchanged":"ac534be9bfe3ca4a274fe5d53b06ca3822a18ba5"},
+    {"log":"correction-commit-retry.log","command":"same authorized b10x-gates bot commit route","exit":0,"session":74751,"commit":"a7ac0ca5c46a72a91e834d18b5cb01962563b800"},
+    {"log":"correction-docs-build.log","command":"cargo run --locked -p mantle-docs -- build --out website/build --commit a7ac0ca5c46a72a91e834d18b5cb01962563b800","exit":0},
+    {"log":"correction-lease-end.log","command":"worktree hook session-end --session codex-worker-upgrades","exit":0}
+  ]
+}

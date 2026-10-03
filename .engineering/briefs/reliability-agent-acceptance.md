@@ -67,3 +67,10 @@ Installed release generations do not currently retain manifest.json, and mantle 
 no source commit. Bind known runner provenance to an explicitly supplied verified manifest AND the
 selected executable's digest, or report unknown. A generation directory name/version alone is no
 proof. Keep document build provenance distinct from publication; the root records the final gate.
+
+Read the story's Structured ownership and bounded metadata preparation and
+../reports/reliability/wave7-preparation.md. Route JSON before writable startup, snapshot read-only
+SQLite before remote waits, and use bounded process-aware transport rather than synchronous connect.
+Prove first-created session ownership or retain an unresolved checkpoint without automatic cleanup.
+Pin resolved profile selection and bind attestations to owned generations; revalidate the selected
+executable across resume. A manifest without its sibling verified archives is not known provenance.

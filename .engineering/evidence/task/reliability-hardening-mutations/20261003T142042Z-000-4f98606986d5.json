@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T14:20:42Z",
+  "actor": "human:timo",
+  "artifact": "task:reliability-hardening-mutations",
+  "kind": "task",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Pinned ESS263 green; selected exec/profile/doctor11 green on restoration; release16 green; fmt and clippy0. Five mutants, initial4 detected/1 survivor, strengthened digest fixture detected final survivor before exact production restoration.",
+    "reference": ".engineering/reports/reliability/hardening-mutations-evidence.json"
+  }
+}
