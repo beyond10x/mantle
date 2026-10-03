@@ -467,7 +467,7 @@ fn live(store: &Store, name: &str) -> Result<SessionRecord> {
 
 /// Runs one command in a session's workspace under the agent's confinement (toolchain root,
 /// aperture, environment) but without its credential, and prints what Substrate observed.
-pub async fn exec(config: &Config, store: &Store, name: &str, argv: &[String]) -> Result<()> {
+pub async fn exec(config: &Config, store: &Store, name: &str, argv: &[String]) -> Result<u8> {
     let record = live(store, name)?;
     let (program, args) = argv.split_first().context("no command given")?;
     let connected = connect(config, &worker(store)?).await?;
@@ -487,14 +487,52 @@ pub async fn exec(config: &Config, store: &Store, name: &str, argv: &[String]) -
         .unwrap_or(4);
     let command = exec_request(program, args, cpu).command(&workspace)?;
     let output = command.run().await.context("running the command")?;
-    use std::io::Write as _;
-    std::io::stdout().write_all(&output.stdout)?;
-    std::io::stderr().write_all(&output.stderr)?;
-    eprintln!(
+    write_exec_output(
+        &output,
+        &mut std::io::stdout().lock(),
+        &mut std::io::stderr().lock(),
+    )
+}
+
+pub(crate) fn write_exec_output(
+    output: &b10x_substrate_sdk::RunOutput,
+    stdout: &mut impl std::io::Write,
+    stderr: &mut impl std::io::Write,
+) -> Result<u8> {
+    stdout.write_all(&output.stdout)?;
+    stderr.write_all(&output.stderr)?;
+    writeln!(
+        stderr,
         "[mantle exec] {} {:?} {:?} refusal={:?}",
         output.exec.id, output.exec.state, output.exec.exit, output.exec.refusal
-    );
-    Ok(())
+    )?;
+    exec_exit_code(&output.exec)
+}
+
+/// Only an unambiguous observed exit can become a command's process status.
+pub(crate) fn exec_exit_code(observed: &b10x_substrate_sdk::ExecObservation) -> Result<u8> {
+    use b10x_substrate_sdk::Signal;
+    if observed.state != ExecState::Exited || observed.refusal.is_some() {
+        bail!(
+            "remote command has no successful terminal observation: {:?}, refusal={:?}",
+            observed.state,
+            observed.refusal
+        );
+    }
+    let exit = observed
+        .exit
+        .as_ref()
+        .context("remote command has no observed exit")?;
+    match (exit.code, exit.signal) {
+        (Some(code), None) => Ok(code),
+        (None, Some(signal)) => Ok(128
+            + match signal {
+                Signal::Interrupt => 2,
+                Signal::Terminate => 15,
+                Signal::Kill => 9,
+            }),
+        _ => bail!("remote command has missing or contradictory exit fields: {exit:?}"),
+    }
 }
 
 pub fn list(store: &Store) -> Result<()> {

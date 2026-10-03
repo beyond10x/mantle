@@ -2,8 +2,8 @@
   "format": "mantle-conformance-baseline/1",
   "components": {
     "mantle-cli": {
-      "answered_floor": 218,
-      "total_floor": 218,
+      "answered_floor": 230,
+      "total_floor": 230,
       "skipped_ceiling": 0
     },
     "mantle-egress": {
@@ -222,6 +222,16 @@
     "mantle.orchestration/authored/codex-private-runtime",
     "mantle.orchestration/authored/codex-start",
     "mantle.orchestration/authored/exec-request",
+    "mantle.orchestration/authored/exec-exit-zero",
+    "mantle.orchestration/authored/exec-exit-nonzero",
+    "mantle.orchestration/authored/exec-signal",
+    "mantle.orchestration/authored/exec-indeterminate",
+    "mantle.orchestration/authored/exec-output",
+    "mantle.orchestration/authored/source-branch",
+    "mantle.orchestration/authored/source-lightweight-tag",
+    "mantle.orchestration/authored/source-annotated-tag",
+    "mantle.orchestration/authored/source-pinned-commit",
+    "mantle.orchestration/authored/source-missing-ref",
     "mantle.orchestration/authored/kubevirt-down-always",
     "mantle.orchestration/authored/kubevirt-down-missing",
     "mantle.orchestration/authored/kubevirt-refused-find",
