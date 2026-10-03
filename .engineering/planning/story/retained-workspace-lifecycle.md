@@ -16,12 +16,20 @@ scope:
   path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
   path: crates/mantle/src/adapters/state.rs
+- confidence: inferred
+  path: crates/mantle/src/adapters/state/lifecycle.rs
+- confidence: inferred
+  path: crates/mantle/src/app/lifecycle.rs
 - confidence: cited
   path: crates/mantle/src/app/session.rs
 - confidence: cited
   path: crates/mantle/src/domain/session.rs
 - confidence: cited
   path: crates/mantle/src/main.rs
+- confidence: inferred
+  path: crates/mantle/tests/retained_workspaces.rs
+- confidence: inferred
+  path: crates/mantle/tests/support/lifecycle_ssh.rs
 - confidence: inferred
   path: generated/session-model
 - confidence: inferred
@@ -36,7 +44,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 30
+revision: 35
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
 - {from: "proposed", to: "active", at: "2026-10-03T14:48:25Z", actor: "human:timo", revision: 30}
@@ -48,7 +56,10 @@ Separate process lifetime from workspace destruction using the existing mantle.s
 Named scenarios retain-stop, retain-repeat-stop, retain-interrupted-stop, retain-files-auth, retain-restart, retain-restart-failure, retain-attach-refusal, destroy-explicit-confirmation, destroy-readback, destroy-repeat, retain-legacy-stopped and retain-other-session-survives. Kill/wait/retire descendants before marking retained; unknown remains incomplete and retryable. Explicit destroy has existing unknown-outcome read-back and no silent success. Existing STOPPED rows retain their historical destroyed meaning; no fabricated recoverability. Names remain reserved while workspace retained. Restart uses persisted selected agent/cwd/resources and existing private paths, never overwrites auth cache or user files; missing workspace is actionable, no implicit recreation. All local state migration and ESS native tests cover old/new schema. Controlled actual filesystem tests prove retained markers survive and deletion affects only selected workspace; live authenticated credentials need not be copied or inspected.
 
 ## Scope
+
 Cited: domain/session.rs, app/session.rs, adapters/state.rs, Session ESS lifecycle, orchestration Stop command and native tests. Inferred: restart request context persistence/migration, CLI/help/docs and lifecycle cases. Serialized after earlier session/worker changes. No VM-loss recovery guarantee or agent-specific conversation-resume protocol.
+
+Implementation preparation adds inferred module boundaries crates/mantle/src/app/lifecycle.rs and crates/mantle/src/adapters/state/lifecycle.rs, with actual CLI fixtures in crates/mantle/tests/retained_workspaces.rs and crates/mantle/tests/support/lifecycle_ssh.rs. These separate lifecycle orchestration and atomic state claims from already substantial session.rs. Existing destructive Stop scenarios retain their purpose as explicit Destroy or legacy migration coverage; new Stop scenarios assert retention. No acceptance case is dropped by renaming the command.
 
 ## Migration and interrupted intent
 
