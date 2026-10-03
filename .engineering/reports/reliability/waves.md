@@ -255,3 +255,14 @@ paths, and spec/components.yaml admission updates. The first production regressi
 old Stop destroying the workspace; the unit's ESS draft refusal remains in its raw evidence.
 The final PR draft is retained privately under .engineering/drafts/reliability-pr.md with explicit
 placeholders for the last two units and final gate; it is not published or treated as completion.
+
+Final-unit scheduling refinement: after the retained-lifecycle gate, the acceptance runtime unit
+will receive a disjoint documentation delegate for README.md, website/index.html and spec/README.md.
+This is existing story:repeatable-agent-acceptance scope, not another roadmap item or audit. Runtime
+implementation excludes those paths. The documentation branch will join the acceptance unit before
+its adversarial review and full integration gate. The persisted delegate brief defines the boundary.
+Planned managed id mantle-final-documentation, branch unit/mantle-final-documentation, tree
+$HOME/.local/state/worktree/trees/b10x/mantle/mantle-final-documentation, lease codex-final-documentation,
+target $HOME/.cache/mantle-reliability/final-documentation-target, TMPDIR
+$HOME/.cache/mantle-reliability/final-documentation-tmp, scratch
+$HOME/.cache/mantle-reliability/final-documentation. No tree or delegate has been started yet.

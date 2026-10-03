@@ -50,6 +50,12 @@ inventory, supported agents, lifecycle and current conformance counts; distingui
 refreshes the published native evidence ledger from the final exact run and creates the one PR.
 No main merge, tag, source release or website deployment is part of this task.
 
+The coordinator delegates README.md, website/index.html and spec/README.md to a separate managed
+documentation tree under reliability-final-documentation.md. The runtime implementor does not
+edit those three files. Supply the settled runner interface and measured counts to that delegate;
+the coordinator combines both branches before this unit's adversarial review. All other assigned
+source, specification and test files remain with the runtime implementor.
+
 Final documentation checklist from read-only source inspection:
 - Split AWS/KubeVirt prerequisites and make the opening worker-up example provider-neutral.
 - Distinguish source-build prerequisites from verified candidate-bundle use, with no new release claim.
