@@ -11,6 +11,8 @@ scope:
 - confidence: inferred
   path: README.md
 - confidence: cited
+  path: crates/mantle/src/adapters/conformance.rs
+- confidence: cited
   path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
   path: crates/mantle/src/adapters/state.rs
@@ -34,7 +36,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 28
+revision: 29
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
 ---
