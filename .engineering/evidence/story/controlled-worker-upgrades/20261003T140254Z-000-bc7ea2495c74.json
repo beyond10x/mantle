@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T14:02:54Z",
+  "actor": "human:timo",
+  "artifact": "story:controlled-worker-upgrades",
+  "kind": "story",
+  "revision": 40,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "Coordinator confirms reachable introduced defect: upgrade.rs absent at c63d5a6 and introduced at ac534be; corrected real-filesystem regression exits 101. Origin classification is source-based, not a base execution. Supported installer effect modeled under HostLock.",
+    "reference": ".engineering/planning/review-result/reliability-wave5-adversary-pass1.md"
+  }
+}

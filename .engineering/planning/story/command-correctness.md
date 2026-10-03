@@ -33,7 +33,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 22
+revision: 23
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:26:55Z", actor: "human:timo", revision: 13}
 - {from: "proposed", to: "active", at: "2026-10-03T08:26:55Z", actor: "human:timo", revision: 14}
@@ -48,3 +48,13 @@ Named ESS cases: exec-exit-zero, exec-exit-nonzero, exec-signal, exec-indetermin
 
 ## Scope
 Cited from read-only story-scoper: session.rs, main.rs, adapters/orchestration.rs, website/index.html and spec/README.md. Inferred: orchestration domain/scenarios/inputs/baseline, real-process test file and generated worker-model provenance when specification changes. README success-warning is removed only after verified fix. Scope overlaps subsequent profiles/doctor main and conformance edits, so units are serial.
+
+## Hardening contract clarification
+
+HD-11 resolves the wording of existing acceptance, without adding response salvage behavior.
+Exact stdout/stderr preservation applies after the SDK envelope decodes successfully. An invalid
+wire exit code such as 256 fails RunOutput deserialization before write_exec_output receives any
+streams; the CLI reports failure rather than recovering terminal bytes from a malformed response.
+This matches the named exec-indeterminate scenario and production adapter flow. README is clarified
+and the final documentation brief preserves this boundary. Binary output after successful decoding
+remains required; HD-01 separately identifies its missing ESS representation.

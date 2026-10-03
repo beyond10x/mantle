@@ -7,7 +7,7 @@ integration gate; the execution record supplies the exact base and measured coun
 - Managed id and branch: `mantle-retained-workspaces`, `unit/mantle-retained-workspaces`.
 - Checkout: `$HOME/.local/state/worktree/trees/b10x/mantle/mantle-retained-workspaces`.
 - Implementor lease: `codex-retained-workspaces`.
-- Target: `/dev/shm/mantle-retained-workspaces-target`.
+- Target: `$HOME/.cache/mantle-reliability/retained-workspaces-target`.
 - Temporary files: `/dev/shm/mantle-retained-workspaces-tmp`.
 - Scratch: `$HOME/.cache/mantle-reliability/retained-workspaces`.
 

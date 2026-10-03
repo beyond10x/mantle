@@ -134,3 +134,26 @@ Operator explicitly requested subagents for ess:hardening while unit5 review run
 Assigned design triple: managed mantle-hardening-design, branch verify/mantle-hardening-design, checkout $HOME/.local/state/worktree/trees/b10x/mantle/mantle-hardening-design, scratch $HOME/.cache/mantle-reliability/hardening-design, temporary /dev/shm/mantle-hardening-design-tmp; no compiler target. Assigned mutation triple: managed mantle-hardening-mutations, branch verify/mantle-hardening-mutations, checkout $HOME/.local/state/worktree/trees/b10x/mantle/mantle-hardening-mutations, scratch $HOME/.cache/mantle-reliability/hardening-mutations, target $HOME/.cache/mantle-reliability/hardening-mutations-target, temporary /dev/shm/mantle-hardening-mutations-tmp. Both fork this committed checkpoint, whose runtime matches the green381-case gate. Only mutation task compiles; root12GiB/tmpfs14GiB available at selection. Persisted briefs own exact scope and controls. The unit5 implementor remains available for its correction; hardening uses separate agents/worktrees.
 
 Both hardening worktrees were created through worktree at ab4d3f9bc81d3b3e1a3c9557f08fa4543bf62d60 after the opening commit's AEP and format checks. Exact git diff from green gate8195f85 to that base is empty for Cargo manifests/lock, crates, generated, deploy and spec. substrate_output_queue owns the design review; fresh reliability_mutation_hardening owns the mutation audit. Both received persisted briefs and explicit Rust-only/no-live-operation/sole-AEP-writer rules. They run alongside unit5 review, leaving its implementor available when review hands back.
+
+Unit5 adversary pass1 is recorded unchanged as review-result:reliability-wave5-adversary-pass1.
+The corrected isolated regression and transaction suite both exit101 (suite11 passed/1 failed).
+A supported first Codex installation after a completed helper upgrade adds its stable link;
+retrying the helper upgrade then removes that link while reporting applied-restart-required.
+The fixture models the coherent installer filesystem effect under the real HostLock, not an
+actual agent download. Root read the full report and tests-only diff, classified the finding
+introduced from the entire upgrade module's absence in the base, and routed correction to the
+same implementor after the reviewer released its lease. No base execution is claimed for origin.
+
+The design hardener validated the pinned specification and demonstrated HD-C01 by removing
+source_commit on a scratch copy: validation alone stayed green, manual mapping review detected
+the omission, and restoring yielded the original exact tree. The full report is retained as
+review-result:reliability-hardening-design with its small evidence JSON. Nine actual specification
+gaps, one stale mapping and one ambiguity remain; no runtime defect was established by this review.
+HD-10 is assigned to unit7's existing final mapping work. Root clarified HD-11 in the command
+story and README: byte preservation follows successful SDK-envelope decoding, without a malformed
+response salvage promise. A read-only remediation scope is requested for HD-01 through HD-09.
+The mutation audit remains running and has measured its first known-kill control red then green.
+
+A fresh bot fetch still observes main df32e9cc4876776aa46fee8c91c5d351d53f6650 as an ancestor of
+integration. Future unit6/unit7 briefs now use unique root-filesystem compiler targets rather
+than tmpfs targets; their temporary directories remain distinct. No live resources were queried.

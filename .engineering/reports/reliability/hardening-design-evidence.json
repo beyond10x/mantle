@@ -1,0 +1,183 @@
+{
+  "format": "mantle-hardening-design-evidence/1",
+  "task": "task:reliability-hardening-design",
+  "technique": 8,
+  "base": "ab4d3f9bc81d3b3e1a3c9557f08fa4543bf62d60",
+  "branch": "verify/mantle-hardening-design",
+  "verdict": "findings",
+  "source_edited": false,
+  "builds_run": false,
+  "runtime_tests_run": false,
+  "live_calls": false,
+  "prior_gate": {
+    "source": "coordinator_handoff",
+    "commit": "8195f85",
+    "complete_cases": 381,
+    "rerun_by_reviewer": false
+  },
+  "validation": {
+    "baseline_exit": 0,
+    "planted_exit": 0,
+    "restored_exit": 0,
+    "files": 8,
+    "authored_scenarios": 268
+  },
+  "control": {
+    "id": "HD-C01",
+    "planted_defect": "Removed ReleaseManifest.source_commit field from isolated spec copy",
+    "method": "manual design-to-spec review supported by a declaration locator, not a runtime conformance test",
+    "classification": "missing",
+    "red_named_finding": "HD-C01",
+    "red_locator_exit": 1,
+    "planted_diff_exit": 1,
+    "restored_locator_exit": 0,
+    "restored_copy_comparison_exit": 0,
+    "restored_mapping": "pass",
+    "baseline_overall": "not_clean"
+  },
+  "classification_counts": {
+    "missing": 9,
+    "contradicts": 0,
+    "stale mapping": 1,
+    "spec-only": 0,
+    "unclear": 1
+  },
+  "findings": [
+    {
+      "id": "HD-01",
+      "classification": "missing",
+      "kind": "spec_gap",
+      "title": "ExecOutcome cannot express non-UTF-8 byte preservation",
+      "design": ".engineering/planning/story/command-correctness.md:47",
+      "spec": "spec/domains/orchestration.yaml:61",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    },
+    {
+      "id": "HD-02",
+      "classification": "missing",
+      "kind": "spec_gap",
+      "title": "Profile transport identities and bounded private socket paths unrepresented",
+      "design": ".engineering/planning/story/named-profiles.md:68",
+      "spec": "spec/domains/operator.yaml:116",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    },
+    {
+      "id": "HD-03",
+      "classification": "missing",
+      "kind": "spec_gap",
+      "title": "Doctor timeout/local IO bounds and descendant cleanup unrepresented",
+      "design": ".engineering/planning/story/worker-doctor.md:76",
+      "spec": "spec/domains/operator.yaml:122",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    },
+    {
+      "id": "HD-04",
+      "classification": "missing",
+      "kind": "spec_gap",
+      "title": "Doctor safe rendered reports, optional selection and CLI exit unrepresented",
+      "design": ".engineering/planning/story/worker-doctor.md:63",
+      "spec": "spec/domains/operator.yaml:122",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    },
+    {
+      "id": "HD-05",
+      "classification": "missing",
+      "kind": "spec_gap",
+      "title": "Doctor independent installed/live/wire identity and WAL freshness unrepresented",
+      "design": ".engineering/planning/story/worker-doctor.md:70",
+      "spec": "spec/scenarios/cli/doctor-version-mismatch.yaml:10",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    },
+    {
+      "id": "HD-06",
+      "classification": "missing",
+      "kind": "spec_gap",
+      "title": "Exact source build provenance reduced to malformed identity refusal",
+      "design": ".engineering/planning/story/prebuilt-release-artifacts.md:82",
+      "spec": "spec/scenarios/cli/release-manifest-identities.yaml:1",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    },
+    {
+      "id": "HD-07",
+      "classification": "missing",
+      "kind": "spec_gap",
+      "title": "Installation atomicity reduced to unmanaged collision refusal",
+      "design": ".engineering/planning/story/prebuilt-release-artifacts.md:59",
+      "spec": "spec/scenarios/cli/release-install-atomic.yaml:1",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    },
+    {
+      "id": "HD-08",
+      "classification": "missing",
+      "kind": "spec_gap",
+      "title": "Publication authority/tag/immutability has no ESS operation",
+      "design": ".engineering/planning/story/prebuilt-release-artifacts.md:66",
+      "spec": "spec/domains/operator.yaml:71",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    },
+    {
+      "id": "HD-09",
+      "classification": "missing",
+      "kind": "spec_gap",
+      "title": "Archive/runtime/license guarantees exceed declared integrity examples",
+      "design": ".engineering/planning/story/prebuilt-release-artifacts.md:74",
+      "spec": "spec/domains/operator.yaml:72",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    },
+    {
+      "id": "HD-10",
+      "classification": "stale mapping",
+      "kind": "mapping_gap",
+      "title": "Operator domain absent from existing mapping",
+      "design": ".engineering/planning/story/named-profiles.md:58",
+      "spec": "spec/README.md:3",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    },
+    {
+      "id": "HD-11",
+      "classification": "unclear",
+      "kind": "contract_ambiguity",
+      "title": "Unconditional byte-preservation wording versus undecodable envelope",
+      "design": ".engineering/planning/story/command-correctness.md:47",
+      "spec": "spec/scenarios/cli/orchestration-exec-indeterminate.yaml:192",
+      "origin": "present_in_baseline_introduction_unassessed",
+      "implementation_defect_established": false
+    }
+  ],
+  "lease": {
+    "session": "codex-hardening-design",
+    "released": true,
+    "end_exit": 0
+  },
+  "outside_files": {
+    "root": "$HOME/.cache/mantle-reliability/hardening-design",
+    "inventory": "files.txt",
+    "empty_directory": "/dev/shm/mantle-hardening-design-tmp"
+  },
+  "techniques_not_run": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "excluded": [
+    "units5-7",
+    "historical future architecture",
+    "live authenticated qualification",
+    "source publication/deployment",
+    "general egress/launcher review"
+  ]
+}

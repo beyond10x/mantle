@@ -7,7 +7,7 @@ lifecycle gate; the execution record supplies the exact source base and measured
 - Managed id and branch: `mantle-agent-acceptance`, `unit/mantle-agent-acceptance`.
 - Checkout: `$HOME/.local/state/worktree/trees/b10x/mantle/mantle-agent-acceptance`.
 - Implementor lease: `codex-agent-acceptance`.
-- Target: `/dev/shm/mantle-agent-acceptance-target`.
+- Target: `$HOME/.cache/mantle-reliability/agent-acceptance-target`.
 - Temporary files: `/dev/shm/mantle-agent-acceptance-tmp`.
 - Scratch: `$HOME/.cache/mantle-reliability/agent-acceptance`.
 
@@ -59,6 +59,9 @@ Final documentation checklist from read-only source inspection:
   existing device-login/private-home path.
 - Describe the complete actual conformance boundaries and separate the new runner from old live
   qualification. New /blob/main links become available after this integration merges.
+- Close hardening mapping finding HD-10 in spec/README.md. Preserve HD-11's clarified boundary:
+  byte preservation follows successful SDK-envelope decoding; malformed responses fail without
+  a raw-response salvage promise. Cite the hardening findings and remaining coverage limits honestly.
 
 Installed release generations do not currently retain manifest.json, and mantle --version carries
 no source commit. Bind known runner provenance to an explicitly supplied verified manifest AND the
