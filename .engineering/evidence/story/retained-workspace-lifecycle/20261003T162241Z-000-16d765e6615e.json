@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T16:22:41Z",
+  "actor": "human:timo",
+  "artifact": "story:retained-workspace-lifecycle",
+  "kind": "story",
+  "revision": 55,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "VERIFIED: identical actual_cli_stop_retains_files_and_destroy_requires_explicit_confirmation; baseline exit101 versus candidate exit0; measured before deb8890 merge",
+    "reference": "$HOME/.cache/mantle-reliability/integration/wave6-claim-base.log and wave6-claim-treatment.log"
+  }
+}

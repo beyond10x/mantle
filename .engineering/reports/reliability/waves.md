@@ -317,3 +317,16 @@ Checkpoint hook initially refused a personal absolute path in the new uncommitte
 reference. Root preserved that unpublished record privately as integration/wave6-private-path-evidence.json
 and re-recorded the same observation through AEP with a portable $HOME reference. No finding was
 waived, source assertion changed or hook bypassed. This corrects publication metadata only.
+
+Checkpoint7930ab106f3a2605ab8054552d68241c29e8566e passed signed common checks165commits and
+published to integration/mantle-reliability; receipt integration/wave6-receipt.json, bot check
+https://github.com/beyond10x/mantle/runs/111242067169. Both final-unit trees were created at that
+exact checkpoint and dispatched to their named owners. Runtime baseline CLI was copied from the
+green root build to agent-acceptance/baseline/mantle, SHA256
+f787b7db40a264a870c9284d40a72d8342971a0a102fff3e6f7c1a9fb1e6307b.
+
+Root ended its final unit6 lease; all unit6 commands were finished. Ignored model/draft/site
+outputs were archived under worktree/archives/mantle/mantle-retained-workspaces, and exact-id GC
+removed the tree after finish and dry-run review. Removed only its reproducible target and TMPDIR;
+raw scratch, original baseline and adversary reports remain. Root storage increased13→16GiB free.
+The unchanged premerge VERIFIED claim, already recorded above, now also has typed AEP evidence.
