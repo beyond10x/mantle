@@ -100,7 +100,7 @@ fn default_worker_binaries() -> PathBuf {
     target.join("x86_64-unknown-linux-musl/release")
 }
 
-fn main() -> Result<()> {
+fn main() -> Result<std::process::ExitCode> {
     mantle_worker::initialize_transport_signals()?;
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -108,7 +108,7 @@ fn main() -> Result<()> {
         .block_on(run())
 }
 
-async fn run() -> Result<()> {
+async fn run() -> Result<std::process::ExitCode> {
     let cli = Cli::parse();
     let config = Config::load()?;
     let store = Store::open(&state_dir()?.join("state.db"))?;
@@ -139,6 +139,11 @@ async fn run() -> Result<()> {
         Command::List => app::session::list(&store),
         Command::Status { name } => app::session::status(&config, &store, &name).await,
         Command::Stop { name } => app::session::stop(&config, &store, &name).await,
-        Command::Exec { name, argv } => app::session::exec(&config, &store, &name, &argv).await,
-    }
+        Command::Exec { name, argv } => {
+            return app::session::exec(&config, &store, &name, &argv)
+                .await
+                .map(std::process::ExitCode::from);
+        }
+    }?;
+    Ok(std::process::ExitCode::SUCCESS)
 }

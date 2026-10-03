@@ -1,0 +1,28 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "exec-output",
+  "summary": "Production command outcome and real Git reference acceptance",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:00Z",
+      "command": "mantle.orchestration.ExecOutcome",
+      "input": {
+        "state": "Exited",
+        "code_json": "42",
+        "signal_json": "null",
+        "missing_exit": false,
+        "refused": false,
+        "stdout": "out\n",
+        "stderr": "err\n"
+      },
+      "outcome": "returned",
+      "response": {
+        "exit_code": 42,
+        "known": true,
+        "stdout": "out\n",
+        "stderr_preserved": true
+      }
+    }
+  ]
+}

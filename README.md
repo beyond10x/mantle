@@ -102,8 +102,14 @@ Standalone `mantle exec` commands need an explicit proxy setting for networked C
 mantle exec SESSION -- cargo --config 'http.proxy="http://127.0.0.1:3128"' check --locked --manifest-path /workspace/PROJECT/Cargo.toml
 ```
 
-Read the printed remote `ExecExit`: the current CLI can return success even when the remote
-command fails. Release archives contain source; no prebuilt Mantle binaries are provided.
+The CLI preserves remote exit codes (0–255), maps the supported INT/TERM/KILL signals to
+130/143/137, and
+returns failure for refused, missing, contradictory or indeterminate results. Command stdout
+and stderr retain their bytes; the existing status diagnostic follows remote stderr.
+This corrects the false-success behavior in release 0.1.4.
+Repository branches, lightweight and annotated tags, and full commit IDs are supported;
+materialization records the actual checked-out commit. Release archives contain source;
+no prebuilt Mantle binaries are provided.
 
 ## Requirements on the laptop
 

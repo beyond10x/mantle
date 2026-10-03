@@ -70,8 +70,8 @@ Shutdown owns and joins its connection tasks, aborting remaining tunnels after t
 
 ## Gate and evidence
 
-`task conformance` synthesizes and executes **336 scenarios: 105 generated and 231 authored**.
-The component counts are CLI 218, egress 69 and launcher 49. The complete inventory requires zero
+`task conformance` synthesizes and executes **348 scenarios: 107 generated and 241 authored**.
+The component counts are CLI 230, egress 69 and launcher 49. The complete inventory requires zero
 failed, skipped, unsupported, outside or refused scenarios. `task check` also runs the
 existing unit/integration/adversary tests, clippy, formatting, ESS validation, AEP validation and
 website generation.

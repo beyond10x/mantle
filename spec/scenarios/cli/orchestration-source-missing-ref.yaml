@@ -1,0 +1,23 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.orchestration",
+  "scenario": "source-missing-ref",
+  "summary": "Production command outcome and real Git reference acceptance",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:00Z",
+      "command": "mantle.orchestration.SourceResolution",
+      "input": {
+        "reference": "missing"
+      },
+      "outcome": "returned",
+      "response": {
+        "succeeded": false,
+        "agent_started": false,
+        "source_count": 0,
+        "commit_matches": false,
+        "declared_matches": false
+      }
+    }
+  ]
+}

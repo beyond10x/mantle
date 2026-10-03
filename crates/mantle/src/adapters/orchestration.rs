@@ -247,7 +247,175 @@ fn record(state: SessionState) -> SessionRecord {
         authentication: crate::domain::session::AuthenticationMethod::V1,
     }
 }
+
+/// Executes production materialization against real Git, with only sandbox paths redirected.
+fn source_fixture(reference: &str) -> Result<Value> {
+    use std::path::PathBuf;
+    use std::process::Command;
+    struct GitPlane {
+        root: PathBuf,
+        agents: Cell<usize>,
+    }
+    impl session::InitPort for &GitPlane {
+        async fn run(&self, argv: &[&str], _: bool) -> Result<String> {
+            let output = Command::new(argv[0])
+                .args(argv[1..].iter().map(|arg| {
+                    arg.strip_prefix("/workspace").map_or_else(
+                        || (*arg).to_owned(),
+                        |suffix| format!("{}{suffix}", self.root.display()),
+                    )
+                }))
+                .env_clear()
+                .env("PATH", "/usr/bin:/bin")
+                .env("HOME", &self.root)
+                .env("GIT_CONFIG_NOSYSTEM", "1")
+                .env("GIT_CONFIG_GLOBAL", "/dev/null")
+                .output()?;
+            anyhow::ensure!(
+                output.status.success(),
+                "Git fixture: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            Ok(String::from_utf8(output.stdout)?.trim().to_owned())
+        }
+    }
+    impl session::StartPort for &GitPlane {
+        type Workspace = Self;
+        async fn create(&self, _: &str, _: &manifest::Resolved) -> Result<Self> {
+            Ok(*self)
+        }
+        fn workspace_id<'a>(&self, _: &'a Self) -> &'a str {
+            "workspace-1"
+        }
+        async fn start_agent(&self, _: &Self, _: &manifest::Resolved) -> Result<String> {
+            self.agents.set(self.agents.get() + 1);
+            Ok("exec-1".into())
+        }
+        async fn attach(
+            &self,
+            _: &Self,
+            _: &str,
+            _: &crate::domain::session::AgentKind,
+        ) -> Result<()> {
+            Ok(())
+        }
+    }
+    let temporary = tempfile::tempdir()?;
+    let origin = temporary.path().join("origin");
+    std::fs::create_dir(&origin)?;
+    let git = |args: &[&str]| -> Result<String> {
+        let output = Command::new("/usr/bin/git")
+            .arg("-C")
+            .arg(&origin)
+            .args([
+                "-c",
+                "user.name=b10x-bot[bot]",
+                "-c",
+                "user.email=b10x-bot[bot]@users.noreply.github.com",
+                "-c",
+                "commit.gpgsign=false",
+                "-c",
+                "tag.gpgsign=false",
+            ])
+            .args(args)
+            .env_clear()
+            .env("PATH", "/usr/bin:/bin")
+            .env("HOME", temporary.path())
+            .env("GIT_CONFIG_NOSYSTEM", "1")
+            .env("GIT_CONFIG_GLOBAL", "/dev/null")
+            .output()?;
+        anyhow::ensure!(
+            output.status.success(),
+            "fixture setup: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        Ok(String::from_utf8(output.stdout)?.trim().to_owned())
+    };
+    git(&["init", "--initial-branch=main"])?;
+    git(&["commit", "--allow-empty", "-m", "tagged commit"])?;
+    let tagged = git(&["rev-parse", "HEAD"])?;
+    git(&["tag", "lightweight"])?;
+    git(&["tag", "-a", "annotated", "-m", "annotated release"])?;
+    git(&["commit", "--allow-empty", "-m", "branch commit"])?;
+    let branch = git(&["rev-parse", "HEAD"])?;
+    let expected = if reference == "main" {
+        &branch
+    } else {
+        &tagged
+    };
+    let declared = if reference == "commit" {
+        &tagged
+    } else {
+        reference
+    };
+    let mut resolved = manifest::parse(
+        "apiVersion: mantle.beyond10x.dev/v1alpha1\nkind: Session\nmetadata: {name: fixture}\nworkspace:\n  repositories:\n    - {name: r, repository: https://example.com/r.git, ref: main, mount: r}\nagent: {kind: claude-code, cwd: /workspace/r}\n",
+    )?;
+    resolved.repositories[0].repository = format!("file://{}", origin.display());
+    resolved.repositories[0].reference = declared.to_owned();
+    let plane = GitPlane {
+        root: temporary.path().join("workspace"),
+        agents: Cell::new(0),
+    };
+    let store = Store::in_memory()?;
+    store.insert_session(&record(SessionState::Materializing))?;
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?;
+    let result = runtime.block_on(session::start_recorded(
+        &store,
+        "session-1",
+        &resolved,
+        &&plane,
+        false,
+    ));
+    let sources = store.sources("session-1")?;
+    Ok(
+        json!({"succeeded":result.is_ok(),"agent_started":plane.agents.get()==1,"source_count":sources.len(),"commit_matches":sources.first().is_some_and(|source|source.commit==*expected),"declared_matches":sources.first().is_some_and(|source|source.declared_ref==declared)}),
+    )
+}
+
+#[test]
+fn real_git_resolves_branches_tags_and_commits() {
+    for reference in ["main", "lightweight", "annotated", "commit"] {
+        assert_eq!(
+            source_fixture(reference).unwrap(),
+            json!({"succeeded":true,"agent_started":true,"source_count":1,"commit_matches":true,"declared_matches":true}),
+            "{reference}"
+        );
+    }
+    assert_eq!(
+        source_fixture("missing").unwrap(),
+        json!({"succeeded":false,"agent_started":false,"source_count":0,"commit_matches":false,"declared_matches":false})
+    );
+}
 pub(super) fn execute(command: &str, input: &Value) -> Result<Reply> {
+    if command == "mantle.orchestration.SourceResolution" {
+        return Ok(Reply::returned(source_fixture(
+            input["reference"].as_str().context("reference")?,
+        )?));
+    }
+    if command == "mantle.orchestration.ExecOutcome" {
+        let code: Value = serde_json::from_str(input["code_json"].as_str().context("code")?)?;
+        let signal: Value = serde_json::from_str(input["signal_json"].as_str().context("signal")?)?;
+        let stdout = input["stdout"].as_str().context("stdout")?;
+        let stderr = input["stderr"].as_str().context("stderr")?;
+        let output = serde_json::from_value::<b10x_substrate_sdk::RunOutput>(json!({
+            "exec":{"id":"fixture","workspace":"ws","state":input["state"],"observed_at":"2026-10-03T00:00:00Z",
+              "requested":{"capability_snapshot":"fixture","network":"none","profile":"workspace","require":true},"applied":null,"usage":null,"lease":null,
+              "exit": if input["missing_exit"].as_bool()==Some(true) {Value::Null} else {json!({"code":code,"signal":signal})},
+              "refusal":if input["refused"].as_bool()==Some(true) {json!({"class":"Failed","code":"fixture.refused","message":"fixture refusal"})} else {Value::Null}},
+            "stdout":stdout.as_bytes(),"stderr":stderr.as_bytes(),"stdout_truncated":false,"stderr_truncated":false
+        }));
+        let mut actual_stdout = Vec::new();
+        let mut actual_stderr = Vec::new();
+        let result = output.map_err(anyhow::Error::from).and_then(|output| {
+            session::write_exec_output(&output, &mut actual_stdout, &mut actual_stderr)
+        });
+        return Ok(Reply::returned(
+            json!({"exit_code":result.as_ref().copied().unwrap_or(1),"known":result.is_ok(),"stdout":String::from_utf8(actual_stdout)?,"stderr_preserved":actual_stderr.starts_with(stderr.as_bytes())}),
+        ));
+    }
     if command == "mantle.orchestration.CodexPreflight" {
         return codex_preflight();
     }

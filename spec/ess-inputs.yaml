@@ -210,6 +210,16 @@ scenarios:
   - scenarios/launch/filesystem-links-and-locks.yaml
   - scenarios/cli/orchestration-agent-request.yaml
   - scenarios/cli/orchestration-exec-request.yaml
+  - scenarios/cli/orchestration-exec-exit-zero.yaml
+  - scenarios/cli/orchestration-exec-exit-nonzero.yaml
+  - scenarios/cli/orchestration-exec-signal.yaml
+  - scenarios/cli/orchestration-exec-indeterminate.yaml
+  - scenarios/cli/orchestration-exec-output.yaml
+  - scenarios/cli/orchestration-source-branch.yaml
+  - scenarios/cli/orchestration-source-lightweight-tag.yaml
+  - scenarios/cli/orchestration-source-annotated-tag.yaml
+  - scenarios/cli/orchestration-source-pinned-commit.yaml
+  - scenarios/cli/orchestration-source-missing-ref.yaml
   - scenarios/cli/orchestration-attach-request.yaml
   - scenarios/cli/orchestration-observe-all-required-facts.yaml
   - scenarios/cli/orchestration-observe-missing-exec-argv-only.yaml
