@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T12:06:26Z",
+  "actor": "human:timo",
+  "artifact": "story:prebuilt-release-artifacts",
+  "kind": "story",
+  "revision": 35,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "VERIFIED: identical mantle-release verify command; baseline has no release package (101), reviewed unit verifies both real source-bound artifacts and executable versions (0)",
+    "reference": "$HOME/.cache/mantle-reliability/integration/wave4-claim-{base,unit}.{log,exit}; .engineering/reports/reliability/wave4-release-validation.md"
+  }
+}
