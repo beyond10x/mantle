@@ -1,14 +1,13 @@
 ---
 format: aep.planning-md/3
-id: review-result:reliability-hardening-design
+id: review-result:reliability-hardening-design-structured
 kind: review-result
-status: archived
-title: ESS hardening design review of reliability units one through four
+status: active
+title: ESS hardening design review with enumerable findings
 relations:
 - reviews: task:reliability-hardening-design
-revision: 2
-transitions:
-- {from: "active", to: "archived", at: "2026-10-03T14:12:02Z", actor: "human:timo", revision: 2}
+- supersedes: review-result:reliability-hardening-design
+revision: 1
 ---
 # ESS hardening design review — reliability units 1–4
 
@@ -163,3 +162,18 @@ or removed by this reviewer. No commits or publication are produced.
 Route missing rules through ESS specifying/conformance; route HD-10 to existing final documentation
 work; resolve HD-11 wording with the design owner. Do not describe this baseline review as clean.
 
+```findings
+[
+{"file":"spec/domains/orchestration.yaml","line":61,"category":"acceptance","severity":"warning","verdict":"CONFIRMED","origin":"undecided","message":"HD-01: ESS specification gap, not an established runtime defect: ExecOutcome String streams cannot express accepted arbitrary-byte preservation; adapter UTF-8 conversion narrows it further. Actual CLI binary-byte coverage already exists in crates/mantle/tests/command_correctness.rs:35."},
+{"file":"spec/domains/operator.yaml","line":116,"category":"acceptance","severity":"warning","verdict":"CONFIRMED","origin":"undecided","message":"HD-02: ESS specification gap, not an established runtime defect: ProfileStateIsolation observes database names/paths but cannot assert selected SSH identity, known-host isolation or short private distinct sockets for unusual state paths; actual CLI coverage exists in crates/mantle/tests/profiles.rs:341."},
+{"file":"spec/domains/operator.yaml","line":122,"category":"acceptance","severity":"warning","verdict":"CONFIRMED","origin":"undecided","message":"HD-03: ESS specification gap, not an established runtime defect: DiagnoseWorker cannot observe accepted elapsed bounds, bounded local reads, child/tunnel retirement or owned-socket cleanup; its timeout fixture immediately refuses instead of exercising timeout ownership. See crates/mantle/src/adapters/orchestration.rs:163."},
+{"file":"spec/domains/operator.yaml","line":122,"category":"acceptance","severity":"warning","verdict":"CONFIRMED","origin":"undecided","message":"HD-04: ESS specification gap, not an established runtime defect: DiagnoseWorker returns no actual report, rendering, optional selection or process exit observation, so declared DiagnosticReport does not oblige privacy, human/JSON agreement, structured selection failures or nonzero unhealthy CLI status. Existing CLI tests are crates/mantle/tests/doctor.rs:52."},
+{"file":"spec/domains/operator.yaml","line":124,"category":"acceptance","severity":"warning","verdict":"CONFIRMED","origin":"undecided","message":"HD-05: ESS specification gap, not an established runtime defect: generic version/readonly scenarios lack independently observed installed versions, live daemon/SDK handshake identity and current committed WAL values. Broader production-seam package coverage exists in crates/mantle/tests/doctor.rs:186."},
+{"file":"spec/domains/operator.yaml","line":72,"category":"acceptance","severity":"warning","verdict":"CONFIRMED","origin":"undecided","message":"HD-06: ESS specification gap, not an established runtime defect: VerifyRelease's malformed source-string case does not oblige exact clean Git source export or refusal of a different valid revision despite matching version. Existing exact-source and attribute/replacement-object package tests protect the stronger implementation."},
+{"file":"spec/domains/operator.yaml","line":80,"category":"acceptance","severity":"warning","verdict":"CONFIRMED","origin":"undecided","message":"HD-07: ESS specification gap, not an established runtime defect: InstallRelease's sole collision-refusal case admits an always-refuse implementation and cannot observe successful activation, concurrent installers or interruption preserving a complete prior managed generation. See crates/mantle-release/tests/release.rs:163,473,522."},
+{"file":"spec/domains/operator.yaml","line":71,"category":"acceptance","severity":"warning","verdict":"CONFIRMED","origin":"undecided","message":"HD-08: ESS specification gap, not an established runtime defect: no executable publication boundary obliges exact source/tag authority, bot wrapper usage, existing-release refusal, remote asset verification or honest partial failure. Production publication and controlled bot-process package tests already exist; this finding does not request live publication."},
+{"file":"spec/domains/operator.yaml","line":72,"category":"acceptance","severity":"warning","verdict":"CONFIRMED","origin":"undecided","message":"HD-09: ESS specification gap, not an established runtime defect: current release cases do not oblige accepted archive duplicate/link/expansion refusals, executable version/static/runtime checks or recognized complete runtime notices; counting twelve fixture payloads cannot establish those properties. Broader package tests and actual release-build qualification are acknowledged."},
+{"file":"spec/README.md","line":3,"category":"contract-drift","severity":"warning","verdict":"CONFIRMED","origin":"undecided","message":"HD-10: stale mapping, not a runtime defect: the five-domain inventory/boundary table omits the declared operator domain and retains older SDK/evidence references. Already assigned to unit7 documentation reconciliation."},
+{"file":".engineering/planning/story/command-correctness.md","line":47,"category":"judgement","severity":"note","verdict":"NEEDS-CHANGE","origin":"undecided","message":"HD-11: original review identified ambiguous unconditional byte-preservation wording beside invalid exit codes, not an established runtime defect. Owner subsequently resolved the intended boundary: preserve bytes after valid SDK-envelope decoding; code_json=256 is a decoding failure with no raw-response salvage obligation. Preserve this historical finding and record the owner resolution separately."}
+]
+```

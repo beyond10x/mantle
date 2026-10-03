@@ -6,7 +6,7 @@ status: active
 title: Harden the green reliability specification against accepted design
 relations:
 - delivers: epic:reliability-and-usability
-revision: 3
+revision: 5
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T13:50:43Z", actor: "human:timo", revision: 2}
 - {from: "proposed", to: "active", at: "2026-10-03T13:50:43Z", actor: "human:timo", revision: 3}
@@ -19,3 +19,14 @@ Validate the pinned specification, demonstrate the review catches a deliberately
 
 ## Scope
 Read-only review on a managed exact integration checkpoint with source equivalent to the last green381-case gate. All mutations occur only on scratch copies. No live resources, auth data, AEP writes, implementation edits or publication. Report and small machine-readable evidence are integrated by root.
+
+## Disposition
+The complete unchanged report and negative control are recorded in
+review-result:reliability-hardening-design-structured (the prose-only predecessor is archived).
+HD-01 through HD-09 remain open in proposed task:reliability-conformance-boundary-expansion,
+with exact source seams and acceptance; this audit does not claim to have closed them.
+They require a broader shared subprocess conformance seam and are follow-up work, while existing
+package coverage stays in the repository gate. HD-10 is assigned to unit7's final documentation
+reconciliation. HD-11 is clarified in the command-correctness story and README: exact bytes follow
+successful SDK-envelope decoding; malformed wire responses fail without raw-response salvage.
+The separate mutation audit corrects its measured checksum survivor in this integration.

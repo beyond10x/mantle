@@ -157,3 +157,12 @@ The mutation audit remains running and has measured its first known-kill control
 A fresh bot fetch still observes main df32e9cc4876776aa46fee8c91c5d351d53f6650 as an ancestor of
 integration. Future unit6/unit7 briefs now use unique root-filesystem compiler targets rather
 than tmpfs targets; their temporary directories remain distinct. No live resources were queried.
+
+The design reviewer supplied an enumerable eleven-finding JSON companion and a source-cited
+remediation proposal. The successor review-result:reliability-hardening-design-structured preserves
+its original prose and appends that supplied array; the original immutable prose-only review is
+archived, not rewritten. AEP still prints the historical prose-only warning for that archived record.
+HD-11 has a fixed outcome. HD-01 through HD-09 remain open, each recorded as escalated to proposed
+task:reliability-conformance-boundary-expansion; none is called fixed or a reproduced runtime defect.
+This broader fixture/spec observation work is outside the bounded audit and five-item integration.
+HD-10 remains assigned to unit7. The small checksum mutation gap is corrected in the current audit.
