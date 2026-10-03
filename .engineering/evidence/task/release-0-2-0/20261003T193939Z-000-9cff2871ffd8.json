@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T19:39:39Z",
+  "actor": "human:timo",
+  "artifact": "task:release-0-2-0",
+  "kind": "task",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Release preparation: mantle-docs tests 2/2; documentation check, fmt, ESS validation (315 authored), AEP validation and diff checks passed; lockfile changes only nine workspace versions",
+    "reference": "https://github.com/beyond10x/mantle/pull/8"
+  }
+}

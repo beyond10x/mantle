@@ -11,16 +11,18 @@ mantle worker up                 # start the configured AWS or KubeVirt worker
 mantle start examples/substrate.yaml
 mantle attach substrate-work     # Ctrl-] d detaches; the agent keeps running
 mantle status substrate-work
-mantle stop substrate-work       # development: retain workspace; 0.1.4: destructive
+mantle stop substrate-work       # retain the workspace; destroy --yes deletes it
 mantle worker down
 ```
 
-Development source is an early preview. The commands below distinguish unreleased behavior from
-the historical 0.1.4 release. See [installation](#requirements-on-the-laptop),
-[named profiles](#named-profiles-development--unreleased),
-[worker diagnostics](#worker-diagnostics-development--unreleased),
-[repeatable acceptance](#repeatable-agent-acceptance-development--unreleased) and
-[offline upgrades](#offline-worker-upgrades-development--unreleased).
+Mantle 0.2.0 adds retained workspaces, named profiles, read-only diagnostics, verified Linux
+bundles, controlled offline upgrades and repeatable agent acceptance. **Compatibility change:**
+`stop` retains workspaces; use `destroy NAME --yes` for deletion. Historical 0.1.4 behavior is
+labeled separately. See [installation](#requirements-on-the-laptop),
+[named profiles](#named-profiles),
+[worker diagnostics](#worker-diagnostics),
+[repeatable acceptance](#repeatable-agent-acceptance) and
+[offline upgrades](#offline-worker-upgrades).
 
 The design is
 [docs/design/00-mantle-on-substrate.md](docs/design/00-mantle-on-substrate.md); its correction block
@@ -40,26 +42,26 @@ mantle attach codex-example
 mantle status codex-example
 ```
 
-Worker provisioning installs and verifies the pinned Codex binary. Mantle 0.1.4 requires its
+Worker provisioning installs and verifies the pinned Codex binary. Mantle 0.2.0 requires its
 matching worker binaries and Substrate 0.7.10, plus the gateway allowlist including
 `auth.openai.com:443` and `chatgpt.com:443`. Follow the
-[offline upgrade guidance](#offline-worker-upgrades-development--unreleased) for development workers before
+[offline upgrade guidance](#offline-worker-upgrades) for existing workers before
 upgrading a running worker. Codex does not need a Claude
 OAuth token or an API key. A manifest without an agent kind continues to select Claude Code.
 
 Codex uses the same Substrate terminal transport and capture behavior as Claude. This is **not
 an end-to-end non-recording mode**. Its private auth and conversation files live under
 `/workspace/.mantle/home/.codex`; launcher replay is volatile and runtime SQLite/text diagnostics
-use launcher-verified tmpfs. In development source, `mantle stop codex-example` retains the workspace
+use launcher-verified tmpfs. In 0.2.0, `mantle stop codex-example` retains the workspace
 and login files; `mantle destroy codex-example --yes` deletes them. **Historical release 0.1.4 has
 destructive stop semantics:** its `stop` deletes the workspace and auth files. Preserve wanted
 project work remotely before using that release's stop command.
 
-## Retained workspaces (development / unreleased)
+## Retained workspaces
 
-**Compatibility change:** development `mantle stop NAME` terminates and retires the agent while
+**Compatibility change:** `mantle stop NAME` in 0.2.0 terminates and retires the agent while
 retaining its workspace, edited files and private login home. Release 0.1.4 still destroys them.
-Use a development CLI for the following commands; this integration does not cut a release.
+Use the matching 0.2.0 CLI and worker helpers for these commands.
 
 ```console
 mantle stop my-project
@@ -92,9 +94,9 @@ Local launcher, confinement and integration checks are recorded in the
 [qualification evidence](docs/evidence/codex-compatibility.md). Real device login, authenticated
 model/tool turns and token refresh have not yet been verified end to end.
 
-## Command results (development / unreleased)
+## Command results
 
-The development CLI preserves remote exit codes (0–255), maps supported INT/TERM/KILL signals to
+The 0.2.0 CLI preserves remote exit codes (0–255), maps supported INT/TERM/KILL signals to
 130/143/137, and returns failure for refused, missing, contradictory or indeterminate results.
 Command stdout and stderr retain their bytes after a valid Substrate response has decoded; the
 existing status diagnostic follows remote stderr. Malformed responses fail without recovering raw
@@ -156,12 +158,12 @@ Standalone `mantle exec` commands need an explicit proxy setting for networked C
 mantle exec SESSION -- cargo --config 'http.proxy="http://127.0.0.1:3128"' check --locked --manifest-path /workspace/PROJECT/Cargo.toml
 ```
 
-The 0.1.4 release archives contain source, without prebuilt Mantle binaries. Development candidate
-bundles and their verifier are described below; their availability does not announce another release.
+The historical 0.1.4 release contains source archives only. [Release 0.2.0](https://github.com/beyond10x/mantle/releases/tag/0.2.0)
+provides verified GNU CLI and static musl worker bundles, a manifest and checksums.
 
 ## Requirements on the laptop
 
-- Linux x86-64 and `ssh`; GNU candidate binaries require the libc environment recorded in their manifest
+- Linux x86-64 and `ssh`; GNU binaries require the libc environment recorded in their manifest
 - for AWS: AWS CLI v2, an authenticated profile allowed to create the required EC2, IAM and
   CloudWatch resources, and `session-manager-plugin`
 - for KubeVirt: `kubectl` and access to the configured cluster; the local `task k3d-up` test bed
@@ -170,14 +172,14 @@ bundles and their verifier are described below; their availability does not anno
 
 Source builds additionally need Rust 1.97 (`rust-toolchain.toml`), [go-task](https://taskfile.dev),
 the `x86_64-unknown-linux-musl` Rust target and a musl C toolchain for worker binaries. Verified
-[candidate bundles](#verified-prebuilt-bundles-development--unreleased) do not require a local
+[release bundles](#verified-prebuilt-bundles) do not require a local
 Rust compiler; fresh worker provisioning accepts their static helpers via `worker up --binaries`.
 
 Copy [examples/config.toml](examples/config.toml) to `~/.config/mantle/config.toml` and fill it in.
 
-## Named profiles (development / unreleased)
+## Named profiles
 
-Named profiles are available in **development source and candidate bundles, not release 0.1.4**.
+Named profiles are available in **0.2.0**.
 Register separate absolute configuration and private state paths:
 
 ```console
@@ -206,9 +208,9 @@ and `${...}` expressions are refused because OpenSSH interprets them rather than
 
 Agent and contributor instructions are in [AGENTS.md](AGENTS.md).
 
-## Worker diagnostics (development / unreleased)
+## Worker diagnostics
 
-Worker diagnostics are **development/unreleased, not part of 0.1.4**:
+Worker diagnostics are available in **0.2.0**:
 
 ```console
 mantle --profile personal doctor
@@ -231,7 +233,7 @@ from 1 to 120 seconds); timed-out process groups are retired, including tunnel d
 Configuration input is capped at 1 MiB, database/sidecar files at 64 MiB, and SQLite busy/query
 handling at 250 milliseconds. Refused or unavailable observations never become a healthy result.
 
-## Metadata for automation (development / unreleased)
+## Metadata for automation
 
 Use the versioned metadata interface for scripts. Human status can print launcher diagnostics and
 is not a transcript-free input format.
@@ -253,10 +255,10 @@ session id and selected profile binding. Persist it before dependent operations;
 cannot replace a lost receipt. An interrupted start may have created resources even when no receipt
 arrived. Treat that result as unresolved rather than automatically claiming or destroying a name.
 
-## Repeatable agent acceptance (development / unreleased)
+## Repeatable agent acceptance
 
 `mantle-acceptance` exercises the installed Mantle CLI with disposable Claude Code or Codex
-sessions. It belongs to the GNU candidate bundle alongside `mantle` and `mantle-release`; it is
+sessions. It belongs to the GNU release bundle alongside `mantle` and `mantle-release`; it is
 not part of historical release 0.1.4. Choose an already configured qualification worker and named
 profile. The runner does not provision workers or adopt existing user sessions.
 
@@ -326,13 +328,12 @@ workflows over controlled external IO. `task check` includes the complete native
 checks. Contributors need ESS 0.50.x and AEP 0.68.0 on `PATH`. Green local tests do not establish
 authenticated Claude or Codex qualification; see the separate historical evidence above.
 
-## Verified prebuilt bundles (development / unreleased)
+## Verified prebuilt bundles
 
-The new `mantle-release` tooling is **not included in release 0.1.4**. This section describes
-candidate artifacts produced from development source; this integration does not publish a new
-release. CI builds and retains candidates without publication credentials.
+Release 0.2.0 includes `mantle-release` and verified prebuilt bundles. CI builds and verifies
+exact-source candidates; the bot publishes the verified artifacts under the matching release tag.
 
-Each candidate contains `manifest.json`, `SHA256SUMS`, a GNU Linux x86-64 archive with `mantle`,
+Each bundle contains `manifest.json`, `SHA256SUMS`, a GNU Linux x86-64 archive with `mantle`,
 `mantle-release` and `mantle-acceptance`, and a static musl x86-64 archive with `mantle-egress`, `mantle-launch` and
 `mantle-worker`. Archives contain the Apache license, complete third-party notices and the matching
 Rust runtime notice; workers also contain the musl 1.2.5 notice. The manifest records the exact Git
@@ -341,8 +342,9 @@ payload's digest, size and mode. GNU compatibility is limited to the recorded bu
 we do not claim older libc, macOS or ARM support. Deterministic archive metadata does not promise
 bit-identical compilation across different toolchains or hosts.
 
-Obtain a candidate from the trusted CI run for the intended source commit and check that commit
-in its manifest. For a future published bundle, use the trusted release for the intended tag.
+Download the assets from the trusted [0.2.0 release](https://github.com/beyond10x/mantle/releases/tag/0.2.0)
+and check the exact tagged source commit in the manifest. Development candidates remain available
+from their trusted CI run and identify that run's source commit.
 Keep `manifest.json`, both named archives and `SHA256SUMS` in one directory. Hashes
 provide integrity against that trusted manifest; an adjacent checksum file is not independent
 publisher authentication. With `jq`, `sha256sum` and `tar` installed, bootstrap the bundled Rust
@@ -397,10 +399,10 @@ against the source, refuses an existing release, uploads only the verified asset
 GitHub's resulting asset digests. Publication failures may leave a partial release for operator
 inspection; the command never clobbers it. No personal `gh` writes or publishing keys in CI.
 
-## Offline worker upgrades (development / unreleased)
+## Offline worker upgrades
 
-Release 0.1.4 does not include `mantle worker upgrade`. Use a matching development CLI and a
-verified development bundle. This upgrades the three Mantle helpers while preserving worker data,
+Use the matching 0.2.0 CLI and verified 0.2.0 bundle for `mantle worker upgrade`.
+This upgrades the three Mantle helpers while preserving worker data,
 configuration, Claude, Codex's generation link and the existing Substrate daemon. A different
 Substrate version or revision is refused. The command does not drain sessions or stop, mask,
 unmask, restart or signal services. `--check` also works with an older installed worker helper:
