@@ -6,7 +6,7 @@ status: implemented
 title: Ship the compatible Codex attachment runtime and updated docs
 relations:
 - delivers: story:attach-startup-readiness
-revision: 9
+revision: 10
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T22:52:53Z", actor: "human:timo", revision: 2}
 - {from: "proposed", to: "active", at: "2026-10-02T22:52:53Z", actor: "human:timo", revision: 3}
@@ -37,3 +37,7 @@ The new isolated worker completed its official0.7.8 bootstrap with no sessions. 
 ## Release verification
 
 Released https://github.com/beyond10x/mantle/releases/tag/0.1.3 at 2026-10-03T00:10:11Z. Annotated bot tag77c1f2ed5a34c3f2fbc0e33523ff4bfa80e5d591 resolves to exact candidate367c7beb440feaec842ba5f8fe141b0fcd0f0cf1. PR3 merged by app/b10x-bot as6058df06 with identical tree82d36448. Exact candidate CI37079969914 and tagged common gate37080872271 passed. GitHub source archive downloaded and version inspected; SHA256492af851c32a065d96b1f8cf0aa63370e542aa11e315ae57c8cc10098fce0d19. No prebuilt binaries promised. Live site provenance at /mantle/.well-known/b10x-site.json reports6058df06ac244d3f94c03903936eab30d7b23834, so updated documentation publication is verified. Published Substrate0.7.10 installed proof is in the committed report. Disposable verification session stopped successfully and workspace destruction was confirmed. The separate versioned CLI leaves the original0.1.2 CLI/worker usable for original sessions; old wave9 attachments still use the unfixed runtime.
+
+## Operator session handoff
+
+A new codex-read session uses exact released source367c7beb440feaec842ba5f8fe141b0fcd0f0cf1 on the isolated published0.7.10 worker. Initial materialization by tag0.1.3 failed because the existing clone path passes --no-tags with --branch; the failed disposable session was stopped and replaced using the exact tag commit. This is a checkout limitation, not evidence against terminal transport. The final12-second100x50PTY attach drained324846bytes, answered4cursorqueries, detached normally with exit0 and zero CLIstderr. Status observed the same agent Running afterward. The versioned CLI, separate configuration and separate state-directory command were handed to the operator; original sessions remain untouched. Actual interactive authentication is still for the operator to complete. Follow-up: support tag references in the existing repository materializer; exact commit references work now.
