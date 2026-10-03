@@ -44,7 +44,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 23
+revision: 24
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
 ---
@@ -70,3 +70,9 @@ Login/model turns run through an exact printed attach command in the operator's 
 This last source unit also reconciles the public documentation with the completed roadmap. Update spec/README.md to the actual domain inventory, SDK pin, supported agents, lifecycle semantics and executed conformance counts; its current text still mixes old Substrate 0.7.8, five domains and historical 304/348-scenario evidence. README and website must clearly distinguish historical release 0.1.4 behavior from new unreleased behavior, especially stop/destroy, source-only historical installation, managed upgrades and the new operator commands. Preserve historical live-qualification limits rather than relabeling them as current successful acceptance.
 
 The coordinator refreshes .engineering/reports/native from the final exact complete run, including suites, reports, runs, results and the no-op audit, and identifies older evidence as historical. Update public metrics from that same run. Validate the site/source manifest and source docs, without claiming the public website is deployed: this task ends at one integration PR, with no main merge or release. Ordinary publication follows later source delivery.
+
+## Executable provenance and documentation closure
+
+Read-only inspection of release installation (crates/mantle-release/src/lib.rs:205) and the manifest definition (crates/mantle-artifact/src/lib.rs:36) confirms that installed generations contain archive payloads but no retained manifest.json; mantle --version has no source commit. The accepted provenance contract therefore requires an explicitly supplied verified manifest matched to the chosen executable digest, or unknown source. Neither the generation's digest-shaped directory name nor a version string supplies the missing commit. This is an implementation seam of the existing requirement, not a new online lookup or release service.
+
+The final implementation brief retains the additional concrete documentation corrections from read-only review: provider prerequisites, source versus candidate acquisition, historical version framing, current navigation and upgrade anchor, agent-specific credential diagram, evidence labels and complete conformance boundaries. The site builder validates local navigation; future-main source links do not prove publication. No live publication or authenticated qualification is claimed by these edits.

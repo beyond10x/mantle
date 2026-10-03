@@ -47,3 +47,20 @@ inventory, supported agents, lifecycle and current conformance counts; distingui
 0.1.4 claims from unreleased behavior. Preserve historical qualification limits. The coordinator
 refreshes the published native evidence ledger from the final exact run and creates the one PR.
 No main merge, tag, source release or website deployment is part of this task.
+
+Final documentation checklist from read-only source inspection:
+- Split AWS/KubeVirt prerequisites and make the opening worker-up example provider-neutral.
+- Distinguish source-build prerequisites from verified candidate-bundle use, with no new release claim.
+- Move development exit-code behavior out of the historical 0.1.4 section and qualify its source-only
+  release statement. Rename the dated acceptance audit link as historical evidence.
+- Add current profile, doctor and acceptance navigation/reference entries; resolve #worker-upgrades
+  deliberately so current callers reach current offline guidance rather than historical advice.
+- Label the architecture secret-slot/descriptor/environment path Claude-specific; Codex uses its
+  existing device-login/private-home path.
+- Describe the complete actual conformance boundaries and separate the new runner from old live
+  qualification. New /blob/main links become available after this integration merges.
+
+Installed release generations do not currently retain manifest.json, and mantle --version carries
+no source commit. Bind known runner provenance to an explicitly supplied verified manifest AND the
+selected executable's digest, or report unknown. A generation directory name/version alone is no
+proof. Keep document build provenance distinct from publication; the root records the final gate.
