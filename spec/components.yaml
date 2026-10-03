@@ -5,6 +5,7 @@ components:
       domains: [mantle.session, mantle.manifest, mantle.orchestration, mantle.operator]
     accepts:
       commands:
+        - mantle.operator.UpgradeWorker
         - mantle.operator.VerifyRelease
         - mantle.operator.InstallRelease
         - mantle.operator.DiagnoseWorker

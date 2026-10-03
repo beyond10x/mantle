@@ -250,3 +250,90 @@ It uses the installed `b10x-gates gh` bot wrapper, checks local and fully derefe
 against the source, refuses an existing release, uploads only the verified assets, and verifies
 GitHub's resulting asset digests. Publication failures may leave a partial release for operator
 inspection; the command never clobbers it. No personal `gh` writes or publishing keys in CI.
+
+## Offline worker upgrades (development / unreleased)
+
+Release 0.1.4 does not include `mantle worker upgrade`. Use a matching development CLI and a
+verified development bundle. This upgrades the three Mantle helpers while preserving worker data,
+configuration, Claude, Codex's generation link and the existing Substrate daemon. A different
+Substrate version or revision is refused. The command does not drain sessions or stop, mask,
+unmask, restart or signal services. `--check` also works with an older installed worker helper:
+it uses bounded, read-only SSH observations and never uploads a checker or initializes state.
+
+The administrator must establish an exclusive maintenance window. Save wanted work and deliberately
+retire all executions first. Exclude other administrative changes and already-running older Mantle
+clients throughout maintenance; those clients do not participate in the new installation lock.
+Use `mantle worker ssh` and prepare the supported layout on the worker:
+
+```console
+sudo systemctl stop substrate.service mantle-egress.service
+sudo install -d -m 0700 /var/lib/mantle/maintenance/units
+sudo mv --no-clobber /etc/systemd/system/substrate.service /var/lib/mantle/maintenance/units/substrate.service
+sudo mv --no-clobber /etc/systemd/system/mantle-egress.service /var/lib/mantle/maintenance/units/mantle-egress.service
+sudo systemctl mask substrate.service mantle-egress.service
+sudo systemctl daemon-reload
+```
+
+These are first-entry maintenance commands: inspect any existing saved originals before proceeding
+and never overwrite them. The originals must retain the supported rendered unit bytes, root:root
+ownership, mode 0644 and a single hard link. Ordinary masking cannot replace the regular unit files
+that Mantle originally installs under `/etc/systemd/system`; a runtime mask alone does not override
+those files. The checker refuses missing originals, unsupported overrides, ineffective masks,
+queued jobs, nonzero service PIDs, populated delegated cgroups and unknown observations. An empty
+`ControlGroup` property alone is insufficient: the fixed cgroup subtree is inspected as well.
+
+On the laptop, verify the complete trusted bundle as described above, then run:
+
+```console
+mantle worker upgrade --check --manifest /absolute/path/to/bundle/manifest.json
+mantle worker upgrade --apply --manifest /absolute/path/to/bundle/manifest.json
+```
+
+The check report separates observed installed versions, selected source/digests, Substrate compatibility
+and maintenance prerequisites. Equal version strings alone never establish that a bundle is current.
+Apply repeats the observations under `/opt/mantle/install.lock`, stages a complete sibling of the
+real `/opt/mantle/bin` directory and uses one atomic directory exchange. Unsupported exchange
+semantics refuse; there is no sequence of individual helper replacements. Codex installation and
+current-client helper reconciliation use the same host lock before any agent-specific lock.
+`worker up` refuses managed helper reconciliation; use the explicit upgrade flow for those workers.
+
+Success is `applied-restart-required`. The services remain masked and inactive. The prior directory
+and a synced journal remain under `/opt/mantle`; a retry of the same apply command inspects actual
+directory identities and either completes the transaction or verifies restoration. If the report
+says `recovery-required`, keep `/opt/mantle/upgrade-pending.json` and the `.upgrade-*` directories
+for inspection; do not remove or rename them to force a retry. Rollback is reported only after the
+exact prior directory is observed restored. A disconnected SSH transport can leave its private
+`/var/tmp/mantle-delivery.*` stage for administrator inspection; it is not an installed generation.
+An interrupted journal takes precedence over a new candidate: `recovered-other-bundle` names the
+earlier recovered source and returns nonzero. Review that result and repeat apply for the intended
+candidate. A written bundle marker alone does not establish `current` while recovery is pending.
+Codex installation refuses an unfinished helper transaction until recovery completes. Completed
+journals are checked without replaying rollback: a later supported Codex installation is preserved,
+and unexpected inventory changes refuse without restoring an older directory over current files.
+
+After a successful upgrade, deliberately leave maintenance on the worker:
+
+```console
+sudo systemctl unmask substrate.service mantle-egress.service
+sudo systemctl unmask --runtime substrate.service mantle-egress.service
+sudo mv --no-clobber /var/lib/mantle/maintenance/units/substrate.service /etc/systemd/system/substrate.service
+sudo mv --no-clobber /var/lib/mantle/maintenance/units/mantle-egress.service /etc/systemd/system/mantle-egress.service
+sudo systemctl daemon-reload
+sudo systemctl start mantle-egress.service substrate.service
+```
+
+Check the restored unit files before starting, then run `mantle doctor` from the laptop. Installed
+version checks do not establish a running daemon's identity or authenticated agent readiness.
+
+For **fresh provisioning**, a local Rust build is unnecessary. Verify the complete trusted bundle,
+then extract only the three static worker payloads into a new local directory:
+
+```console
+mkdir -m 0700 worker-stage
+tar --extract --file mantle-VERSION-x86_64-unknown-linux-musl.tar --directory worker-stage --no-same-owner bin/mantle-egress bin/mantle-launch bin/mantle-worker
+mantle worker up --binaries "$PWD/worker-stage/bin"
+```
+
+This is the existing provisioning flow, including its normal provider setup and selected agent
+configuration. Existing workers that need binary replacement use offline upgrade instead. The
+upgrade transport bounds each transferred file to 64 MiB and preserves its verified digest.

@@ -10,6 +10,7 @@ mod app {
     pub mod session;
     pub mod terminal;
     pub mod worker;
+    pub mod worker_upgrade;
 }
 mod config;
 mod profile;
@@ -104,6 +105,16 @@ enum ProfileCommand {
 
 #[derive(Debug, Subcommand)]
 enum WorkerCommand {
+    /// Check or apply a verified helper bundle during explicit offline maintenance.
+    #[command(group(clap::ArgGroup::new("mode").required(true).args(["check", "apply"])))]
+    Upgrade {
+        #[arg(long)]
+        check: bool,
+        #[arg(long)]
+        apply: bool,
+        #[arg(long)]
+        manifest: PathBuf,
+    },
     /// Create or start the worker, install Mantle's binaries, and check Substrate's facts.
     Up {
         /// Directory holding static `mantle-egress`, `mantle-launch`, and `mantle-worker` binaries.
@@ -194,6 +205,18 @@ async fn run() -> Result<std::process::ExitCode> {
         }
         return Ok(std::process::ExitCode::SUCCESS);
     }
+    if let Command::Worker {
+        command: WorkerCommand::Upgrade {
+            manifest, apply, ..
+        },
+    } = &cli.command
+    {
+        return app::worker_upgrade::run(
+            resolve_selection(cli.profile.as_deref())?,
+            manifest,
+            *apply,
+        );
+    }
     let selection = resolve_selection(cli.profile.as_deref())?;
     let config = RuntimeContext {
         config: Config::load(&selection)?,
@@ -205,6 +228,9 @@ async fn run() -> Result<std::process::ExitCode> {
         Command::Doctor { .. } => unreachable!("doctor returns before ordinary initialization"),
         Command::Profile { .. } => unreachable!("profile commands return before runtime selection"),
         Command::Worker { command } => match command {
+            WorkerCommand::Upgrade { .. } => {
+                unreachable!("upgrade returns before ordinary initialization")
+            }
             WorkerCommand::Up {
                 binaries,
                 no_idle_stop,

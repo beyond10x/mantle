@@ -1,7 +1,7 @@
 # Mantle executable contract
 
-Five ESS domains describe Mantle's implemented behavior: sessions, manifest resolution, egress,
-launcher OS behavior, and application orchestration. The specification uses ESS 0.50.x, `ess/17`
+Six ESS domains describe Mantle's implemented behavior: sessions, manifest resolution, egress,
+launcher OS behavior, application orchestration and operator workflows. The specification uses ESS 0.50.x, `ess/17`
 and authored `ess-scenario/4` documents. `ess-inputs.yaml` explicitly selects every model and
 scenario input. Design proposals for scheduling, snapshots, peer buses and shared caches remain
 future scope.
@@ -15,6 +15,7 @@ future scope.
 | `mantle.egress` | `crates/mantle-egress/src/{allow,head,addr,proxy}.rs` | Real TCP CONNECT requests, binary tunnel traffic, DNS/address filtering, deadlines, connection budgets and shutdown |
 | `mantle.launch` | `crates/mantle-launch/src/` | Real subprocesses, PTYs, FIFOs, locks and descriptor ownership; OS argument bytes, detach/replay, resize, process-group signals, bounded slow-reader output and filesystem safety |
 | `mantle.orchestration` | `crates/mantle/src/app/{session,worker}.rs`, `adapters/substrate.rs` | Production start/materialization/stop and provider flows over controlled IO ports; exact agent/attach/exec request construction, capability refusal and usage presentation |
+| `mantle.operator` | `crates/mantle-worker/src/{maintenance,upgrade}.rs`, CLI profile/doctor modules, `mantle-artifact` and `mantle-release` | Actual selection, registry, bounded probes, artifact verification and offline filesystem transaction; controlled service observations use the supplied unit renderings, and fixture ELFs exercise real version subprocesses and directory exchange |
 
 The test interfaces substitute external IO, not Mantle's decisions. DNS fixtures return addresses;
 the production proxy filters and dials them. Provider fixtures return typed observations and record
@@ -23,7 +24,7 @@ destroy outcome must read back absence before recording Stopped. The five-minute
 under Tokio's virtual clock. These tests do not provision AWS or KubeVirt, run a Substrate daemon,
 or attest to a live deployment's capabilities. Those upstream systems retain their own contracts.
 
-The SDK is pinned to Substrate `05695970b069f79e6678f2f02cbd78bbe5fa2a56` (0.7.8).
+The SDK is pinned to Substrate `65304edf6ebdf4a95f9c2c6138b0c20ea47d157e` (0.7.10).
 Its producer declarations in `crates/substrate-wire/src/lib.rs` define `CapabilityFacts`,
 `ExecUsage`, `ResourceUsage` and `ErrorDetail`; `crates/substrate-daemon/src/app/responses.rs`
 defines unknown-outcome refusals. Observation fixtures retain metadata and metrics that Mantle
