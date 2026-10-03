@@ -266,3 +266,20 @@ $HOME/.local/state/worktree/trees/b10x/mantle/mantle-final-documentation, lease 
 target $HOME/.cache/mantle-reliability/final-documentation-target, TMPDIR
 $HOME/.cache/mantle-reliability/final-documentation-tmp, scratch
 $HOME/.cache/mantle-reliability/final-documentation. No tree or delegate has been started yet.
+
+Unit6 implementation handoff: bot8df716f6c53b56f62ba0ad5ebdfa75c97f859ddd, clean branch
+unit/mantle-retained-workspaces. The full report and command ledger are retained in
+wave6-implementation.md and wave6-implementation-status.json. Package64→67, nativeCLI273→372,
+authored277→307; final package, Clippy, formatting, drift, notices and exact-commit docs exit0.
+Thirty authored lifecycle cases exercise production SQLite/filesystem and orchestration seams.
+The actual old-CLI filesystem fixture is red because Stop deletes the workspace; the candidate
+passes. Its earlier malformed-wire setup failure is retained separately, not causal evidence.
+Scope now cites observed paths and explicitly removes the unneeded inferred generated/session-model.
+The existing generated/worker-model owns changed ESS provenance. No dependencies changed.
+
+The implementor ended codex-retained-workspaces and all commands. At handoff root observed
+19GiB free on root, 31GiB tmpfs; unit target3.0GiB, TMPDIR35MiB, scratch79MiB before report copies.
+Adversary pass1 is assigned to attach_readiness_impl, owning the same tree/target under
+codex-retained-workspaces-adversary; scratch ends retained-workspaces/adversary/pass1.
+Root owns AEP, final baseline/treatment measurement and full integration gate. No source merge or
+completion move has happened. Agent token/tool counters are unavailable; no estimates are invented.

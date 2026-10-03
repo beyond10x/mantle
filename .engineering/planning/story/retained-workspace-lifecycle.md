@@ -8,7 +8,7 @@ relations:
 - decomposes: epic:reliability-and-usability
 - depends_on: story:controlled-worker-upgrades
 scope:
-- confidence: inferred
+- confidence: cited
   path: README.md
 - confidence: cited
   path: crates/mantle/src/adapters/conformance.rs
@@ -16,9 +16,9 @@ scope:
   path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
   path: crates/mantle/src/adapters/state.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/adapters/state/lifecycle.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/app/lifecycle.rs
 - confidence: cited
   path: crates/mantle/src/app/session.rs
@@ -26,29 +26,27 @@ scope:
   path: crates/mantle/src/domain/session.rs
 - confidence: cited
   path: crates/mantle/src/main.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/tests/retained_workspaces.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/tests/support/lifecycle_ssh.rs
-- confidence: inferred
-  path: generated/session-model
-- confidence: inferred
+- confidence: cited
   path: generated/worker-model
-- confidence: inferred
+- confidence: cited
   path: spec/components.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/conformance-baseline.json
 - confidence: cited
   path: spec/domains/orchestration.yaml
 - confidence: cited
   path: spec/domains/session.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/ess-inputs.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/cli
-- confidence: inferred
+- confidence: cited
   path: website/index.html
-revision: 39
+revision: 53
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
 - {from: "proposed", to: "active", at: "2026-10-03T14:48:25Z", actor: "human:timo", revision: 30}
@@ -68,6 +66,8 @@ Implementation preparation adds inferred module boundaries crates/mantle/src/app
 Inferred addition during ESS validation: spec/components.yaml must admit the renamed destructive Destroy command and new lifecycle commands. The previous admission reference to orchestration.Stop cannot be left after its destructive contract becomes Destroy.
 
 Inferred: spec/conformance-baseline.json must reconcile the required generated identity mantle.orchestration.Stop/outcome/returned to Destroy while preserving its destruction purpose, and retain the new lifecycle obligations. Root found the old required identity during aggregate-gate preparation; package-only checks do not read this baseline.
+
+Confirmed at bot source 8df716f6c53b56f62ba0ad5ebdfa75c97f859ddd: all retained typed paths were observed in the implementation diff and are now cited. The earlier inferred generated/session-model path was not needed and is removed from typed scope; the existing owned generated/worker-model carries the changed ESS provenance. The implementation added no dependencies or lockfile edits; unchanged notices were checked. Full 69-file inventory and red/green commands are preserved in .engineering/reports/reliability/wave6-implementation.md. These corrections preserve the original scope history above rather than making the initial guesses appear certain.
 
 ## Migration and interrupted intent
 
@@ -102,3 +102,9 @@ Read-only preparation against c63d5a6 identified implementation details of the a
 5. Recover via Operation.resource followed by get_exec, checking operation ID/kind/resource and exec ID/workspace binding. Operation.result is wire JSON; do not deserialize it as SDK ExecObservation whose derived enum names differ (SDK model.rs:602 and :195).
 
 Fixtures must cover interrupted retirement, initial materialization interleaving with stop, stale completion after a newer attempt, migration reopen and unsupported launch-policy versions, in addition to the already accepted restart-admission cases. No new Substrate capability or authenticated qualification requirement is introduced.
+
+## Implementation verification
+
+Bot source 8df716f6c53b56f62ba0ad5ebdfa75c97f859ddd, exact base e5624f2a907fb59d91c9e54a6680b64c2eee852a. Full implementation handoff and direct command ledger are .engineering/reports/reliability/wave6-implementation.md and wave6-implementation-status.json. Package tests64→67 and native CLI273→372 pass; authored ESS277→307 validates. Formatter, Clippy, generated drift, unchanged notices and exact-commit documentation build pass. The same actual CLI/filesystem fixture fails on the retained old binary because Stop deletes the workspace and passes on the candidate. A first malformed wire fixture failure is retained separately and excluded from causal evidence.
+
+The implementor released its lease and all commands ended. Independent adversary pass1 owns the unit tree/target now; the coordinator still owes its own baseline/treatment claim and complete integrated gate. No full-gate or implementation-complete status is claimed yet. Unsupported launch contexts, unqualified missing operations and unproven interrupted initialization remain explicit incomplete outcomes. No live worker/auth operation or public website deployment occurred.

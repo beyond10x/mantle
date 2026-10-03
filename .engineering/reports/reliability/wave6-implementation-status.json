@@ -1,0 +1,118 @@
+[
+  {
+    "command": "cargo test --locked -p mantle stop_retains_workspace_and_reserves_name",
+    "log": "red-retain.log",
+    "exit": 101
+  },
+  {
+    "command": "$BASELINE/mantle destroy fixture --yes --expected-session-id session-old",
+    "log": "red-cli.log",
+    "exit": 2
+  },
+  {
+    "command": "ess specify validate --path spec",
+    "log": "spec-initial.log",
+    "exit": 1
+  },
+  {
+    "command": "ess specify validate --path spec",
+    "log": "spec-defined.log",
+    "exit": 1
+  },
+  {
+    "command": "ess specify validate --path spec",
+    "log": "spec-defined-green.log",
+    "exit": 0
+  },
+  {
+    "command": "cargo test --locked -p mantle --bin mantle retained_",
+    "log": "retained-first.log",
+    "exit": 101
+  },
+  {
+    "command": "cargo test --locked -p mantle --bin mantle retained_",
+    "log": "retained-second.log",
+    "exit": 0
+  },
+  {
+    "command": "MANTLE_LIFECYCLE_BASE_CLI=$BASELINE/mantle cargo test --locked -p mantle --test retained_workspaces",
+    "log": "red-baseline-process.log",
+    "exit": 101,
+    "meaning": "fixture missing observed_at, setup error"
+  },
+  {
+    "command": "MANTLE_LIFECYCLE_BASE_CLI=$BASELINE/mantle cargo test --locked -p mantle --test retained_workspaces",
+    "log": "red-baseline-process-2.log",
+    "exit": 101,
+    "meaning": "meaningful old CLI destroys workspace"
+  },
+  {
+    "command": "cargo test --locked -p mantle --test retained_workspaces",
+    "log": "green-process.log",
+    "exit": 0
+  },
+  {
+    "command": "cargo test --locked -p mantle",
+    "log": "package-first.log",
+    "exit": 101
+  },
+  {
+    "command": "cargo test --locked -p mantle",
+    "log": "package-second.log",
+    "exit": 0
+  },
+  {
+    "command": "cargo test --locked -p mantle --bin mantle retained_",
+    "log": "retained-expanded.log",
+    "exit": 0
+  },
+  {
+    "command": "cargo clippy --locked -p mantle --all-targets -- -D warnings",
+    "log": "clippy-first.log",
+    "exit": 101
+  },
+  {
+    "command": "cargo clippy --locked -p mantle --all-targets -- -D warnings",
+    "log": "clippy-final.log",
+    "exit": 0
+  },
+  {
+    "command": "cargo fmt --check && rustfmt --edition 2024 --check crates/mantle/tests/support/lifecycle_ssh.rs",
+    "exit": 0
+  },
+  {
+    "command": "ess specify validate --path spec",
+    "log": "spec-final.log",
+    "exit": 0
+  },
+  {
+    "command": "cargo test --locked -p mantle",
+    "log": "package-final.log",
+    "exit": 0
+  },
+  {
+    "command": "cargo test --locked -p mantle-worker generated_model_has_no_drift",
+    "log": "drift-final.log",
+    "exit": 0
+  },
+  {
+    "command": "cargo run --locked -p mantle-docs -- check",
+    "log": "docs-final.log",
+    "exit": 0
+  },
+  {
+    "command": "cargo run --locked -p mantle-release -- notices --source . --check",
+    "log": "notices-final.log",
+    "exit": 0
+  },
+  {
+    "command": "b10x-gates bot --repo . --policy $HOME/beyond10x/gates-policy/policy.json --repository beyond10x/mantle -- commit -m 'feat: retain session workspaces with fenced lifecycle recovery'",
+    "log": "bot-commit.log",
+    "exit": 0
+  },
+  {
+    "command": "cargo run --locked -p mantle-docs -- build --out website/build --commit 8df716f6c53b56f62ba0ad5ebdfa75c97f859ddd",
+    "log": "docs-build.log",
+    "exit": 0
+  }
+]
