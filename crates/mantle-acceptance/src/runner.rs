@@ -71,6 +71,11 @@ impl Checkpoint {
     }
     fn observe(&mut self, case: &str, status: &str, origin: &str) {
         if let Some(row) = self.results.iter_mut().find(|r| r.case == case) {
+            // Later recovery may clean resources, but cannot replace measured qualification
+            // failure or its original generation, phase, timestamp and evidence origin.
+            if row.status == "failed" {
+                return;
+            }
             *row = Evidence {
                 case: case.into(),
                 status: status.into(),
