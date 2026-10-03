@@ -36,6 +36,8 @@ scope:
   path: spec/README.md
 - confidence: inferred
   path: spec/components.yaml
+- confidence: inferred
+  path: spec/conformance-baseline.json
 - confidence: cited
   path: spec/domains/operator.yaml
 - confidence: inferred
@@ -44,7 +46,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 26
+revision: 28
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
 ---
@@ -55,7 +57,10 @@ Provide a Rust/clap acceptance runner plus operator procedure for disposable Cla
 Named scenarios acceptance-case-inventory, acceptance-real-command-path, acceptance-auth-required, acceptance-no-raw-transcript, acceptance-failure-exit, acceptance-resume-evidence, acceptance-owned-cleanup and acceptance-no-fabricated-pass. Cases cover create/login handoff, repository/model tool turn, detach/reconnect, resize/interrupt, transport loss, status/exec, retained stop/restart and explicit destroy for both agents. User completes real login/model steps in their terminal; runner records operator assertions distinctly from machine observations and never reads credentials/transcripts or treats cache presence as authentication. Missing manual action is operator-required/not-run and aggregate incomplete, never green. Run-id and names isolate disposable sessions; cleanup only exact resources it created, never user sessions. Controlled CLI fixtures prove progression, timeouts, interruptions and failure counts; an opt-in real mode uses the actual installed CLI. Existing full native conformance gate remains mandatory. Documentation gives a short repeatable procedure and clearly separates full live qualification from runner implementation.
 
 ## Scope
+
 Inferred: Rust acceptance crate/CLI, Cargo workspace/lock, ESS operator commands/scenarios, fixtures, docs and CI checks. Uses selected named profile; no new auth/agent protocol, no automated credential entry or API billing fallback. Does not claim missing old-epic live cases passed.
+
+Inferred: spec/conformance-baseline.json is reconciled with the final actual suite, retaining previous required scenario identities (including explicit reviewed command renames), adding the new acceptance obligations and raising component floors to measured counts. This accompanies the final native evidence refresh; no required scenario is silently dropped.
 
 ## Metadata-only CLI observations
 

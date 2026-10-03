@@ -36,6 +36,8 @@ scope:
   path: generated/worker-model
 - confidence: inferred
   path: spec/components.yaml
+- confidence: inferred
+  path: spec/conformance-baseline.json
 - confidence: cited
   path: spec/domains/orchestration.yaml
 - confidence: cited
@@ -46,7 +48,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 37
+revision: 39
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
 - {from: "proposed", to: "active", at: "2026-10-03T14:48:25Z", actor: "human:timo", revision: 30}
@@ -64,6 +66,8 @@ Cited: domain/session.rs, app/session.rs, adapters/state.rs, Session ESS lifecyc
 Implementation preparation adds inferred module boundaries crates/mantle/src/app/lifecycle.rs and crates/mantle/src/adapters/state/lifecycle.rs, with actual CLI fixtures in crates/mantle/tests/retained_workspaces.rs and crates/mantle/tests/support/lifecycle_ssh.rs. These separate lifecycle orchestration and atomic state claims from already substantial session.rs. Existing destructive Stop scenarios retain their purpose as explicit Destroy or legacy migration coverage; new Stop scenarios assert retention. No acceptance case is dropped by renaming the command.
 
 Inferred addition during ESS validation: spec/components.yaml must admit the renamed destructive Destroy command and new lifecycle commands. The previous admission reference to orchestration.Stop cannot be left after its destructive contract becomes Destroy.
+
+Inferred: spec/conformance-baseline.json must reconcile the required generated identity mantle.orchestration.Stop/outcome/returned to Destroy while preserving its destruction purpose, and retain the new lifecycle obligations. Root found the old required identity during aggregate-gate preparation; package-only checks do not read this baseline.
 
 ## Migration and interrupted intent
 
