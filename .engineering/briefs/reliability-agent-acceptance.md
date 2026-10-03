@@ -8,7 +8,7 @@ lifecycle gate; the execution record supplies the exact source base and measured
 - Checkout: `$HOME/.local/state/worktree/trees/b10x/mantle/mantle-agent-acceptance`.
 - Implementor lease: `codex-agent-acceptance`.
 - Target: `$HOME/.cache/mantle-reliability/agent-acceptance-target`.
-- Temporary files: `/dev/shm/mantle-agent-acceptance-tmp`.
+- Temporary files: `$HOME/.cache/mantle-reliability/agent-acceptance-tmp`.
 - Scratch: `$HOME/.cache/mantle-reliability/agent-acceptance`.
 
 Deliver a Rust/clap runner for the installed Mantle CLI, not another direct SDK orchestrator.

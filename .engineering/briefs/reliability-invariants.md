@@ -56,3 +56,7 @@ Use RUST_TEST_THREADS=1 for independent fixtures; explicit concurrency tests kee
 Set SCCACHE_IDLE_TIMEOUT=0 and keep the task server's temporary directory at the integration
 path, never a unit path that will be retired. Global filesystem free space does not establish
 per-user quota availability; preserve quota failures and rerun only after correcting allocation.
+The stable server TMPDIR is now `$HOME/.cache/mantle-reliability/integration-tmp` on the main
+filesystem. Future units also use the main-filesystem temporary paths assigned in their briefs:
+the unit5 integration gate hit tmpfs user quota despite globally free space. The existing bounded
+compiler cache remains at its assigned path; do not restart its server with a unit's TMPDIR.

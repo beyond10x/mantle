@@ -8,7 +8,7 @@ integration gate; the execution record supplies the exact base and measured coun
 - Checkout: `$HOME/.local/state/worktree/trees/b10x/mantle/mantle-retained-workspaces`.
 - Implementor lease: `codex-retained-workspaces`.
 - Target: `$HOME/.cache/mantle-reliability/retained-workspaces-target`.
-- Temporary files: `/dev/shm/mantle-retained-workspaces-tmp`.
+- Temporary files: `$HOME/.cache/mantle-reliability/retained-workspaces-tmp`.
 - Scratch: `$HOME/.cache/mantle-reliability/retained-workspaces`.
 
 Update the existing Session ESS lifecycle before runtime changes. Stop retains the workspace,
@@ -55,3 +55,8 @@ and retirement identity before retiring; missing execution alone is not proof. I
 covers materialization executions. Fence completion writes as well as claims, version migrations
 and the launch-policy contract, and recover through Operation.resource plus get_exec. Preserve
 unknown outcomes rather than inventing a recoverable idle workspace.
+
+The coordinator retained the pre-unit CLI built by the green391-case gate at19c817f under
+`$HOME/.cache/mantle-reliability/retained-workspaces/baseline/mantle`. Treat it as a private test
+baseline, not a release. Where useful, make the actual CLI fixture accept an explicit baseline
+executable override so the coordinator can run the same condition against old and new behavior.

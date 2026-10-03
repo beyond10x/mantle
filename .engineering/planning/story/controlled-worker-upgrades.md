@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:controlled-worker-upgrades
 kind: story
-status: active
+status: implemented
 title: Verify and apply offline worker upgrades with rollback
 relations:
 - decomposes: epic:reliability-and-usability
@@ -56,10 +56,11 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 40
+revision: 41
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"review_outcome":2}}}
 - {from: "proposed", to: "active", at: "2026-10-03T12:22:48Z", actor: "human:timo", revision: 29, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "active", to: "implemented", at: "2026-10-03T14:47:47Z", actor: "human:timo", revision: 41, decided_on: {"recorded":{"test_result":4,"review_outcome":3,"verification":2,"ess_conformance_coverage_v1":1}}}
 ---
 ## Outcome
 Provide mantle worker upgrade --check and explicit --apply consuming a verified matching release bundle. This is an OFFLINE Mantle binary upgrade, not an online daemon drain or a Substrate version migration. The pinned SDK has no global inventory/quiesce endpoint. Keeping that responsibility upstream avoids a freeze/encrypted/SQL workaround. UpgradeAssessment and ReleaseManifest are typed in spec/domains/operator.yaml; existing Worker owns placement.

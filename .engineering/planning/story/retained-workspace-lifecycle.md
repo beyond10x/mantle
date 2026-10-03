@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:retained-workspace-lifecycle
 kind: story
-status: proposed
+status: active
 title: Stop agents while retaining workspaces and destroy only explicitly
 relations:
 - decomposes: epic:reliability-and-usability
@@ -36,9 +36,10 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 29
+revision: 30
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
+- {from: "proposed", to: "active", at: "2026-10-03T14:48:25Z", actor: "human:timo", revision: 30}
 ---
 ## Outcome
 Separate process lifetime from workspace destruction using the existing mantle.session.Session entity and Workspace SDK handle. Extend ESS states/commands before implementation. Proposed CLI: stop NAME ends the agent but preserves files and login state; destroy NAME --yes is explicit irreversible deletion; restart NAME starts a fresh agent execution in a retained workspace without cloning over files. Do not call a fresh process a same-conversation resume. Reattach alone never restarts. Document the intentional stop-semantics compatibility change prominently.

@@ -197,3 +197,28 @@ contract: early JSON routing before writable state initialization, bounded synch
 provable first-created ownership, resolved selection/attestation binding and verified executable
 provenance across resume. The full report is recorded in the story and wave7-preparation.md,
 with brief references. It establishes no runtime defect or new live acceptance claim.
+
+Unit5 final review is recorded unchanged as review-result:reliability-wave5-adversary-pass2.
+The complete findings comparison reports carried0/new0/resolved1. Reviewer-added tests were
+retained in bot5b922a5 after both isolated cases and all48 worker tests passed. Root then measured
+the same actual CLI check against the verified source107f9c8 baseline and the reviewed candidate:
+baseline101 (upgrade absent), treatment0 (observations/refusal, no uploads/local writes). Production
+CLI source is equivalent from107f9c8 through the pre-merge baseline; later hardening changes only
+tests. Both raw claim logs/statuses are retained. The unit merged cleanly at19c817f.
+
+The full integration gate at19c817f first exited201: release tests reported disk quota122 on
+tmpfs (three explicit diagnostics and one generic installation assertion in the same run).
+No product source was changed. Root created a private main-filesystem integration-tmp, restarted
+only task sccache43179 with that stable TMPDIR (bounded cache retained), and reran the same gate.
+The retry exited0: 391 complete ESS cases, nativeCLI273, authored277, all workspace tests, Clippy,
+formatting, AEP and exact-commit documentation passed. Both logs/exit files remain under
+integration/wave5-gate*. Main filesystem reports ext4 without quota; tmpfs reports usrquota.
+Future unit briefs use their own main-filesystem temporary directories. No other workload or quota
+was changed. Unit5 is implemented, revision41; the recomputed next waves are retained lifecycle,
+then acceptance, with no unassessed scope or cycles and existing overlap kept serial.
+
+For the next independent comparison, root retained the actual CLI produced by the green gate at
+19c817f in $HOME/.cache/mantle-reliability/retained-workspaces/baseline/mantle, SHA256
+6385e997a17bc333c87956819a3fd876c238508fdb180dd5c2e7e1de9d205e86. It is a private test baseline,
+not a release artifact. Native CLI report/suite and complete report were copied as wave5 evidence;
+final public native evidence reconciliation remains with the final unit.
