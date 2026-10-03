@@ -428,3 +428,81 @@ fn selected_profiles_isolate_ssh_identity_known_hosts_and_private_sockets() {
     }
     assert_ne!(sockets[0], sockets[1]);
 }
+
+#[test]
+fn adversary_profile_boundaries_and_corrupt_registry_fail_closed() {
+    let home = tempfile::tempdir().unwrap();
+    let config = home.path().join("unread-configuration");
+    let state = home.path().join("uncreated-state");
+    fs::write(&config, "PRIVATE_CONFIG_SENTINEL invalid TOML").unwrap();
+    let maximum = "a".repeat(63);
+    success(run(add(home.path(), &maximum, &config, &state)));
+    for name in ["a".repeat(64), "Upper".into(), "_prefix".into(), "λ".into()] {
+        assert!(
+            !run(add(home.path(), &name, &config, &state))
+                .status
+                .success()
+        );
+    }
+    for path in [
+        home.path().join("../escape"),
+        home.path().join("line\nbreak"),
+    ] {
+        assert!(
+            !run(add(home.path(), "bad-config", &path, &state))
+                .status
+                .success()
+        );
+        assert!(
+            !run(add(home.path(), "bad-state", &config, &path))
+                .status
+                .success()
+        );
+    }
+    let expected = format!("{maximum}\t{}\t{}\n", config.display(), state.display());
+    assert_eq!(
+        success(run(cli(home.path(), &["profile", "list"]))),
+        expected
+    );
+    let registry = home.path().join(".config/mantle/profiles");
+    let entry = registry.join(format!("{maximum}.toml"));
+    let original = fs::read(&entry).unwrap();
+    for mode in [0o640, 0o604, 0o666] {
+        fs::set_permissions(&entry, fs::Permissions::from_mode(mode)).unwrap();
+        let output = run(cli(home.path(), &["profile", "list"]));
+        assert!(!output.status.success(), "entry mode {mode:o}");
+        assert!(output.stdout.is_empty());
+    }
+    fs::set_permissions(&entry, fs::Permissions::from_mode(0o600)).unwrap();
+    for contents in [
+        String::from_utf8(original.clone())
+            .unwrap()
+            .replace(&maximum, "other"),
+        format!(
+            "{}\ncredential = 'PRIVATE_DESCRIPTOR_SENTINEL'\n",
+            String::from_utf8(original.clone()).unwrap()
+        ),
+    ] {
+        fs::write(&entry, contents).unwrap();
+        let output = run(cli(home.path(), &["profile", "list"]));
+        assert!(!output.status.success());
+        assert!(
+            output.stdout.is_empty(),
+            "partial list output must not escape"
+        );
+        assert!(!String::from_utf8_lossy(&output.stderr).contains("PRIVATE_DESCRIPTOR_SENTINEL"));
+    }
+    fs::write(&entry, original).unwrap();
+    fs::set_permissions(&registry, fs::Permissions::from_mode(0o750)).unwrap();
+    assert!(!run(cli(home.path(), &["profile", "list"])).status.success());
+    fs::set_permissions(&registry, fs::Permissions::from_mode(0o700)).unwrap();
+    assert_eq!(
+        success(run(cli(home.path(), &["profile", "show", &maximum]))),
+        expected
+    );
+    assert!(!state.exists());
+    assert_eq!(
+        fs::read_to_string(config).unwrap(),
+        "PRIVATE_CONFIG_SENTINEL invalid TOML"
+    );
+}
