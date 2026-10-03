@@ -246,3 +246,12 @@ $HOME/.cache/mantle-reliability/retained-workspaces-target; temporary
 $HOME/.cache/mantle-reliability/retained-workspaces-tmp. correctness_scope implements the complete
 current brief under codex-retained-workspaces, with no AEP or live-resource operations. The root
 retains orchestration/cleanup ownership; unit7 remains serially dependent on this unit's gate.
+
+At 2026-10-03T15:02Z, a fresh bot fetch still found remote main at
+ df32e9cc4876776aa46fee8c91c5d351d53f6650, already an ancestor of the integration branch.
+No rebase or source rewrite was needed. Root confirmed bot author and committer on the current
+planning commit. Unit6 scope now includes separate app/state lifecycle modules, real CLI fixture
+paths, and spec/components.yaml admission updates. The first production regression exits101 with
+old Stop destroying the workspace; the unit's ESS draft refusal remains in its raw evidence.
+The final PR draft is retained privately under .engineering/drafts/reliability-pr.md with explicit
+placeholders for the last two units and final gate; it is not published or treated as completion.
