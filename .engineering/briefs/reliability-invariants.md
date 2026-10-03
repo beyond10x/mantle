@@ -51,3 +51,8 @@ Documentation describes development/unreleased behavior until an actual source r
 After release tooling lands, dependency or workspace-member changes also regenerate notices with
 `cargo run --locked -p mantle-release -- notices --source .`, then verify the same command with
 `--check`. Keep the locked graph, complete notices and source-bound release workflow coherent.
+
+Use RUST_TEST_THREADS=1 for independent fixtures; explicit concurrency tests keep their threads.
+Set SCCACHE_IDLE_TIMEOUT=0 and keep the task server's temporary directory at the integration
+path, never a unit path that will be retired. Global filesystem free space does not establish
+per-user quota availability; preserve quota failures and rerun only after correcting allocation.

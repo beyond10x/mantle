@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T12:22:10Z",
+  "actor": "human:timo",
+  "artifact": "story:prebuilt-release-artifacts",
+  "kind": "story",
+  "revision": 35,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check at 8195f852596309d2f09c1742c6015b9894237f66 exited 0; complete ESS inventory 381 passed",
+    "reference": "$HOME/.cache/mantle-reliability/integration/wave4-gate-retry.log"
+  }
+}

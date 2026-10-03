@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:controlled-worker-upgrades
 kind: story
-status: proposed
+status: active
 title: Verify and apply offline worker upgrades with rollback
 relations:
 - decomposes: epic:reliability-and-usability
@@ -42,9 +42,10 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 27
+revision: 29
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "proposed", to: "active", at: "2026-10-03T12:22:48Z", actor: "human:timo", revision: 29, decided_on: {"recorded":{"review_outcome":2}}}
 ---
 ## Outcome
 Provide mantle worker upgrade --check and explicit --apply consuming a verified matching release bundle. This is an OFFLINE Mantle binary upgrade, not an online daemon drain or a Substrate version migration. The pinned SDK has no global inventory/quiesce endpoint. Keeping that responsibility upstream avoids a freeze/encrypted/SQL workaround. UpgradeAssessment and ReleaseManifest are typed in spec/domains/operator.yaml; existing Worker owns placement.
@@ -88,3 +89,11 @@ Observe each fixed unit separately with bounded, fixed-locale systemctl show pro
 Always inspect the fixed supported /sys/fs/cgroup/system.slice/substrate.service and mantle-egress.service paths even if ControlGroup is empty. systemd [unit_release_cgroup](https://github.com/systemd/systemd/blob/v255/src/core/cgroup.c#L2803) can forget the property without destroying the cgroup. An existing directory needs one valid populated=0 observation from bounded cgroup.events; that value covers the full descendant tree according to the [kernel cgroup-v2 contract](https://docs.kernel.org/admin-guide/cgroup-v2.html#un-populated-notification). Confirm actual ENOENT under a verified readable parent before calling a subtree absent; access/I/O failures are unknown. Older-worker read-only checks may use bounded parent enumeration and file observations through existing SSH commands, without uploading a new checker. Apply repeats the observations locally under the host lock immediately before exchange.
 
 Update the existing ESS assessment before code to carry real known/unknown unit, layout, job, PID, cgroup and assessment/reason observations. A boot identity and observation time can bind one assessment; do not invent active_execs from these facts. Add regression fixtures for deployed regular /etc units, ineffective runtime masks, absent-show-success, empty Job, empty ControlGroup with populated descendants and missing originals. At least one fixture must use the actual supported rendered units and feasible maintenance layout and succeed. The exclusive operator-maintenance assumption still excludes external root changes; this preparation does not introduce automatic stop/drain or a Substrate API dependency.
+
+## Prebuilt provisioning and first adoption
+
+The completed package unit provides both verified archives, while existing fresh provisioning already accepts `mantle worker up --binaries DIR` (crates/mantle/src/main.rs:106 and app/worker.rs:281). The default DIR points at a source-build target, so the public prebuilt workflow must show the supported explicit path rather than implicitly requiring a Rust build.
+
+Document verification of the trusted complete bundle, extraction of only the three known static worker payloads from its verified musl archive into a fresh operator-owned local staging directory, and `mantle worker up --binaries <stage>/bin` for fresh provisioning. No new downloader, package manager or worker activation command is required for this handoff. Existing workers use the explicit offline upgrade path with its maintenance checks. Keep filenames and bounded delivery verification compatible.
+
+The implementation also needs to examine serialization of the current worker-up helper reconciliation with first adoption, not only the managed-marker happy path. A check made before acquiring the host lock must not authorize later overwrites after a bundle transaction commits. Preserve the accepted host-wide lock, managed-bundle refusal and exclusive operator-maintenance boundary; do not introduce a committed shell checker to work around missing old-helper commands.

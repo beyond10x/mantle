@@ -7,7 +7,7 @@ integration gate; the execution record supplies the exact base and package count
 - Managed id and branch: `mantle-worker-upgrades`, `unit/mantle-worker-upgrades`.
 - Checkout: `$HOME/.local/state/worktree/trees/b10x/mantle/mantle-worker-upgrades`.
 - Implementor lease: `codex-worker-upgrades`.
-- Target: `/dev/shm/mantle-worker-upgrades-target`.
+- Target: `$HOME/.cache/mantle-reliability/worker-upgrades-target`.
 - Temporary files: `/dev/shm/mantle-worker-upgrades-tmp`.
 - Scratch: `$HOME/.cache/mantle-reliability/worker-upgrades`.
 
@@ -63,3 +63,7 @@ scenarios and actual filesystem/process fixtures. Test an eligible success, ever
 no installed-byte mutation, concurrent installers, preserved Codex/Claude layout, interruption
 around exchange/journal updates, and honest rollback failure. Document the maintenance steps
 and limits as unreleased behavior. Return package/source evidence for separate adversary review.
+
+Also read the story's Prebuilt provisioning and first adoption section. Document the existing
+fresh-worker --binaries workflow using verified static artifacts, and prove first-adoption locking
+against a concurrent legacy worker-up whose pre-lock marker observation has become stale.
