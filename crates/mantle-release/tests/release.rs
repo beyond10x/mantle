@@ -160,6 +160,34 @@ fn strict_manifest_and_checksum_refusals_are_not_cli_parse_errors() {
     assert!(String::from_utf8_lossy(&out.stderr).contains("archive"));
 }
 #[test]
+fn same_length_archive_padding_corruption_is_refused() {
+    let fixture = Fixture::new();
+    let artifact = &fixture.manifest["artifacts"][0];
+    let path = fixture.dir.path().join(artifact["name"].as_str().unwrap());
+    let mut bytes = fs::read(&path).unwrap();
+    let length = bytes.len();
+    let digest = sha(&bytes);
+    let padding = {
+        let mut archive = tar::Archive::new(bytes.as_slice());
+        let entry = archive.entries().unwrap().next().unwrap().unwrap();
+        assert_ne!(entry.size() % 512, 0, "fixture needs TAR padding");
+        usize::try_from(entry.raw_file_position() + entry.size()).unwrap()
+    };
+    // Padding belongs to the archive digest, but not to any extracted payload digest.
+    bytes[padding] ^= 1;
+    assert_eq!(bytes.len(), length);
+    assert_ne!(sha(&bytes), digest);
+    fs::write(path, bytes).unwrap();
+    let out = fixture.cli("verify", &[]);
+    assert_eq!(out.status.code(), Some(1));
+    assert!(
+        String::from_utf8_lossy(&out.stderr).contains("archive checksum or size mismatch"),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+}
+
+#[test]
 fn install_is_managed_and_atomic_and_refuses_unmanaged_collision() {
     let fixture = Fixture::new();
     let prefix = tempfile::tempdir().unwrap();

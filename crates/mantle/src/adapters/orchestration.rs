@@ -880,7 +880,16 @@ fn release(command: &str, input: &Value) -> Result<Reply> {
         "none" => {}
         "source" => manifest.source_commit = "invalid".into(),
         "checksum" => {
-            fs::write(temp.path().join(&manifest.artifacts[0].name), b"tampered")?;
+            let artifact = &manifest.artifacts[0];
+            let path = temp.path().join(&artifact.name);
+            let mut bytes = fs::read(&path)?;
+            // Change TAR padding, preserving length, member metadata and every payload digest.
+            // A truncated archive only proves the independent size refusal.
+            let first = &artifact.payloads[0];
+            anyhow::ensure!(first.path == "LICENSE" && !first.size_bytes.is_multiple_of(512));
+            let padding = 512 + usize::try_from(first.size_bytes)?;
+            bytes[padding] ^= 1;
+            fs::write(path, bytes)?;
         }
         "target" => manifest.artifacts[0].target = "unsupported".into(),
         "path" => manifest.artifacts[0].payloads[0].path = "../outside".into(),
