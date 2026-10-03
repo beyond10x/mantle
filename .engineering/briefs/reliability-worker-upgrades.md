@@ -28,6 +28,16 @@ unknown. Use a host-wide lock and recheck immediately before commit. No stop, ma
 restart or session signals belong in this transaction. External administrative changes during
 the exclusive maintenance window are outside the contract and must be documented plainly.
 
+Read the story's sourced Effective maintenance on existing workers section before implementing
+observations. Today regular unit files in `/etc/systemd/system` prevent ordinary masks and take
+precedence over runtime masks. Support operator-preserved exact originals under
+`/var/lib/mantle/maintenance/units`, then effective masks and reload; the upgrade never performs
+that preparation or restoration. Unknown/missing originals or unsupported overrides refuse.
+Empty `Job=` is the documented no-job observation; successful show can still mean not-found.
+Empty `ControlGroup` does not prove an empty subtree: inspect the fixed supported paths and
+recursive `cgroup.events` or confirmed absence. Test feasible maintenance using the actual unit
+renderings, not invented metadata; update ESS to these observed facts before runtime code.
+
 Preserve `/opt/mantle/bin` as a real directory and preserve the Codex relative link to
 `../agents/codex/current/codex`. Stage a complete sibling directory on the same filesystem with
 the three verified helpers, exact prior Claude bytes/mode/ownership, and supported existing

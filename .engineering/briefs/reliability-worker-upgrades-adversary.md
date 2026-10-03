@@ -14,6 +14,10 @@ installed bytes, and a qualifying offline installation must actually succeed. Te
 directory exchange, preservation of Claude bytes/mode/ownership and Codex's relative link,
 exchange-before-journal-update recovery, failed rollback reporting and competing installers.
 Check that worker-up and Codex installation cannot bypass the shared transaction lock.
+Also target the actual deployed regular `/etc` unit files: ineffective runtime masks, missing
+preserved originals, masked metadata hiding unsupported drop-ins, successful show of absent units,
+empty `Job=` and empty `ControlGroup` with populated descendants. A positive fixture must use the
+actual supported rendered units and effective operator-prepared maintenance layout.
 
 Use local filesystem and controlled process/service fixtures only. No real workers, services,
 sessions, signals, credentials or provider/GitHub calls. No automatic maintenance is authorized.
