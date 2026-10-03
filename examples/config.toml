@@ -29,5 +29,10 @@ data_disk_gib = 40
 token_command = ["secret-tool", "lookup", "service", "mantle", "account", "claude-code"]
 # Optional isolation: MANTLE_CONFIG selects this file and MANTLE_STATE_DIR selects
 # a separate private directory for SQLite, SSH keys and known hosts. Both must be absolute.
+# Development/unreleased (not 0.1.4): register this file with
+# mantle profile add personal --config /absolute/config.toml --state-dir /absolute/private-state
+# Then use mantle --profile personal list, or MANTLE_PROFILE=personal mantle list.
+# Unset MANTLE_CONFIG and MANTLE_STATE_DIR before selecting a named profile.
+# State paths support spaces/Unicode, but refuse quotes, backslashes, % and ${...}.
 # Omit the entire [claude] table to provision common worker readiness without a Claude token.
 # READY means common confinement/toolchain readiness; agent authentication is separate.

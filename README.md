@@ -121,6 +121,33 @@ no prebuilt Mantle binaries are provided.
 
 Copy [examples/config.toml](examples/config.toml) to `~/.config/mantle/config.toml` and fill it in.
 
+Named profiles are available in **development source, not release 0.1.4**. After building that
+source, register separate absolute configuration and private state paths:
+
+```console
+mantle profile add personal --config "$HOME/.config/mantle/personal.toml" --state-dir "$HOME/.local/state/mantle-personal"
+mantle profile list
+mantle profile show personal
+mantle --profile personal list
+MANTLE_PROFILE=personal mantle worker status
+```
+
+Registration stores path references only; it does not copy credentials, read provider configuration,
+create the selected state directory, or contact a worker. Names contain lowercase letters, digits,
+underscores and hyphens, start with a letter or digit, and are at most 63 characters. Existing names
+cannot be overwritten. The private registry is `~/.config/mantle/profiles/`.
+
+`--profile` overrides `MANTLE_PROFILE`. A named selection refuses either `MANTLE_CONFIG` or
+`MANTLE_STATE_DIR`; unset those legacy overrides first. Without a named selection, the legacy
+variables and default paths still work. Each selected state directory holds its own SQLite database,
+SSH key and known hosts. Point profiles at different state directories to keep them isolated.
+Attachments retain separate, short private temporary socket directories, including with long or
+Unicode state paths. Profile registry entries and selected paths refuse symlinks and unsafe file
+types; configuration and state directory ancestors must be owned by the operator or root and not
+writable by others (root-owned sticky temporary directories are allowed).
+Spaces, `#`, colons and Unicode are supported in state paths. Quotes, backslashes, percent tokens
+and `${...}` expressions are refused because OpenSSH interprets them rather than using literal paths.
+
 Agent and contributor instructions are in [AGENTS.md](AGENTS.md).
 
 ## Executable specification

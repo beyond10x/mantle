@@ -251,3 +251,13 @@ scenarios:
   - scenarios/egress/codex-default-destinations.yaml
   - scenarios/egress/codex-connect-destinations.yaml
   - scenarios/egress/codex-destination-refusals.yaml
+  - scenarios/cli/profile-add.yaml
+  - scenarios/cli/profile-duplicate.yaml
+  - scenarios/cli/profile-name-refusal.yaml
+  - scenarios/cli/profile-path-refusal.yaml
+  - scenarios/cli/profile-list-show.yaml
+  - scenarios/cli/profile-symlink-refusal.yaml
+  - scenarios/cli/profile-selection.yaml
+  - scenarios/cli/profile-env-conflict.yaml
+  - scenarios/cli/profile-legacy-defaults.yaml
+  - scenarios/cli/profile-state-isolation.yaml

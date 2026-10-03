@@ -71,19 +71,10 @@ const fn default_data_volume() -> i32 {
 }
 
 impl Config {
-    pub fn load() -> Result<Self> {
-        let path = configured_path(
-            std::env::var_os("MANTLE_CONFIG"),
-            config_dir()?.join("config.toml"),
-        )?;
-        let text = std::fs::read_to_string(&path).with_context(|| {
-            format!(
-                "reading {} (copy examples/config.toml there and fill it in)",
-                path.display()
-            )
-        })?;
-        let config: Self =
-            toml::from_str(&text).with_context(|| format!("parsing {}", path.display()))?;
+    pub fn load(selection: &crate::profile::Selection) -> Result<Self> {
+        let text = selection.read_config()?;
+        let config: Self = toml::from_str(&text)
+            .map_err(|_| anyhow::anyhow!("configuration has malformed or unsupported fields"))?;
         if config.ubuntu_serial.len() != 8
             || !config
                 .ubuntu_serial
@@ -176,11 +167,8 @@ pub fn expand_home(path: &str) -> Result<PathBuf> {
     }
 }
 
-pub fn config_dir() -> Result<PathBuf> {
-    Ok(home()?.join(".config/mantle"))
-}
-
 /// Owner-private state: the SQLite database, the SSH key, known hosts and forwarded sockets.
+#[cfg(test)]
 pub fn state_dir() -> Result<PathBuf> {
     let dir = configured_path(
         std::env::var_os("MANTLE_STATE_DIR"),
@@ -190,6 +178,7 @@ pub fn state_dir() -> Result<PathBuf> {
     Ok(dir)
 }
 
+#[cfg(test)]
 fn configured_path(override_path: Option<std::ffi::OsString>, default: PathBuf) -> Result<PathBuf> {
     let path = override_path.map_or(default, PathBuf::from);
     if !path.is_absolute() {
@@ -231,5 +220,17 @@ mod tests {
     fn legacy_claude_table_remains_parseable() {
         let config: Config = toml::from_str(include_str!("../../../examples/config.toml")).unwrap();
         assert!(config.claude.unwrap().token_command.is_some());
+    }
+}
+
+#[derive(Debug)]
+pub struct RuntimeContext {
+    pub config: Config,
+    pub selection: crate::profile::Selection,
+}
+impl std::ops::Deref for RuntimeContext {
+    type Target = Config;
+    fn deref(&self) -> &Config {
+        &self.config
     }
 }

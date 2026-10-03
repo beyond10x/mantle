@@ -13,7 +13,7 @@ use crate::adapters::state::{SessionRecord, SourceRecord, Store, WorkerRecord};
 use crate::adapters::substrate::{self as sub, bytes};
 use crate::app::terminal::{self, Ended};
 use crate::app::worker::{SUBSTRATE_VERSION, WORKER, install_token};
-use crate::config::Config;
+use crate::config::RuntimeContext;
 use crate::domain::manifest::{self, Resolved};
 use crate::domain::session::{AgentKind, SessionState, agent_name, auth_name, validate_identity};
 
@@ -34,7 +34,7 @@ fn worker(store: &Store) -> Result<WorkerRecord> {
         .context("no worker recorded; run `mantle worker up` first")
 }
 
-async fn connect(config: &Config, worker: &WorkerRecord) -> Result<Connected> {
+async fn connect(config: &RuntimeContext, worker: &WorkerRecord) -> Result<Connected> {
     let ssh = crate::app::worker::ssh_for(config, worker)?;
     // A worker that is still bootstrapping, or whose daemon is down, answers a socket forward with
     // a reset. Say which, before the transport error does.
@@ -63,7 +63,7 @@ async fn connect(config: &Config, worker: &WorkerRecord) -> Result<Connected> {
 }
 
 pub async fn start(
-    config: &Config,
+    config: &RuntimeContext,
     store: &Store,
     manifest_path: &str,
     attach: bool,
@@ -435,7 +435,7 @@ async fn attach_workspace(workspace: &Workspace, name: &str, agent: &AgentKind) 
     Ok(())
 }
 
-pub async fn attach(config: &Config, store: &Store, name: &str) -> Result<()> {
+pub async fn attach(config: &RuntimeContext, store: &Store, name: &str) -> Result<()> {
     let record = live(store, name)?;
     let connected = connect(config, &worker(store)?).await?;
     let workspace = connected
@@ -467,7 +467,12 @@ fn live(store: &Store, name: &str) -> Result<SessionRecord> {
 
 /// Runs one command in a session's workspace under the agent's confinement (toolchain root,
 /// aperture, environment) but without its credential, and prints what Substrate observed.
-pub async fn exec(config: &Config, store: &Store, name: &str, argv: &[String]) -> Result<u8> {
+pub async fn exec(
+    config: &RuntimeContext,
+    store: &Store,
+    name: &str,
+    argv: &[String],
+) -> Result<u8> {
     let record = live(store, name)?;
     let (program, args) = argv.split_first().context("no command given")?;
     let connected = connect(config, &worker(store)?).await?;
@@ -559,7 +564,7 @@ pub fn list(store: &Store) -> Result<()> {
     Ok(())
 }
 
-pub async fn status(config: &Config, store: &Store, name: &str) -> Result<()> {
+pub async fn status(config: &RuntimeContext, store: &Store, name: &str) -> Result<()> {
     let record = live(store, name)?;
     let worker = worker(store)?;
     println!("Session");
@@ -672,7 +677,7 @@ pub async fn status(config: &Config, store: &Store, name: &str) -> Result<()> {
     Ok(())
 }
 
-pub async fn stop(config: &Config, store: &Store, name: &str) -> Result<()> {
+pub async fn stop(config: &RuntimeContext, store: &Store, name: &str) -> Result<()> {
     let record = live(store, name)?;
     let connected = connect(config, &worker(store)?).await?;
     stop_recorded(&connected.client, store, &record, name).await

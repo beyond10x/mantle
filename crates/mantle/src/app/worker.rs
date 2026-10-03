@@ -16,7 +16,7 @@ use crate::adapters::kubevirt::{self, Kubevirt};
 use crate::adapters::ssh::{self, Ssh};
 use crate::adapters::state::{Store, WorkerRecord};
 use crate::adapters::substrate;
-use crate::config::{Config, Provider};
+use crate::config::{Provider, RuntimeContext};
 
 pub const WORKER: &str = "default";
 /// The signed Substrate release a worker runs: image `ghcr.io/{repository}@sha256:{manifest}`, of
@@ -45,7 +45,7 @@ pub struct UpOptions<'a> {
 
 /// Where a recorded worker lives, written into the record so a changed configuration cannot point
 /// Mantle at a different machine under the same name.
-fn location(config: &Config) -> Result<String> {
+fn location(config: &RuntimeContext) -> Result<String> {
     Ok(match config.provider {
         Provider::Aws => format!("aws/{}", config.aws()?.region),
         Provider::Kubevirt => {
@@ -56,7 +56,7 @@ fn location(config: &Config) -> Result<String> {
 }
 
 /// The SSH channel to a recorded worker.
-pub fn ssh_for(config: &Config, record: &WorkerRecord) -> Result<Ssh> {
+pub fn ssh_for(config: &RuntimeContext, record: &WorkerRecord) -> Result<Ssh> {
     let expected = location(config)?;
     if record.region != expected {
         bail!(
@@ -70,17 +70,20 @@ pub fn ssh_for(config: &Config, record: &WorkerRecord) -> Result<Ssh> {
             Kubevirt::new(config.kubevirt()?, &config.ubuntu_serial).proxy_command(WORKER)
         }
     };
-    Ssh::new(&record.instance, proxy)
+    Ssh::new(&record.instance, proxy, &config.selection.state_dir)
 }
 
-pub async fn up(config: &Config, store: &Store, options: &UpOptions<'_>) -> Result<()> {
+pub async fn up(config: &RuntimeContext, store: &Store, options: &UpOptions<'_>) -> Result<()> {
     let binaries = worker_binaries(options.worker_binaries)?;
     let token = config
         .claude
         .as_ref()
         .map(|_| config.claude_token())
         .transpose()?;
-    let user_data = render_user_data_for(&ssh::public_key()?, token.is_some())?;
+    let user_data = render_user_data_for(
+        &ssh::public_key(&config.selection.state_dir)?,
+        token.is_some(),
+    )?;
     let (instance, data_volume) = match config.provider {
         Provider::Aws => up_aws(config, &user_data, options.idle_stop).await?,
         Provider::Kubevirt => up_kubevirt(config, &user_data).await?,
@@ -127,7 +130,7 @@ pub async fn up(config: &Config, store: &Store, options: &UpOptions<'_>) -> Resu
 }
 
 async fn up_aws(
-    config: &Config,
+    config: &RuntimeContext,
     user_data: &str,
     idle_stop: bool,
 ) -> Result<(String, Option<String>)> {
@@ -185,7 +188,7 @@ pub(crate) async fn up_aws_with(
     Ok((running.id, running.data_volume))
 }
 
-async fn up_kubevirt(config: &Config, user_data: &str) -> Result<(String, Option<String>)> {
+async fn up_kubevirt(config: &RuntimeContext, user_data: &str) -> Result<(String, Option<String>)> {
     let kubevirt = Kubevirt::new(config.kubevirt()?, &config.ubuntu_serial);
     up_kubevirt_with(&kubevirt, user_data).await
 }
@@ -449,7 +452,7 @@ async fn report_machine(ssh: &Ssh) -> Result<()> {
     }
 }
 
-pub async fn down(config: &Config) -> Result<()> {
+pub async fn down(config: &RuntimeContext) -> Result<()> {
     match config.provider {
         Provider::Aws => {
             let aws = Aws::connect(config.aws()?).await;
@@ -463,7 +466,7 @@ pub async fn down(config: &Config) -> Result<()> {
     Ok(())
 }
 
-pub async fn status(config: &Config, store: &Store) -> Result<()> {
+pub async fn status(config: &RuntimeContext, store: &Store) -> Result<()> {
     let running = match config.provider {
         Provider::Aws => {
             let aws = Aws::connect(config.aws()?).await;
@@ -507,7 +510,7 @@ pub async fn status(config: &Config, store: &Store) -> Result<()> {
 }
 
 /// A shell on the worker host as `ubuntu`, through the same tunnel Mantle uses.
-pub fn ssh(config: &Config, store: &Store) -> Result<()> {
+pub fn ssh(config: &RuntimeContext, store: &Store) -> Result<()> {
     let record = store
         .worker(WORKER)?
         .context("no worker recorded; run `mantle worker up` first")?;
