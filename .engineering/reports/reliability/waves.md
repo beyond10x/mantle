@@ -372,3 +372,13 @@ its short integration lease. correctness_scope owns the same unit under codex-ag
 scratch agent-acceptance/correction1, for the minimal correction and unchanged regression.
 No existing assertion or documented contract may be weakened. Source has not merged into integration;
 full gate and pass2 remain pending. This correction is within existing unit7 scope.
+
+Correction f4bf80579e8daba5ab9a93d281d1ed5a8acab6a2 changes only runner.rs by five lines.
+The shared observation writer preserves already-failed qualification rows, including their original
+phase, generation, timestamp and origin; cleanup still runs its guarded destroy/readback. Original
+isolated regression reproduced101 then passes0; acceptance8/8, Clippy/fmt/diff0. Root read the
+complete portable correction report/status and verified tests are byte-identical to a4f4ee3.
+Reports are retained as wave7-correction.md and wave7-correction-status.json. Implementor ended
+its lease and all commands. Final adversary pass2 now owns the same unit/target under
+codex-agent-acceptance-adversary-pass2, scratch agent-acceptance/adversary/pass2. No third attack
+is planned. Full integrated gate remains pending; no source completion claim is made yet.
