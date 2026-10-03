@@ -2,8 +2,8 @@
   "format": "mantle-conformance-baseline/1",
   "components": {
     "mantle-cli": {
-      "answered_floor": 372,
-      "total_floor": 372,
+      "answered_floor": 381,
+      "total_floor": 381,
       "skipped_ceiling": 0
     },
     "mantle-egress": {
@@ -193,6 +193,7 @@
     "mantle.manifest/authored/wrong-root",
     "mantle.manifest/authored/wrong-runtime",
     "mantle.manifest/authored/zero-cpu-clamped",
+    "mantle.operator.AssessAcceptance/outcome/returned",
     "mantle.operator.DiagnoseWorker/outcome/returned",
     "mantle.operator.InstallRelease/outcome/returned",
     "mantle.operator.ProfileRegistry/outcome/returned",
@@ -200,6 +201,14 @@
     "mantle.operator.SelectProfile/outcome/returned",
     "mantle.operator.UpgradeWorker/outcome/returned",
     "mantle.operator.VerifyRelease/outcome/returned",
+    "mantle.operator/authored/acceptance-auth-required",
+    "mantle.operator/authored/acceptance-case-inventory",
+    "mantle.operator/authored/acceptance-failure-exit",
+    "mantle.operator/authored/acceptance-no-fabricated-pass",
+    "mantle.operator/authored/acceptance-no-raw-transcript",
+    "mantle.operator/authored/acceptance-owned-cleanup",
+    "mantle.operator/authored/acceptance-real-command-path",
+    "mantle.operator/authored/acceptance-resume-evidence",
     "mantle.operator/authored/doctor-config-invalid",
     "mantle.operator/authored/doctor-facts-missing",
     "mantle.operator/authored/doctor-healthy",

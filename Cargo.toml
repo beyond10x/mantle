@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/mantle", "crates/mantle-egress", "crates/mantle-launch", "crates/mantle-docs", "crates/mantle-conformance", "crates/mantle-worker", "crates/mantle-artifact", "crates/mantle-release"]
+members = ["crates/mantle", "crates/mantle-egress", "crates/mantle-launch", "crates/mantle-docs", "crates/mantle-conformance", "crates/mantle-worker", "crates/mantle-artifact", "crates/mantle-release", "crates/mantle-acceptance"]
 exclude = ["generated/worker-model"]
 
 [workspace.package]

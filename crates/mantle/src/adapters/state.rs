@@ -324,6 +324,17 @@ impl Store {
         let rows = statement.query_map([], read_session)?;
         rows.map(|row| finish_session(row?)).collect()
     }
+
+    pub(crate) fn metadata_sessions(&self) -> Result<Vec<SessionRecord>> {
+        let sql = format!("{SESSION_COLUMNS} ORDER BY created_at, id LIMIT 1001");
+        let mut statement = self.connection.prepare(&sql)?;
+        let rows = statement.query_map([], read_session)?;
+        let records: Vec<_> = rows
+            .map(|row| finish_session(row?))
+            .collect::<Result<_>>()?;
+        anyhow::ensure!(records.len() <= 1000, "metadata record bound exceeded");
+        Ok(records)
+    }
 }
 
 const SESSION_COLUMNS: &str =

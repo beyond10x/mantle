@@ -325,7 +325,7 @@ pub fn build(source: &Path, revision: &str, output: &Path, work: &Path) -> Resul
     fs::write(work.join("fetch.log"), fetched)?;
     // A private exact export and fresh target exclude caller-supplied stale same-version binaries.
     for (triple, packages) in [
-        (GNU, &["mantle", "mantle-release"][..]),
+        (GNU, &["mantle", "mantle-release", "mantle-acceptance"][..]),
         (
             MUSL,
             &["mantle-worker", "mantle-launch", "mantle-egress"][..],

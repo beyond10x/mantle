@@ -10,6 +10,14 @@ specification:
   - domains/orchestration.yaml
   - domains/operator.yaml
 scenarios:
+  - scenarios/cli/acceptance-case-inventory.yaml
+  - scenarios/cli/acceptance-real-command-path.yaml
+  - scenarios/cli/acceptance-auth-required.yaml
+  - scenarios/cli/acceptance-no-raw-transcript.yaml
+  - scenarios/cli/acceptance-failure-exit.yaml
+  - scenarios/cli/acceptance-resume-evidence.yaml
+  - scenarios/cli/acceptance-owned-cleanup.yaml
+  - scenarios/cli/acceptance-no-fabricated-pass.yaml
   - scenarios/cli/retain-missing-terminal-proof.yaml
   - scenarios/cli/retain-retirement-not-absent.yaml
   - scenarios/cli/retain-failed-admission-cleanup.yaml

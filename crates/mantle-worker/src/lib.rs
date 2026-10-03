@@ -629,15 +629,21 @@ pub struct BoundedProcess {
 
 impl BoundedProcess {
     pub fn spawn(command: &mut Command, timeout: Duration) -> Result<Self> {
+        command
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        Self::spawn_with_stdio(command, timeout)
+    }
+
+    /// Preserve caller-owned descriptors (for example a PTY slave), with the same bounded
+    /// process-group ownership and signal/descendant retirement as ordinary live transports.
+    pub fn spawn_with_stdio(command: &mut Command, timeout: Duration) -> Result<Self> {
         ensure!(
             !timeout.is_zero(),
             "live transport timeout must be positive"
         );
-        command
-            .process_group(0)
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null());
+        command.process_group(0);
         let registry = Arc::clone(transport_registry()?);
         let mut children = registry.lock_until(Instant::now() + CLEANUP_TIMEOUT)?;
         ensure!(
@@ -713,6 +719,56 @@ impl BoundedProcess {
 
     pub fn finish(mut self) -> Result<()> {
         self.owned.finish()
+    }
+
+    /// Observe completion without reaping: the ownership registry still retires descendants.
+    pub fn exit_code(&self) -> Result<Option<i32>> {
+        ensure!(
+            Instant::now() < self.deadline,
+            "bounded live child exceeded deadline"
+        );
+        let children = self.owned.registry.lock_until(self.deadline)?;
+        ensure!(
+            children
+                .get(&self.owned.pid.as_raw())
+                .is_some_and(|child| !child.retiring
+                    && Arc::ptr_eq(
+                        &child.retirement_requested,
+                        &self.owned.retirement_requested
+                    )),
+            "bounded child retired"
+        );
+        Ok(
+            match waitid(
+                Id::Pid(self.owned.pid),
+                WaitPidFlag::WEXITED | WaitPidFlag::WNOHANG | WaitPidFlag::WNOWAIT,
+            )? {
+                WaitStatus::StillAlive => None,
+                WaitStatus::Exited(_, code) => Some(code),
+                WaitStatus::Signaled(_, signal, _) => Some(128 + signal as i32),
+                _ => anyhow::bail!("unexpected bounded child state"),
+            },
+        )
+    }
+}
+
+impl BoundedProcess {
+    /// Supplied PTYs need not be controlling terminals; notify the owned group after resize.
+    pub fn notify_resize(&self) -> Result<()> {
+        self.check_running()?;
+        let children = self.owned.registry.lock_until(self.deadline)?;
+        ensure!(
+            children
+                .get(&self.owned.pid.as_raw())
+                .is_some_and(|child| !child.retiring
+                    && Arc::ptr_eq(
+                        &child.retirement_requested,
+                        &self.owned.retirement_requested
+                    )),
+            "bounded child retired"
+        );
+        killpg(self.owned.pid, Signal::SIGWINCH)?;
+        Ok(())
     }
 }
 

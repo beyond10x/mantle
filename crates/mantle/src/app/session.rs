@@ -64,12 +64,25 @@ async fn connect(config: &RuntimeContext, worker: &WorkerRecord) -> Result<Conne
     })
 }
 
-pub async fn start(
+pub async fn start_with_receipt(
     config: &RuntimeContext,
     store: &Store,
     manifest_path: &str,
     attach: bool,
+    receipt: Option<&std::path::Path>,
 ) -> Result<()> {
+    let binding = receipt
+        .map(|path| {
+            anyhow::ensure!(
+                !attach && !path.exists() && path.symlink_metadata().is_err(),
+                "receipt must be new and detached"
+            );
+            let parent = path.parent().context("receipt needs parent")?;
+            let probe = tempfile::NamedTempFile::new_in(parent)?;
+            drop(probe);
+            super::metadata::binding(&config.selection)
+        })
+        .transpose()?;
     let text = std::fs::read_to_string(manifest_path)
         .with_context(|| format!("reading {manifest_path}"))?;
     let resolved = manifest::parse(&text)?;
@@ -126,7 +139,22 @@ pub async fn start(
     println!("Worker         {} {}", worker.region, worker.instance);
     println!("Manifest       {}", resolved.digest);
 
-    start_recorded(store, &id, &resolved, &connected, attach).await
+    start_recorded(store, &id, &resolved, &connected, attach).await?;
+    if let (Some(path), Some(selection)) = (receipt, binding) {
+        let record = store
+            .session_by_id(&id)?
+            .context("created session missing")?;
+        mantle_acceptance::write_new(
+            path,
+            &mantle_acceptance::CreationReceipt {
+                format: mantle_acceptance::RECEIPT_FORMAT.into(),
+                selection,
+                session: super::metadata::record(store, &record)?,
+                created_at: mantle_acceptance::now(),
+            },
+        )?;
+    }
+    Ok(())
 }
 
 pub(crate) trait StartPort {
@@ -504,8 +532,13 @@ async fn attach_workspace(workspace: &Workspace, name: &str, agent: &AgentKind) 
     Ok(())
 }
 
-pub async fn attach(config: &RuntimeContext, store: &Store, name: &str) -> Result<()> {
-    let record = live(store, name)?;
+pub async fn attach_guarded(
+    config: &RuntimeContext,
+    store: &Store,
+    name: &str,
+    expected: Option<&str>,
+) -> Result<()> {
+    let record = store.selected_session(name, expected)?;
     super::lifecycle::attachable(&record)?;
     let connected = connect(config, &worker(store)?).await?;
     let workspace = connected
@@ -537,13 +570,18 @@ fn live(store: &Store, name: &str) -> Result<SessionRecord> {
 
 /// Runs one command in a session's workspace under the agent's confinement (toolchain root,
 /// aperture, environment) but without its credential, and prints what Substrate observed.
-pub async fn exec(
+pub async fn exec_guarded(
     config: &RuntimeContext,
     store: &Store,
     name: &str,
     argv: &[String],
+    expected: Option<&str>,
 ) -> Result<u8> {
-    let record = live(store, name)?;
+    let record = store.selected_session(name, expected)?;
+    anyhow::ensure!(
+        record.state != SessionState::Stopped,
+        "session has been destroyed"
+    );
     let (program, args) = argv.split_first().context("no command given")?;
     let connected = connect(config, &worker(store)?).await?;
     let workspace = connected

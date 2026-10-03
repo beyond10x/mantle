@@ -76,6 +76,49 @@ types:
       - {name: job, type: String}
       - {name: pids, type: String}
       - {name: cgroup, type: String}
+  - name: mantle.operator.SelectionBinding
+    kind: struct
+    fields:
+      - {name: profile, type: 'Optional<String>'}
+      - {name: config_path, type: String}
+      - {name: state_dir, type: String}
+      - {name: config_sha256, type: String}
+  - name: mantle.operator.SessionMetadata
+    kind: struct
+    fields:
+      - {name: id, type: String}
+      - {name: name, type: String}
+      - {name: agent, type: String}
+      - {name: authentication, type: String}
+      - {name: recorded_state, type: String}
+      - {name: generation, type: Integer}
+      - {name: workspace_id, type: 'Optional<String>'}
+      - {name: exec_id, type: 'Optional<String>'}
+      - {name: source_commits, type: 'List<String>'}
+      - {name: observed, type: 'Optional<mantle.operator.SessionObservation>'}
+  - name: mantle.operator.SessionObservation
+    kind: struct
+    fields:
+      - {name: workspace_state, type: 'Optional<String>'}
+      - {name: exec_state, type: 'Optional<String>'}
+      - {name: exit_code, type: 'Optional<Integer>'}
+      - {name: exit_signal, type: 'Optional<String>'}
+      - {name: refused, type: Boolean}
+  - name: mantle.operator.MetadataReport
+    kind: struct
+    fields:
+      - {name: format, type: String}
+      - {name: selection, type: 'Optional<mantle.operator.SelectionBinding>'}
+      - {name: outcome, type: String}
+      - {name: observed_at, type: String}
+      - {name: sessions, type: 'List<mantle.operator.SessionMetadata>'}
+  - name: mantle.operator.CreationReceipt
+    kind: struct
+    fields:
+      - {name: format, type: String}
+      - {name: selection, type: mantle.operator.SelectionBinding}
+      - {name: session, type: mantle.operator.SessionMetadata}
+      - {name: created_at, type: String}
   - name: mantle.operator.AcceptanceResult
     kind: struct
     fields:
@@ -86,7 +129,24 @@ types:
       - {name: exec_before, type: 'Optional<String>'}
       - {name: exec_after, type: 'Optional<String>'}
       - {name: observation, type: String}
+      - {name: run_id, type: String}
+      - {name: session_id, type: 'Optional<String>'}
+      - {name: workspace_id, type: 'Optional<String>'}
+      - {name: source_commit, type: 'Optional<String>'}
+      - {name: executable_sha256, type: String}
+      - {name: executable_version, type: String}
+      - {name: evidence_origin, type: String}
+      - {name: phase, type: String}
 commands:
+  - name: mantle.operator.AssessAcceptance
+    input:
+      - {name: case, type: String, example: inventory}
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: complete, type: Boolean}
+      - {name: count, type: Integer}
+      - {name: private, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
   - name: mantle.operator.UpgradeWorker
     input:
       - {name: case, type: String, example: plan}

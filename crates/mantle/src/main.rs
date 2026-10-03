@@ -8,6 +8,7 @@ mod adapters {
 mod app {
     pub mod doctor;
     pub mod lifecycle;
+    pub mod metadata;
     pub mod session;
     pub mod terminal;
     pub mod worker;
@@ -71,13 +72,32 @@ enum Command {
         /// Start the agent without attaching the terminal.
         #[arg(long)]
         detached: bool,
+        /// Atomically write a private creation receipt after a successful detached start.
+        #[arg(long, requires = "detached")]
+        receipt: Option<PathBuf>,
     },
     /// Attach the terminal to a running session (Ctrl-] d detaches).
-    Attach { name: String },
+    Attach {
+        name: String,
+        #[arg(long)]
+        expected_session_id: Option<String>,
+    },
     /// List live sessions as recorded locally.
-    List,
+    List {
+        #[arg(long)]
+        json: bool,
+    },
     /// Show a session: recorded intent, then what Substrate observes now.
-    Status { name: String },
+    #[command(group(clap::ArgGroup::new("identity").required(true).args(["name", "session_id"])))]
+    Status {
+        name: Option<String>,
+        #[arg(long, requires = "json")]
+        session_id: Option<String>,
+        #[arg(long)]
+        json: bool,
+        #[arg(long, default_value_t = 10, value_parser = clap::value_parser!(u64).range(1..=120))]
+        timeout_secs: u64,
+    },
     /// Stop the agent and retain its workspace and private login state (unreleased semantics).
     Stop {
         name: String,
@@ -101,6 +121,8 @@ enum Command {
     /// Run one command in a session's workspace under the agent's confinement, without its credential.
     Exec {
         name: String,
+        #[arg(long)]
+        expected_session_id: Option<String>,
         #[arg(last = true, required = true)]
         argv: Vec<String>,
     },
@@ -174,6 +196,35 @@ fn main() -> Result<std::process::ExitCode> {
 
 async fn run() -> Result<std::process::ExitCode> {
     let cli = Cli::parse();
+    let metadata = match &cli.command {
+        Command::List { json: true } => Some((None, None, 10)),
+        Command::Status {
+            name,
+            session_id,
+            json: true,
+            timeout_secs,
+        } => Some((name.as_deref(), session_id.as_deref(), *timeout_secs)),
+        _ => None,
+    };
+    if let Some((name, id, timeout)) = metadata {
+        let report = app::metadata::report(
+            resolve_selection(cli.profile.as_deref()),
+            name,
+            id,
+            std::time::Duration::from_secs(timeout),
+        )
+        .await;
+        let success = matches!(report.outcome.as_str(), "recorded" | "observed");
+        println!(
+            "{}",
+            String::from_utf8(mantle_acceptance::encoded(&report)?)?
+        );
+        return Ok(if success {
+            std::process::ExitCode::SUCCESS
+        } else {
+            std::process::ExitCode::FAILURE
+        });
+    }
     if let Command::Doctor { json, timeout_secs } = cli.command {
         let report = app::doctor::diagnose(
             resolve_selection(cli.profile.as_deref()),
@@ -268,12 +319,36 @@ async fn run() -> Result<std::process::ExitCode> {
             WorkerCommand::Status => app::worker::status(&config, &store).await,
             WorkerCommand::Ssh => app::worker::ssh(&config, &store),
         },
-        Command::Start { manifest, detached } => {
-            app::session::start(&config, &store, &manifest, !detached).await
+        Command::Start {
+            manifest,
+            detached,
+            receipt,
+        } => {
+            app::session::start_with_receipt(
+                &config,
+                &store,
+                &manifest,
+                !detached,
+                receipt.as_deref(),
+            )
+            .await
         }
-        Command::Attach { name } => app::session::attach(&config, &store, &name).await,
-        Command::List => app::session::list(&store),
-        Command::Status { name } => app::session::status(&config, &store, &name).await,
+        Command::Attach {
+            name,
+            expected_session_id,
+        } => {
+            app::session::attach_guarded(&config, &store, &name, expected_session_id.as_deref())
+                .await
+        }
+        Command::List { .. } => app::session::list(&store),
+        Command::Status { name, .. } => {
+            app::session::status(
+                &config,
+                &store,
+                name.as_deref().expect("human status requires name"),
+            )
+            .await
+        }
         Command::Stop {
             name,
             expected_session_id,
@@ -314,10 +389,20 @@ async fn run() -> Result<std::process::ExitCode> {
             )
             .await
         }
-        Command::Exec { name, argv } => {
-            return app::session::exec(&config, &store, &name, &argv)
-                .await
-                .map(std::process::ExitCode::from);
+        Command::Exec {
+            name,
+            argv,
+            expected_session_id,
+        } => {
+            return app::session::exec_guarded(
+                &config,
+                &store,
+                &name,
+                &argv,
+                expected_session_id.as_deref(),
+            )
+            .await
+            .map(std::process::ExitCode::from);
         }
     }?;
     Ok(std::process::ExitCode::SUCCESS)
