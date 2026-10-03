@@ -76,3 +76,8 @@ SQLite before remote waits, and use bounded process-aware transport rather than 
 Prove first-created session ownership or retain an unresolved checkpoint without automatic cleanup.
 Pin resolved profile selection and bind attestations to owned generations; revalidate the selected
 executable across resume. A manifest without its sibling verified archives is not known provenance.
+
+Reconcile spec/conformance-baseline.json against the final measured suite: retain existing required
+identities, document any intentional rename, add acceptance cases, and raise component floors to
+the observed counts. The coordinator copies fresh native run/report/suite/no-op evidence after the
+final integrated gate; stale baseline floors are not the documentation's source of current counts.
