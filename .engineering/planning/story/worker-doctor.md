@@ -9,8 +9,6 @@ relations:
 - depends_on: story:named-profiles
 scope:
 - confidence: cited
-  path: Cargo.lock
-- confidence: inferred
   path: README.md
 - confidence: cited
   path: crates/mantle-worker/src/lib.rs
@@ -18,8 +16,6 @@ scope:
   path: crates/mantle/Cargo.toml
 - confidence: cited
   path: crates/mantle/src/adapters/aws.rs
-- confidence: cited
-  path: crates/mantle/src/adapters/conformance.rs
 - confidence: cited
   path: crates/mantle/src/adapters/kubevirt.rs
 - confidence: cited
@@ -29,8 +25,6 @@ scope:
 - confidence: cited
   path: crates/mantle/src/adapters/state.rs
 - confidence: cited
-  path: crates/mantle/src/adapters/substrate.rs
-- confidence: inferred
   path: crates/mantle/src/app/doctor.rs
 - confidence: cited
   path: crates/mantle/src/app/worker.rs
@@ -40,23 +34,23 @@ scope:
   path: crates/mantle/src/main.rs
 - confidence: cited
   path: crates/mantle/src/profile.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/tests/doctor.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/tests/support/doctor_fixture.rs
-- confidence: inferred
+- confidence: cited
   path: generated/worker-model
-- confidence: inferred
+- confidence: cited
   path: spec/components.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/domains/operator.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/ess-inputs.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/cli
-- confidence: inferred
+- confidence: cited
   path: website/index.html
-revision: 30
+revision: 32
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 21, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-03T09:45:04Z", actor: "human:timo", revision: 30, decided_on: {"recorded":{"review_outcome":1}}}
@@ -79,3 +73,7 @@ No agent credential command means never call Config::claude_token, execute its t
 ## Entry, failure and timeout boundaries
 
 Handle doctor before the ordinary mutating Config/Store initialization path. For --json, selection/configuration failures must still produce a structured failed report (ordinary clap usage errors are outside this runtime-report contract). A report whose selection could not be resolved must model that as absent, not invent selected paths; adjust the proposed DiagnosticReport selection field accordingly before implementation. Bound local file reads as well as external processes, so a FIFO or oversized malformed configuration/registry/database entry cannot hang diagnosis. Raw TOML parser excerpts, provider stderr, SSH output and credential-command text are not diagnostics: emit stable safe stage details and actionable remedies. Ensure failed early stages suppress downstream calls. Reuse the existing bounded process-group cleanup for provider/SSH subprocesses; an async timeout around a blocking child alone does not establish bounded cleanup. Temporary private SSH sockets retain the existing short-path behavior.
+
+## Observed implementation scope
+
+Source commit 3ed0f50723890a484a4ea5c8c064f5dab394faae establishes the previously inferred doctor module, actual CLI fixture, bounded live-process extension, read-only state/SSH constructors, operator scenarios, generated provenance and README/site paths. Existing conformance routing required changes in adapters/orchestration.rs; adapters/conformance.rs, adapters/substrate.rs and Cargo.lock did not change and are removed from the write scope. The implementation handoff records package counts 55 to 60 and worker counts 28 to 29, with CLI conformance 243 to 255. These are package results pending separate adversary review and the full integrated gate, not yet story closure.
