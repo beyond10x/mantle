@@ -382,3 +382,23 @@ Reports are retained as wave7-correction.md and wave7-correction-status.json. Im
 its lease and all commands. Final adversary pass2 now owns the same unit/target under
 codex-agent-acceptance-adversary-pass2, scratch agent-acceptance/adversary/pass2. No third attack
 is planned. Full integrated gate remains pending; no source completion claim is made yet.
+
+Final adversary pass2 found nothing; runner8→9, all9passed, isolated/package/Clippy/fmt/diff0.
+Its unchanged report is review-result:reliability-wave7-adversary-pass2. The CLI findings diff
+records carried0/new0/resolved1; original failure and correction evidence remain immutable.
+Tests-only commit0c5c495 retained the cleanup retry case. All worker leases ended before integration.
+
+Reviewed source and documentation merged at dee44cf83d2dafc18d447b82674424893f1c916f.
+Full task check exited0: complete499=315authored+184generated, CLI381, egress69, launcher49;
+zero failed/skipped/unsupported/outside/refused in the complete inventory. All component reports
+share digest40dc7bfa7a332091e37575b2bb7fe04934452aa6054539b46dae37a4ae141f5d.
+All workspace tests, Clippy, formatting, ESS/AEP validation and site build passed. Direct raw
+log/status remain at $HOME/.cache/mantle-reliability/integration/wave7-gate.{log,exit}; portable
+counts are wave7-gate-status.json. Fresh coordinated evidence replaced reports/native together;
+mutations.json remains explicitly historical. The six no-op outcome passes and zero authored
+passes are retained in the new audit. Unit7 moved implemented on these observations.
+
+Docs now report the measured complete499 inventory. HD10's source mapping/counts are corrected;
+HD11's decoded-envelope boundary remains explicit. The nine wider observation gaps remain proposed
+follow-up, not claimed fixed. No authenticated qualification, release or website publication ran.
+Agent token/tool counters are unavailable. Final publication, one PR and managed cleanup follow.

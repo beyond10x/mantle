@@ -89,10 +89,10 @@ Shutdown owns and joins its connection tasks, aborting remaining tunnels after t
 
 ## Gate and evidence
 
-The measured native CLI run executes **381 scenarios: 160 generated and 221 authored**, with zero
-failures or skips. Specification validation counts **315 authored scenarios** across all six domains;
-that inventory count is not an executed aggregate. `task conformance` executes the CLI, egress and
-launcher components and reconciles their complete inventory. The complete inventory requires zero
+The measured complete native inventory executes **499 scenarios: 184 generated and 315 authored**,
+with zero failures, skips, unsupported, outside or refused cases. Its CLI component executes 381,
+egress 69 and launcher 49 scenarios at the same specification digest. `task conformance` executes
+these components and reconciles their complete inventory. The complete inventory requires zero
 failed, skipped, unsupported, outside or refused scenarios. `task check` also runs the
 existing unit/integration/adversary tests, clippy, formatting, ESS validation, AEP validation and
 website generation.

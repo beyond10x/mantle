@@ -4,6 +4,34 @@
     {
       "checks": [
         {
+          "about": "outcome mantle.launch.AttachBackpressure/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.AttachBackpressure",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 4430,
+      "purpose": "`mantle.launch.AttachBackpressure` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.AttachBackpressure/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
           "about": "outcome mantle.launch.Emit/returned",
           "code": "ESS-CF-OUTCOME",
           "status": "passed"
@@ -80,7 +108,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 270,
+      "duration_ms": 356,
       "purpose": "`mantle.launch.Lifecycle` answers `returned` for an input no other branch's guard claims",
       "scenario": "mantle.launch.Lifecycle/outcome/returned",
       "status": "passed"
@@ -108,7 +136,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 2,
       "purpose": "`mantle.launch.ParseArgs` answers `returned` for an input no other branch's guard claims",
       "scenario": "mantle.launch.ParseArgs/outcome/returned",
       "status": "passed"
@@ -144,6 +172,62 @@
     {
       "checks": [
         {
+          "about": "outcome mantle.launch.PersistentReplayCompatibility/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.PersistentReplayCompatibility",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 513,
+      "purpose": "`mantle.launch.PersistentReplayCompatibility` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.PersistentReplayCompatibility/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.PrivatePaths/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.PrivatePaths",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 118,
+      "purpose": "`mantle.launch.PrivatePaths` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.PrivatePaths/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
           "about": "outcome mantle.launch.ReadSecret/returned",
           "code": "ESS-CF-OUTCOME",
           "status": "passed"
@@ -164,7 +248,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "`mantle.launch.ReadSecret` answers `returned` for an input no other branch's guard claims",
       "scenario": "mantle.launch.ReadSecret/outcome/returned",
       "status": "passed"
@@ -192,7 +276,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 1,
+      "duration_ms": 0,
       "purpose": "`mantle.launch.ReplayRing` answers `returned` for an input no other branch's guard claims",
       "scenario": "mantle.launch.ReplayRing/outcome/returned",
       "status": "passed"
@@ -248,7 +332,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 4128,
+      "duration_ms": 1229,
       "purpose": "`mantle.launch.SlowReader` answers `returned` for an input no other branch's guard claims",
       "scenario": "mantle.launch.SlowReader/outcome/returned",
       "status": "passed"
@@ -286,7 +370,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "`mantle.launch.ValidateScrollback` answers `accepted` for an input that satisfies that branch's guard",
       "scenario": "mantle.launch.ValidateScrollback/outcome/accepted",
       "status": "passed"
@@ -324,9 +408,121 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 1,
+      "duration_ms": 0,
       "purpose": "`mantle.launch.ValidateScrollback` answers `refused` for an input no other branch's guard claims",
       "scenario": "mantle.launch.ValidateScrollback/outcome/refused",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.VolatileReplayBounds/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.VolatileReplayBounds",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 663,
+      "purpose": "`mantle.launch.VolatileReplayBounds` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.VolatileReplayBounds/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.VolatileReplayExitPaths/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.VolatileReplayExitPaths",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 731,
+      "purpose": "`mantle.launch.VolatileReplayExitPaths` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.VolatileReplayExitPaths/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.VolatileReplayLifecycle/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.VolatileReplayLifecycle",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 304,
+      "purpose": "`mantle.launch.VolatileReplayLifecycle` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.VolatileReplayLifecycle/outcome/returned",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.VolatileReplayPreflight/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.VolatileReplayPreflight",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionChanged",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        },
+        {
+          "about": "no event mantle.session.SessionRecorded",
+          "code": "ESS-CF-NO-EVENT",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 41,
+      "purpose": "`mantle.launch.VolatileReplayPreflight` answers `returned` for an input no other branch's guard claims",
+      "scenario": "mantle.launch.VolatileReplayPreflight/outcome/returned",
       "status": "passed"
     },
     {
@@ -342,7 +538,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "argument-byte-preservation",
       "scenario": "mantle.launch/authored/argument-byte-preservation",
       "status": "passed"
@@ -368,6 +564,24 @@
     {
       "checks": [
         {
+          "about": "outcome mantle.launch.AttachBackpressure/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.AttachBackpressure",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 4446,
+      "purpose": "AB01–AB04 bounded cancellation, PTY/descriptor restoration and exact partial-write relay.",
+      "scenario": "mantle.launch/authored/attach-backpressure-cancellation",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
           "about": "outcome mantle.launch.ParseArgs/returned",
           "code": "ESS-CF-OUTCOME",
           "status": "passed"
@@ -378,7 +592,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 1,
+      "duration_ms": 0,
       "purpose": "attach-no-tty",
       "scenario": "mantle.launch/authored/attach-no-tty",
       "status": "passed"
@@ -396,7 +610,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "bad-environment-name",
       "scenario": "mantle.launch/authored/bad-environment-name",
       "status": "passed"
@@ -432,7 +646,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 1,
+      "duration_ms": 0,
       "purpose": "filesystem-links-and-locks",
       "scenario": "mantle.launch/authored/filesystem-links-and-locks",
       "status": "passed"
@@ -450,7 +664,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "missing-command",
       "scenario": "mantle.launch/authored/missing-command",
       "status": "passed"
@@ -468,7 +682,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 11,
+      "duration_ms": 111,
       "purpose": "os-argument-bytes-and-exit",
       "scenario": "mantle.launch/authored/os-argument-bytes-and-exit",
       "status": "passed"
@@ -494,6 +708,42 @@
     {
       "checks": [
         {
+          "about": "outcome mantle.launch.PersistentReplayCompatibility/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.PersistentReplayCompatibility",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 514,
+      "purpose": "Default persistence retains the bounded tail with owner-only mode.",
+      "scenario": "mantle.launch/authored/persistent-replay-compatibility",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.PrivatePaths/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.PrivatePaths",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 140,
+      "purpose": "Private paths preserve auth files and reject unsafe dispatch paths.",
+      "scenario": "mantle.launch/authored/private-path-initialization",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
           "about": "outcome mantle.launch.Signals/returned",
           "code": "ESS-CF-OUTCOME",
           "status": "passed"
@@ -504,7 +754,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 121,
+      "duration_ms": 123,
       "purpose": "process-group-signals",
       "scenario": "mantle.launch/authored/process-group-signals",
       "status": "passed"
@@ -540,7 +790,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 263,
+      "duration_ms": 373,
       "purpose": "pty-fifo-lifecycle",
       "scenario": "mantle.launch/authored/pty-fifo-lifecycle",
       "status": "passed"
@@ -561,6 +811,34 @@
       "duration_ms": 1,
       "purpose": "relative-dir",
       "scenario": "mantle.launch/authored/relative-dir",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.launch.ParseArgs/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.ParseArgs",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "Explicit volatile replay selection and malformed value refusal.",
+      "scenario": "mantle.launch/authored/replay-policy-arguments",
       "status": "passed"
     },
     {
@@ -594,7 +872,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "secret-fd-pair",
       "scenario": "mantle.launch/authored/secret-fd-pair",
       "status": "passed"
@@ -684,7 +962,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 4228,
+      "duration_ms": 1230,
       "purpose": "slow-reader-bounded-output",
       "scenario": "mantle.launch/authored/slow-reader-bounded-output",
       "status": "passed"
@@ -702,9 +980,81 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 1,
+      "duration_ms": 0,
       "purpose": "standard-secret-fd",
       "scenario": "mantle.launch/authored/standard-secret-fd",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.VolatileReplayBounds/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.VolatileReplayBounds",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 664,
+      "purpose": "Volatile replay retains the bounded newest bytes and termination budget.",
+      "scenario": "mantle.launch/authored/volatile-replay-bounds",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.VolatileReplayExitPaths/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.VolatileReplayExitPaths",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 641,
+      "purpose": "All termination cases exclude the output file and diagnostic canary.",
+      "scenario": "mantle.launch/authored/volatile-replay-exit-paths",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.VolatileReplayLifecycle/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.VolatileReplayLifecycle",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 214,
+      "purpose": "Live relay, detach, replay and resize without a persisted replay file.",
+      "scenario": "mantle.launch/authored/volatile-replay-lifecycle",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.launch.VolatileReplayPreflight/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.launch.VolatileReplayPreflight",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 46,
+      "purpose": "Existing replay entries are preserved and refused before dispatch.",
+      "scenario": "mantle.launch/authored/volatile-replay-preflight",
       "status": "passed"
     },
     {
@@ -720,7 +1070,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "window-fragmentation",
       "scenario": "mantle.launch/authored/window-fragmentation",
       "status": "passed"
@@ -744,23 +1094,23 @@
       "status": "passed"
     }
   ],
-  "started_at": 1790937870329,
+  "started_at": 1791049650587,
   "summary": {
-    "completed_at": 1790937879592,
+    "completed_at": 1791049667719,
     "conformance_status": "passed",
     "counts": {
       "error": 0,
       "failed": 0,
-      "passed": 34,
+      "passed": 49,
       "skipped": 0,
-      "total": 34,
+      "total": 49,
       "unsupported": 0
     },
     "coverage": {
       "counts": {
-        "authored": 23,
-        "generated": 11,
-        "outside": 77,
+        "authored": 31,
+        "generated": 18,
+        "outside": 166,
         "refused": 0
       },
       "knowledge": "complete_inventory",
@@ -778,24 +1128,32 @@
     },
     "execution_status": "passed",
     "format": "ess-conformance-report/2",
-    "implementation": "mantle-native 0.1.0",
+    "implementation": "mantle-native 0.1.4",
     "outcomes": {
       "error": [],
       "failed": [],
       "passed": [
+        "mantle.launch.AttachBackpressure/outcome/returned",
         "mantle.launch.Emit/outcome/returned",
         "mantle.launch.FileSafety/outcome/returned",
         "mantle.launch.Lifecycle/outcome/returned",
         "mantle.launch.ParseArgs/outcome/returned",
         "mantle.launch.ParseWindow/outcome/returned",
+        "mantle.launch.PersistentReplayCompatibility/outcome/returned",
+        "mantle.launch.PrivatePaths/outcome/returned",
         "mantle.launch.ReadSecret/outcome/returned",
         "mantle.launch.ReplayRing/outcome/returned",
         "mantle.launch.Signals/outcome/returned",
         "mantle.launch.SlowReader/outcome/returned",
         "mantle.launch.ValidateScrollback/outcome/accepted",
         "mantle.launch.ValidateScrollback/outcome/refused",
+        "mantle.launch.VolatileReplayBounds/outcome/returned",
+        "mantle.launch.VolatileReplayExitPaths/outcome/returned",
+        "mantle.launch.VolatileReplayLifecycle/outcome/returned",
+        "mantle.launch.VolatileReplayPreflight/outcome/returned",
         "mantle.launch/authored/argument-byte-preservation",
         "mantle.launch/authored/argument-defaults",
+        "mantle.launch/authored/attach-backpressure-cancellation",
         "mantle.launch/authored/attach-no-tty",
         "mantle.launch/authored/bad-environment-name",
         "mantle.launch/authored/bounded-scrollback",
@@ -803,10 +1161,13 @@
         "mantle.launch/authored/missing-command",
         "mantle.launch/authored/os-argument-bytes-and-exit",
         "mantle.launch/authored/oversize-scrollback-write",
+        "mantle.launch/authored/persistent-replay-compatibility",
+        "mantle.launch/authored/private-path-initialization",
         "mantle.launch/authored/process-group-signals",
         "mantle.launch/authored/proxy-userinfo",
         "mantle.launch/authored/pty-fifo-lifecycle",
         "mantle.launch/authored/relative-dir",
+        "mantle.launch/authored/replay-policy-arguments",
         "mantle.launch/authored/secret-empty",
         "mantle.launch/authored/secret-fd-pair",
         "mantle.launch/authored/secret-non-utf8",
@@ -815,6 +1176,10 @@
         "mantle.launch/authored/secret-trailing-whitespace",
         "mantle.launch/authored/slow-reader-bounded-output",
         "mantle.launch/authored/standard-secret-fd",
+        "mantle.launch/authored/volatile-replay-bounds",
+        "mantle.launch/authored/volatile-replay-exit-paths",
+        "mantle.launch/authored/volatile-replay-lifecycle",
+        "mantle.launch/authored/volatile-replay-preflight",
         "mantle.launch/authored/window-fragmentation",
         "mantle.launch/authored/window-oversize-discard"
       ],
@@ -823,10 +1188,10 @@
     },
     "policy": "complete-selection/1",
     "producer_profile": "rust-scenario-status/1",
-    "spec_digest": "8336f2747da565d5095d1469d79302729d8f9583382a012cdef92b09840e9ece",
+    "spec_digest": "40dc7bfa7a332091e37575b2bb7fe04934452aa6054539b46dae37a4ae141f5d",
     "specification": "mantle/v1",
     "suite": {
-      "digest": "sha256:8a8c36d0c37959d0abb525fdee406b77f4dc550086c3e03d2d89d9e14415ff1e",
+      "digest": "sha256:820c26fd17f3f161791a2aa6f3b084606026653083f0c5103cc40e37376b109d",
       "digest_profile": "sha256-json-bytes/1",
       "version": "ess-conformance/29"
     }

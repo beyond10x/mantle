@@ -42,6 +42,9 @@
       "mantle.egress/authored/bad-header",
       "mantle.egress/authored/bad-version",
       "mantle.egress/authored/closed-incomplete",
+      "mantle.egress/authored/codex-connect-destinations",
+      "mantle.egress/authored/codex-default-destinations",
+      "mantle.egress/authored/codex-destination-refusals",
       "mantle.egress/authored/connect-failure",
       "mantle.egress/authored/connect-opaque-bytes",
       "mantle.egress/authored/connect-timeout",
@@ -268,6 +271,21 @@
         "disposition": "accepted",
         "scenario": "mantle.egress/authored/closed-incomplete"
       },
+      "codex-connect-destinations.yaml": {
+        "digest": "sha256:dd98deb59f1c1bcc901f779864764d3f9f4c77915683006ae80eedf1cca87642",
+        "disposition": "accepted",
+        "scenario": "mantle.egress/authored/codex-connect-destinations"
+      },
+      "codex-default-destinations.yaml": {
+        "digest": "sha256:309f34eff9c702ffdbe415b876a40cb5cc707007c4250fae2aa96c852cfec5ac",
+        "disposition": "accepted",
+        "scenario": "mantle.egress/authored/codex-default-destinations"
+      },
+      "codex-destination-refusals.yaml": {
+        "digest": "sha256:74aa47dc8de0b0ed3e3130ac14eb0b1b2b3b6a52e13855df43db9bafb5457d19",
+        "disposition": "accepted",
+        "scenario": "mantle.egress/authored/codex-destination-refusals"
+      },
       "connect-failure.yaml": {
         "digest": "sha256:8a597f2a71b2dfcc3f3435702a852579d692feea6e19ed36c9d4922b163709e6",
         "disposition": "accepted",
@@ -365,9 +383,9 @@
       }
     },
     "counts": {
-      "authored": 60,
+      "authored": 63,
       "generated": 6,
-      "outside": 82,
+      "outside": 178,
       "refused": 0
     },
     "generated": [
@@ -380,6 +398,17 @@
     ],
     "knowledge": "complete_inventory",
     "outside": [
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.launch.AttachBackpressure"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.launch.AttachBackpressure/outcome/returned"
+      },
       {
         "needs": [
           {
@@ -434,6 +463,28 @@
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.launch.ParseWindow/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.launch.PersistentReplayCompatibility"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.launch.PersistentReplayCompatibility/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.launch.PrivatePaths"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.launch.PrivatePaths/outcome/returned"
       },
       {
         "needs": [
@@ -500,6 +551,50 @@
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.launch.ValidateScrollback/outcome/refused"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.launch.VolatileReplayBounds"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.launch.VolatileReplayBounds/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.launch.VolatileReplayExitPaths"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.launch.VolatileReplayExitPaths/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.launch.VolatileReplayLifecycle"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.launch.VolatileReplayLifecycle/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.launch.VolatileReplayPreflight"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.launch.VolatileReplayPreflight/outcome/returned"
       },
       {
         "needs": [
@@ -606,6 +701,127 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.operator.AssessAcceptance"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.operator.AssessAcceptance/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.operator.DiagnoseWorker"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.operator.DiagnoseWorker/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.operator.InstallRelease"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.operator.InstallRelease/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.operator.ProfileRegistry"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.operator.ProfileRegistry/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.operator.ProfileStateIsolation"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.operator.ProfileStateIsolation/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.operator.SelectProfile"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.operator.SelectProfile/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.operator.UpgradeWorker"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.operator.UpgradeWorker/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.operator.VerifyRelease"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.operator.VerifyRelease/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.orchestration.CodexPreflight"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.orchestration.CodexPreflight/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.orchestration.Destroy"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.orchestration.Destroy/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.orchestration.ExecOutcome"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.orchestration.ExecOutcome/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
             "name": "mantle.orchestration.Observe"
           }
         ],
@@ -628,23 +844,23 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.orchestration.SourceResolution"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.orchestration.SourceResolution/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
             "name": "mantle.orchestration.Start"
           }
         ],
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.orchestration.Start/outcome/returned"
-      },
-      {
-        "needs": [
-          {
-            "kind": "command",
-            "name": "mantle.orchestration.Stop"
-          }
-        ],
-        "origin": "generated",
-        "reason": "other_component",
-        "scenario": "mantle.orchestration.Stop/outcome/returned"
       },
       {
         "needs": [
@@ -764,6 +980,277 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.session.AssessAgentInstallation"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.AssessAgentInstallation/outcome/already-current"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AssessAgentInstallation"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.AssessAgentInstallation/outcome/installed"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AssessAgentInstallation"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.AssessAgentInstallation/outcome/refused"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AssessSharedBinaryUpgrade"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.AssessSharedBinaryUpgrade/outcome/applicable"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AssessSharedBinaryUpgrade"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.AssessSharedBinaryUpgrade/outcome/deferred"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AssessWorkerReadiness"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.AssessWorkerReadiness/outcome/missing"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AssessWorkerReadiness"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.AssessWorkerReadiness/outcome/ready"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.BeginDestroy/outcome/missing"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionChanged"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.BeginDestroy/outcome/moved"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.BeginRestart/outcome/missing"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionChanged"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.BeginRestart/outcome/moved"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.BeginRetain/outcome/missing"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionChanged"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.BeginRetain/outcome/moved"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
             "name": "mantle.session.BeginStop"
           }
         ],
@@ -801,6 +1288,60 @@
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.session.BeginStop/outcome/moved"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.FinishRetain/outcome/missing"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionChanged"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.FinishRetain/outcome/moved"
       },
       {
         "needs": [
@@ -852,12 +1393,34 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.session.IdentityMigration"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.IdentityMigration/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
             "name": "mantle.session.InsertSession"
           }
         ],
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.session.InsertSession/outcome/conflict"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.InsertSession/outcome/invalid-identity"
       },
       {
         "needs": [
@@ -992,6 +1555,324 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.session.RetainedLifecycle"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.RetainedLifecycle/outcome/returned"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Destroying/refuses/mantle.session.AgentStartFailed"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStarted"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Destroying/refuses/mantle.session.AgentStarted"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Destroying/refuses/mantle.session.BeginDestroy"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Destroying/refuses/mantle.session.BeginRestart"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Destroying/refuses/mantle.session.BeginRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Destroying/refuses/mantle.session.BeginStop"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Destroying/refuses/mantle.session.FinishRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Destroying/refuses/mantle.session.MaterializationFailed"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Destroying/refuses/mantle.session.Materialized"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
             "name": "mantle.session.AgentStartFailed"
           },
           {
@@ -1053,6 +1934,76 @@
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.AgentStarted"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.BeginRestart"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/FailedAgentStart/refuses/mantle.session.FinishRetain"
       },
       {
         "needs": [
@@ -1221,6 +2172,99 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.BeginRestart"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.BeginRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/FailedMaterialization/refuses/mantle.session.FinishRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
             "name": "mantle.session.FinishStop"
           },
           {
@@ -1364,6 +2408,114 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Materializing/refuses/mantle.session.BeginDestroy"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Materializing/refuses/mantle.session.BeginRestart"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Materializing/refuses/mantle.session.BeginRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Materializing/refuses/mantle.session.FinishRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
             "name": "mantle.session.FinishStop"
           },
           {
@@ -1386,6 +2538,1037 @@
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.session.Session/state/Materializing/refuses/mantle.session.FinishStop"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Restarting/refuses/mantle.session.AgentStartFailed"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Restarting/refuses/mantle.session.BeginDestroy"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Restarting/refuses/mantle.session.BeginRestart"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Restarting/refuses/mantle.session.BeginRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Restarting/refuses/mantle.session.BeginStop"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Restarting/refuses/mantle.session.FinishRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Restarting/refuses/mantle.session.FinishStop"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Restarting/refuses/mantle.session.MaterializationFailed"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Restarting/refuses/mantle.session.Materialized"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retained/refuses/mantle.session.AgentStartFailed"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStarted"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retained/refuses/mantle.session.AgentStarted"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retained/refuses/mantle.session.BeginStop"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retained/refuses/mantle.session.FinishRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retained/refuses/mantle.session.FinishStop"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retained/refuses/mantle.session.MaterializationFailed"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retained/refuses/mantle.session.Materialized"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retaining/refuses/mantle.session.AgentStartFailed"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStarted"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retaining/refuses/mantle.session.AgentStarted"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retaining/refuses/mantle.session.BeginDestroy"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retaining/refuses/mantle.session.BeginRestart"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retaining/refuses/mantle.session.BeginRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retaining/refuses/mantle.session.BeginStop"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retaining/refuses/mantle.session.FinishStop"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retaining/refuses/mantle.session.MaterializationFailed"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Retaining/refuses/mantle.session.Materialized"
       },
       {
         "needs": [
@@ -1452,6 +3635,76 @@
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.session.Session/state/Running/refuses/mantle.session.AgentStarted"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStarted"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Running/refuses/mantle.session.BeginRestart"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStarted"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Running/refuses/mantle.session.FinishRetain"
       },
       {
         "needs": [
@@ -1553,6 +3806,130 @@
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.session.Session/state/Running/refuses/mantle.session.Materialized"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Starting/refuses/mantle.session.BeginDestroy"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Starting/refuses/mantle.session.BeginRestart"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Starting/refuses/mantle.session.BeginRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Starting/refuses/mantle.session.FinishRetain"
       },
       {
         "needs": [
@@ -1709,6 +4086,99 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Stopped/refuses/mantle.session.BeginDestroy"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Stopped/refuses/mantle.session.BeginRestart"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Stopped/refuses/mantle.session.BeginRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
             "name": "mantle.session.BeginStop"
           },
           {
@@ -1731,6 +4201,37 @@
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.session.Session/state/Stopped/refuses/mantle.session.BeginStop"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Stopped/refuses/mantle.session.FinishRetain"
       },
       {
         "needs": [
@@ -1887,6 +4388,68 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Stopping/refuses/mantle.session.BeginRestart"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Stopping/refuses/mantle.session.BeginRetain"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
             "name": "mantle.session.BeginStop"
           },
           {
@@ -1909,6 +4472,37 @@
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.session.Session/state/Stopping/refuses/mantle.session.BeginStop"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/state/Stopping/refuses/mantle.session.FinishRetain"
       },
       {
         "needs": [
@@ -1971,6 +4565,65 @@
         "origin": "generated",
         "reason": "other_component",
         "scenario": "mantle.session.Session/state/Stopping/refuses/mantle.session.Materialized"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStarted"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginStop"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionChanged"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/transition/destroying/by/mantle.session.BeginDestroy/moved"
       },
       {
         "needs": [
@@ -2042,6 +4695,143 @@
           },
           {
             "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionChanged"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/transition/restarting/by/mantle.session.BeginRestart/moved"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionChanged"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/transition/retained/by/mantle.session.FinishRetain/moved"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStarted"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.Materialized"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionChanged"
+          },
+          {
+            "kind": "event",
+            "name": "mantle.session.SessionRecorded"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.LiveSessions"
+          },
+          {
+            "kind": "view",
+            "name": "mantle.session.SessionRecords"
+          }
+        ],
+        "origin": "generated",
+        "reason": "other_component",
+        "scenario": "mantle.session.Session/transition/retaining/by/mantle.session.BeginRetain/moved"
+      },
+      {
+        "needs": [
+          {
+            "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
             "name": "mantle.session.InsertSession"
           },
           {
@@ -2073,7 +4863,23 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.session.AgentStartFailed"
+          },
+          {
+            "kind": "command",
             "name": "mantle.session.AgentStarted"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRestart"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.BeginRetain"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.FinishRetain"
           },
           {
             "kind": "command",
@@ -2108,6 +4914,10 @@
         "needs": [
           {
             "kind": "command",
+            "name": "mantle.session.BeginDestroy"
+          },
+          {
+            "kind": "command",
             "name": "mantle.session.BeginStop"
           },
           {
@@ -2117,6 +4927,10 @@
           {
             "kind": "command",
             "name": "mantle.session.InsertSession"
+          },
+          {
+            "kind": "command",
+            "name": "mantle.session.MaterializationFailed"
           },
           {
             "kind": "event",
@@ -2285,8 +5099,8 @@
   },
   "provenance": {
     "component": "mantle-egress",
-    "contract_digest": "3842f07e2e61ab6b95f536307445ece50843d18970a8f00007aa86a0649b4eb6",
-    "spec_digest": "8336f2747da565d5095d1469d79302729d8f9583382a012cdef92b09840e9ece",
+    "contract_digest": "d9a79258062d495448478a2636d88cdea71d9a4b439cca4f64f09cffae41cfd2",
+    "spec_digest": "40dc7bfa7a332091e37575b2bb7fe04934452aa6054539b46dae37a4ae141f5d",
     "specification_version": "v1",
     "suite_version": "ess-conformance/29",
     "system": "mantle"
@@ -5366,6 +8180,1278 @@
               "forwarded": "",
               "resolved_names": [],
               "status": 0.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        }
+      ]
+    },
+    "mantle.egress/authored/codex-connect-destinations": {
+      "purpose": "GW02: real CONNECT normalizes both fixed hosts, pins public dialing and preserves binary bytes",
+      "source": [
+        {
+          "kind": "domain",
+          "name": "mantle.egress"
+        },
+        {
+          "kind": "type",
+          "name": "mantle.egress.ConnectorFixture"
+        },
+        {
+          "kind": "type",
+          "name": "mantle.egress.ResolverFixture"
+        },
+        {
+          "kind": "command",
+          "name": "mantle.egress.Exchange"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          }
+        }
+      ],
+      "steps": [
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBhdXRoLm9wZW5haS5jb206NDQzIEhUVFAvMS4xDQoNCgD/AQ0K"
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "body": "AP8BDQo=",
+              "dialled": [
+                "93.184.216.34:443"
+              ],
+              "forwarded": "AP8BDQo=",
+              "resolved_names": [
+                "auth.openai.com."
+              ],
+              "status": 200.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBjaGF0Z3B0LmNvbTo0NDMgSFRUUC8xLjENCg0KAP8BDQo="
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "body": "AP8BDQo=",
+              "dialled": [
+                "93.184.216.34:443"
+              ],
+              "forwarded": "AP8BDQo=",
+              "resolved_names": [
+                "chatgpt.com."
+              ],
+              "status": 200.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBBVVRILk9wZW5BSS5DT00uOjQ0MyBIVFRQLzEuMQ0KDQoA/wENCg=="
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "mixed"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "body": "AP8BDQo=",
+              "dialled": [
+                "93.184.216.34:443"
+              ],
+              "forwarded": "AP8BDQo=",
+              "resolved_names": [
+                "auth.openai.com."
+              ],
+              "status": 200.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBDSEFUR1BULkNPTS46NDQzIEhUVFAvMS4xDQoNCgD/AQ0K"
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "mixed"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "body": "AP8BDQo=",
+              "dialled": [
+                "93.184.216.34:443"
+              ],
+              "forwarded": "AP8BDQo=",
+              "resolved_names": [
+                "chatgpt.com."
+              ],
+              "status": 200.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        }
+      ]
+    },
+    "mantle.egress/authored/codex-default-destinations": {
+      "purpose": "GW01: exactly the two selected subscription destinations use the production default policy",
+      "source": [
+        {
+          "kind": "domain",
+          "name": "mantle.egress"
+        },
+        {
+          "kind": "command",
+          "name": "mantle.egress.CheckDefaultDestination"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "mantle.egress.CheckDefaultDestination",
+            "outcome": "allowed"
+          }
+        }
+      ],
+      "steps": [
+        {
+          "command": "mantle.egress.CheckDefaultDestination",
+          "input": {
+            "host": {
+              "kind": "literal",
+              "value": "auth.openai.com"
+            },
+            "port": {
+              "kind": "literal",
+              "value": 443.0
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.CheckDefaultDestination",
+            "outcome": "allowed"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.CheckDefaultDestination",
+            "declarations": {},
+            "expected": {
+              "allowed": true
+            },
+            "fields": [
+              {
+                "name": "allowed",
+                "type": "Boolean"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.CheckDefaultDestination",
+              "outcome": "allowed"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.CheckDefaultDestination",
+          "input": {
+            "host": {
+              "kind": "literal",
+              "value": "chatgpt.com"
+            },
+            "port": {
+              "kind": "literal",
+              "value": 443.0
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.CheckDefaultDestination",
+            "outcome": "allowed"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.CheckDefaultDestination",
+            "declarations": {},
+            "expected": {
+              "allowed": true
+            },
+            "fields": [
+              {
+                "name": "allowed",
+                "type": "Boolean"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.CheckDefaultDestination",
+              "outcome": "allowed"
+            }
+          },
+          "step": "expect_direct_response"
+        }
+      ]
+    },
+    "mantle.egress/authored/codex-destination-refusals": {
+      "purpose": "GW03: wrong ports, subdomains, lookalikes, suffixes and unselected endpoints refuse before DNS/dial",
+      "source": [
+        {
+          "kind": "domain",
+          "name": "mantle.egress"
+        },
+        {
+          "kind": "type",
+          "name": "mantle.egress.ConnectorFixture"
+        },
+        {
+          "kind": "type",
+          "name": "mantle.egress.ResolverFixture"
+        },
+        {
+          "kind": "command",
+          "name": "mantle.egress.Exchange"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          }
+        }
+      ],
+      "steps": [
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBhdXRoLm9wZW5haS5jb206ODAgSFRUUC8xLjENCg0K"
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBhdXRoLm9wZW5haS5jb206ODQ0MyBIVFRQLzEuMQ0KDQo="
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBjaGF0Z3B0LmNvbTo4MCBIVFRQLzEuMQ0KDQo="
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBjaGF0Z3B0LmNvbTo4NDQzIEhUVFAvMS4xDQoNCg=="
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBhdXRoLm9wZW5haS5jb20uYXR0YWNrZXIudGVzdDo0NDMgSFRUUC8xLjENCg0K"
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBjaGF0Z3B0LmNvbS5hdHRhY2tlci50ZXN0OjQ0MyBIVFRQLzEuMQ0KDQo="
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBldmlsLmF1dGgub3BlbmFpLmNvbTo0NDMgSFRUUC8xLjENCg0K"
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBldmlsLmNoYXRncHQuY29tOjQ0MyBIVFRQLzEuMQ0KDQo="
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBhdXRoLW9wZW5haS5jb206NDQzIEhUVFAvMS4xDQoNCg=="
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBjaGF0Z3B0LWNvbTo0NDMgSFRUUC8xLjENCg0K"
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBhcGkub3BlbmFpLmNvbTo0NDMgSFRUUC8xLjENCg0K"
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
+            },
+            "fields": [
+              {
+                "name": "status",
+                "type": "Integer"
+              },
+              {
+                "name": "body",
+                "type": "Bytes"
+              },
+              {
+                "name": "forwarded",
+                "type": "Bytes"
+              },
+              {
+                "name": "resolved_names",
+                "type": "List<String>"
+              },
+              {
+                "name": "dialled",
+                "type": "List<String>"
+              }
+            ],
+            "outcome": {
+              "command": "mantle.egress.Exchange",
+              "outcome": "returned"
+            }
+          },
+          "step": "expect_direct_response"
+        },
+        {
+          "command": "mantle.egress.Exchange",
+          "input": {
+            "connector": {
+              "kind": "literal",
+              "value": "echo"
+            },
+            "half_close": {
+              "kind": "literal",
+              "value": true
+            },
+            "request": {
+              "kind": "literal",
+              "value": "Q09OTkVDVCBjZG4ub3BlbmFpLmNvbTo0NDMgSFRUUC8xLjENCg0K"
+            },
+            "resolver": {
+              "kind": "literal",
+              "value": "public"
+            }
+          },
+          "step": "execute_command"
+        },
+        {
+          "outcome": {
+            "command": "mantle.egress.Exchange",
+            "outcome": "returned"
+          },
+          "step": "expect_outcome"
+        },
+        {
+          "response": {
+            "command": "mantle.egress.Exchange",
+            "declarations": {},
+            "expected": {
+              "dialled": [],
+              "forwarded": "",
+              "resolved_names": [],
+              "status": 403.0
             },
             "fields": [
               {

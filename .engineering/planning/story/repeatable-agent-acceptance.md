@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:repeatable-agent-acceptance
 kind: story
-status: active
+status: implemented
 title: Run and record a bounded real-agent lifecycle acceptance suite
 relations:
 - decomposes: epic:reliability-and-usability
@@ -60,10 +60,11 @@ scope:
   path: spec/scenarios/cli
 - confidence: cited
   path: website/index.html
-revision: 36
+revision: 38
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
 - {from: "proposed", to: "active", at: "2026-10-03T16:18:01Z", actor: "human:timo", revision: 31}
+- {from: "active", to: "implemented", at: "2026-10-03T17:54:25Z", actor: "human:timo", revision: 37, decided_on: {"recorded":{"test_result":1,"review_outcome":1,"verification":1,"ess_conformance_coverage_v1":1}}}
 ---
 ## Outcome
 Provide a Rust/clap acceptance runner plus operator procedure for disposable Claude and Codex sessions through the installed Mantle CLI, not duplicated orchestration. AcceptanceResult is typed in spec/domains/operator.yaml. Bound duration/output/disk; keep only non-secret metadata, exact version/source identities and explicit case outcomes.
@@ -147,3 +148,7 @@ Cited preparation: crates/mantle-worker/src/lib.rs:631 BoundedProcess::spawn cur
 Confirmed by source diff 7930ab1..3ce4d28037a4c6d3120b5594f463cd8924bf43bc (38 files) and documentation diff 7930ab1..211332ba6f6b4f6d80d3881f7ce238cad21196e1 (three files): retained typed paths are now cited. Earlier inferred crates/mantle-conformance and docs/evidence were not needed; previously cited codex_preflight.rs was inspected but unchanged. These three unused paths are removed from typed scope while the earlier preparation remains historical context. Existing aggregate conformance already includes the new CLI scenarios without coordinator-crate changes.
 
 Source package aggregate133→143, new metadata4 and runner6, native CLI372→381 (221 authored +160 generated), validated authored307→315. Complete aggregate execution remains with root. Source final package, Clippy, formatting, model drift, notices and fixture formatting all exit0. Documentation commit has tests2/2, links and exact-commit site build exit0. Implementor reports distinguish its semantic lost-receipt refusal correction from fixture setup/compilation and generated-provenance failures. Root still owes reviewed integration and full gate; no live qualification is claimed.
+
+## Completed integration
+
+Reviewed runtime and docs merged at dee44cf83d2dafc18d447b82674424893f1c916f. Full task check exited0, complete native499/499 (CLI381, egress69, launcher49), all workspace tests, Clippy, fmt, specification/plan validation and docs build passed. Final adversary pass2 found nothing; runner9/9. The prior cleanup-evidence finding is fixed with unchanged original assertions and an additional retry case. Fresh coordinated reports and direct counts are in .engineering/reports/native and .engineering/reports/reliability/wave7-gate-status.json. The later docs-only count refresh passes both documentation tests and document validation. This supersedes the earlier pending integration/gate statement; no live authenticated qualification is claimed.

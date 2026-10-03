@@ -156,7 +156,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "`mantle.egress.ClassifyAddress` answers `returned` for an input no other branch's guard claims",
       "scenario": "mantle.egress.ClassifyAddress/outcome/returned",
       "status": "passed"
@@ -274,7 +274,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "address-12",
       "scenario": "mantle.egress/authored/address-12",
       "status": "passed"
@@ -310,7 +310,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 1,
+      "duration_ms": 0,
       "purpose": "address-14",
       "scenario": "mantle.egress/authored/address-14",
       "status": "passed"
@@ -544,7 +544,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "address-26",
       "scenario": "mantle.egress/authored/address-26",
       "status": "passed"
@@ -634,7 +634,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 1,
+      "duration_ms": 0,
       "purpose": "address-5",
       "scenario": "mantle.egress/authored/address-5",
       "status": "passed"
@@ -922,7 +922,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "closed-incomplete",
       "scenario": "mantle.egress/authored/closed-incomplete",
       "status": "passed"
@@ -938,9 +938,213 @@
           "about": "direct response mantle.egress.Exchange",
           "code": "ESS-CF-PAYLOAD",
           "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
         }
       ],
-      "duration_ms": 1,
+      "duration_ms": 3,
+      "purpose": "GW02: real CONNECT normalizes both fixed hosts, pins public dialing and preserves binary bytes",
+      "scenario": "mantle.egress/authored/codex-connect-destinations",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.CheckDefaultDestination/allowed",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.CheckDefaultDestination",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
+      "purpose": "GW01: exactly the two selected subscription destinations use the production default policy",
+      "scenario": "mantle.egress/authored/codex-default-destinations",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        },
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 7,
+      "purpose": "GW03: wrong ports, subdomains, lookalikes, suffixes and unselected endpoints refuse before DNS/dial",
+      "scenario": "mantle.egress/authored/codex-destination-refusals",
+      "status": "passed"
+    },
+    {
+      "checks": [
+        {
+          "about": "outcome mantle.egress.Exchange/returned",
+          "code": "ESS-CF-OUTCOME",
+          "status": "passed"
+        },
+        {
+          "about": "direct response mantle.egress.Exchange",
+          "code": "ESS-CF-PAYLOAD",
+          "status": "passed"
+        }
+      ],
+      "duration_ms": 0,
       "purpose": "connect-failure",
       "scenario": "mantle.egress/authored/connect-failure",
       "status": "passed"
@@ -958,7 +1162,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "connect-opaque-bytes",
       "scenario": "mantle.egress/authored/connect-opaque-bytes",
       "status": "passed"
@@ -994,7 +1198,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 64,
+      "duration_ms": 66,
       "purpose": "connection-budgets",
       "scenario": "mantle.egress/authored/connection-budgets",
       "status": "passed"
@@ -1048,7 +1252,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "ip-literal",
       "scenario": "mantle.egress/authored/ip-literal",
       "status": "passed"
@@ -1066,7 +1270,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 1,
+      "duration_ms": 0,
       "purpose": "missing-port",
       "scenario": "mantle.egress/authored/missing-port",
       "status": "passed"
@@ -1102,7 +1306,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "non-connect",
       "scenario": "mantle.egress/authored/non-connect",
       "status": "passed"
@@ -1174,7 +1378,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "resolver-failure",
       "scenario": "mantle.egress/authored/resolver-failure",
       "status": "passed"
@@ -1192,7 +1396,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 1,
+      "duration_ms": 0,
       "purpose": "resolver-private",
       "scenario": "mantle.egress/authored/resolver-private",
       "status": "passed"
@@ -1210,7 +1414,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 62,
+      "duration_ms": 63,
       "purpose": "resolver-timeout",
       "scenario": "mantle.egress/authored/resolver-timeout",
       "status": "passed"
@@ -1246,7 +1450,7 @@
           "status": "passed"
         }
       ],
-      "duration_ms": 0,
+      "duration_ms": 1,
       "purpose": "suffix-is-not-allowed",
       "scenario": "mantle.egress/authored/suffix-is-not-allowed",
       "status": "passed"
@@ -1270,23 +1474,23 @@
       "status": "passed"
     }
   ],
-  "started_at": 1790937869227,
+  "started_at": 1791049619603,
   "summary": {
-    "completed_at": 1790937869849,
+    "completed_at": 1791049620243,
     "conformance_status": "passed",
     "counts": {
       "error": 0,
       "failed": 0,
-      "passed": 66,
+      "passed": 69,
       "skipped": 0,
-      "total": 66,
+      "total": 69,
       "unsupported": 0
     },
     "coverage": {
       "counts": {
-        "authored": 60,
+        "authored": 63,
         "generated": 6,
-        "outside": 82,
+        "outside": 178,
         "refused": 0
       },
       "knowledge": "complete_inventory",
@@ -1304,7 +1508,7 @@
     },
     "execution_status": "passed",
     "format": "ess-conformance-report/2",
-    "implementation": "mantle-native 0.1.0",
+    "implementation": "mantle-native 0.1.4",
     "outcomes": {
       "error": [],
       "failed": [],
@@ -1356,6 +1560,9 @@
         "mantle.egress/authored/bad-header",
         "mantle.egress/authored/bad-version",
         "mantle.egress/authored/closed-incomplete",
+        "mantle.egress/authored/codex-connect-destinations",
+        "mantle.egress/authored/codex-default-destinations",
+        "mantle.egress/authored/codex-destination-refusals",
         "mantle.egress/authored/connect-failure",
         "mantle.egress/authored/connect-opaque-bytes",
         "mantle.egress/authored/connect-timeout",
@@ -1381,10 +1588,10 @@
     },
     "policy": "complete-selection/1",
     "producer_profile": "rust-scenario-status/1",
-    "spec_digest": "8336f2747da565d5095d1469d79302729d8f9583382a012cdef92b09840e9ece",
+    "spec_digest": "40dc7bfa7a332091e37575b2bb7fe04934452aa6054539b46dae37a4ae141f5d",
     "specification": "mantle/v1",
     "suite": {
-      "digest": "sha256:454df943e2a755fc513f7025b4625a0a887d63cde52578f2c21f401d571a4266",
+      "digest": "sha256:a6534acc14e11be207647d959e7c3c44a695add03895b50e86fb8c63e567090b",
       "digest_profile": "sha256-json-bytes/1",
       "version": "ess-conformance/29"
     }
