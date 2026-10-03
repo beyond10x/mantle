@@ -25,6 +25,8 @@ scope:
 - confidence: inferred
   path: about.toml
 - confidence: inferred
+  path: crates/mantle-artifact
+- confidence: inferred
   path: crates/mantle-conformance
 - confidence: inferred
   path: crates/mantle-release
@@ -40,7 +42,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 27
+revision: 29
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 19}
 ---
@@ -80,3 +82,7 @@ The pinned Rust 1.97 installation includes share/doc/rust/COPYRIGHT-library.html
 ## Prebuilt installer bootstrap
 
 Include the Rust verifier/installer executable in the GNU CLI artifact alongside mantle. Document the initial trusted-manifest checksum verification and extraction before invoking that tool. The supported prebuilt installation path must not require compiling the installer from source. The manifest's payload inventory and fixed archive whitelist include that executable; worker archives retain the three existing worker filenames. Neither an archive checksum nor its adjacent manifest independently proves publisher authenticity.
+
+## Shared verifier dependency layout
+
+Read-only implementation preparation identified a concrete dependency cycle if the shared verifier remains in mantle-release: release commands need mantle-worker's existing bounded subprocess ownership, while worker upgrades need the verifier. Put strict manifest/archive/ELF verification in a small leaf crate crates/mantle-artifact, with no dependency on the application or worker. mantle-release depends on mantle-artifact plus mantle-worker; the later upgrade adds mantle-worker to mantle-artifact dependency only. Reuse the existing process owner instead of copying it or extracting a second orchestration library. This models existing ReleaseManifest/ReleaseArtifact values and does not introduce a new product noun.

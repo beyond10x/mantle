@@ -11,9 +11,11 @@ unit passes its integrated gate; the execution record supplies the exact base co
 - Temporary files: `/dev/shm/mantle-prebuilt-release-tmp`.
 - Scratch: `$HOME/.cache/mantle-reliability/prebuilt-release`.
 
-Build one coherent Rust library/CLI with build, verify, install and operator publication commands.
-Keep verification independent of Mantle application/worker dependencies so the next unit can
-reuse it. Supported artifacts are Linux x86_64 GNU CLI and static x86_64 musl worker binaries.
+Build a Rust release CLI with build, verify, install and operator publication commands. Put
+manifest/archive/ELF verification in the small leaf crate `crates/mantle-artifact`; `mantle-release`
+can depend on that and `mantle-worker` for existing bounded subprocess ownership. The next unit
+can then make the worker depend on the artifact verifier without a cycle or copied process owner.
+Supported artifacts are Linux x86_64 GNU CLI and static x86_64 musl worker binaries.
 Ship the Rust verifier/installer executable with the GNU CLI artifact and document the initial
 trusted-manifest checksum check, so using the prebuilt installation path does not require a
 source build of its installer.

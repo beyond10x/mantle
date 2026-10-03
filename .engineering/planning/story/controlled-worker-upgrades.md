@@ -11,6 +11,8 @@ scope:
 - confidence: inferred
   path: README.md
 - confidence: inferred
+  path: crates/mantle-artifact
+- confidence: inferred
   path: crates/mantle-release
 - confidence: inferred
   path: crates/mantle-worker
@@ -40,7 +42,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 22
+revision: 24
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"review_outcome":2}}}
 ---
@@ -61,3 +63,6 @@ The two blocker findings correctly rejected online idle-check-then-stop. The req
 ## Scope
 Cited: crates/mantle/src/app/worker.rs, crates/mantle/src/adapters/ssh.rs, crates/mantle-worker/src/lib.rs, crates/mantle-worker/src/main.rs, deploy/substrate.service and deploy/mantle-egress.service. Inferred: CLI dispatch, release verifier, offline installer transaction and failure fixtures, operator ESS scenarios/generated provenance, README and public website. Depends on packaging and doctor.
 
+## Shared verifier dependency layout
+
+Read-only implementation preparation identified a concrete dependency cycle if the shared verifier remains in mantle-release: release commands need mantle-worker's existing bounded subprocess ownership, while worker upgrades need the verifier. Put strict manifest/archive/ELF verification in a small leaf crate crates/mantle-artifact, with no dependency on the application or worker. mantle-release depends on mantle-artifact plus mantle-worker; the later upgrade adds mantle-worker to mantle-artifact dependency only. Reuse the existing process owner instead of copying it or extracting a second orchestration library. This models existing ReleaseManifest/ReleaseArtifact values and does not introduce a new product noun.
