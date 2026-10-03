@@ -6,6 +6,7 @@ mod adapters {
     pub mod substrate;
 }
 mod app {
+    pub mod doctor;
     pub mod session;
     pub mod terminal;
     pub mod worker;
@@ -42,6 +43,14 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    /// Diagnose existing worker readiness without provisioning or changing application state.
+    Doctor {
+        #[arg(long)]
+        json: bool,
+        /// Deadline for each external probe; timed-out subprocess groups are retired.
+        #[arg(long, default_value_t = 10, value_parser = clap::value_parser!(u64).range(1..=120))]
+        timeout_secs: u64,
+    },
     /// Manage local named path references without contacting a provider.
     Profile {
         #[command(subcommand)]
@@ -135,6 +144,24 @@ fn main() -> Result<std::process::ExitCode> {
 
 async fn run() -> Result<std::process::ExitCode> {
     let cli = Cli::parse();
+    if let Command::Doctor { json, timeout_secs } = cli.command {
+        let report = app::doctor::diagnose(
+            resolve_selection(cli.profile.as_deref()),
+            &app::doctor::SystemProbes,
+            std::time::Duration::from_secs(timeout_secs),
+        )
+        .await;
+        if json {
+            println!("{}", serde_json::to_string(&report)?);
+        } else {
+            print!("{}", report.human());
+        }
+        return Ok(if report.healthy {
+            std::process::ExitCode::SUCCESS
+        } else {
+            std::process::ExitCode::FAILURE
+        });
+    }
     let home = std::env::var_os("HOME")
         .map(PathBuf::from)
         .ok_or_else(|| anyhow::anyhow!("HOME is not set"))?;
@@ -167,23 +194,7 @@ async fn run() -> Result<std::process::ExitCode> {
         }
         return Ok(std::process::ExitCode::SUCCESS);
     }
-    let environment = if cli.profile.is_some() {
-        None
-    } else {
-        std::env::var("MANTLE_PROFILE")
-            .map(Some)
-            .or_else(|error| match error {
-                std::env::VarError::NotPresent => Ok(None),
-                _ => Err(anyhow::anyhow!("MANTLE_PROFILE must be valid UTF-8")),
-            })?
-    };
-    let selection = profile::Selection::resolve(
-        &home,
-        cli.profile.as_deref(),
-        environment.as_deref(),
-        std::env::var_os("MANTLE_CONFIG"),
-        std::env::var_os("MANTLE_STATE_DIR"),
-    )?;
+    let selection = resolve_selection(cli.profile.as_deref())?;
     let config = RuntimeContext {
         config: Config::load(&selection)?,
         selection,
@@ -191,6 +202,7 @@ async fn run() -> Result<std::process::ExitCode> {
     config.selection.prepare_state()?;
     let store = Store::open(&config.selection.state_dir.join("state.db"))?;
     match cli.command {
+        Command::Doctor { .. } => unreachable!("doctor returns before ordinary initialization"),
         Command::Profile { .. } => unreachable!("profile commands return before runtime selection"),
         Command::Worker { command } => match command {
             WorkerCommand::Up {
@@ -225,4 +237,27 @@ async fn run() -> Result<std::process::ExitCode> {
         }
     }?;
     Ok(std::process::ExitCode::SUCCESS)
+}
+
+fn resolve_selection(explicit: Option<&str>) -> Result<profile::Selection> {
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .ok_or_else(|| anyhow::anyhow!("HOME is not set"))?;
+    let environment = if explicit.is_some() {
+        None
+    } else {
+        std::env::var("MANTLE_PROFILE")
+            .map(Some)
+            .or_else(|error| match error {
+                std::env::VarError::NotPresent => Ok(None),
+                _ => Err(anyhow::anyhow!("MANTLE_PROFILE must be valid UTF-8")),
+            })?
+    };
+    profile::Selection::resolve(
+        &home,
+        explicit,
+        environment.as_deref(),
+        std::env::var_os("MANTLE_CONFIG"),
+        std::env::var_os("MANTLE_STATE_DIR"),
+    )
 }

@@ -73,7 +73,11 @@ const fn default_data_volume() -> i32 {
 impl Config {
     pub fn load(selection: &crate::profile::Selection) -> Result<Self> {
         let text = selection.read_config()?;
-        let config: Self = toml::from_str(&text)
+        Self::parse(&text)
+    }
+
+    pub fn parse(text: &str) -> Result<Self> {
+        let config: Self = toml::from_str(text)
             .map_err(|_| anyhow::anyhow!("configuration has malformed or unsupported fields"))?;
         if config.ubuntu_serial.len() != 8
             || !config

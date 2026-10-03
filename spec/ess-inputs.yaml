@@ -261,3 +261,14 @@ scenarios:
   - scenarios/cli/profile-env-conflict.yaml
   - scenarios/cli/profile-legacy-defaults.yaml
   - scenarios/cli/profile-state-isolation.yaml
+  - scenarios/cli/doctor-healthy.yaml
+  - scenarios/cli/doctor-config-invalid.yaml
+  - scenarios/cli/doctor-state-missing.yaml
+  - scenarios/cli/doctor-placement-mismatch.yaml
+  - scenarios/cli/doctor-provider-unreachable.yaml
+  - scenarios/cli/doctor-ssh-unreachable.yaml
+  - scenarios/cli/doctor-service-unavailable.yaml
+  - scenarios/cli/doctor-version-mismatch.yaml
+  - scenarios/cli/doctor-facts-missing.yaml
+  - scenarios/cli/doctor-timeout.yaml
+  - scenarios/cli/doctor-readonly.yaml

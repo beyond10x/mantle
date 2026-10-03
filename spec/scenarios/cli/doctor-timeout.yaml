@@ -1,0 +1,24 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.operator",
+  "scenario": "doctor-timeout",
+  "summary": "Read-only production doctor orchestration with bounded probe observations",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:00Z",
+      "command": "mantle.operator.DiagnoseWorker",
+      "input": {
+        "failure": "timeout"
+      },
+      "outcome": "returned",
+      "response": {
+        "healthy": false,
+        "failed_stage": "provider",
+        "called": [
+          "provider"
+        ],
+        "state_unchanged": true
+      }
+    }
+  ]
+}

@@ -440,6 +440,7 @@ pub fn proxy_command(config: &AwsConfig) -> String {
     format!(
         "aws ssm start-session --target %h --document-name AWS-StartSSHSession \
          --parameters portNumber=%p --profile {} --region {}",
-        config.profile, config.region
+        super::ssh::proxy_argument(&config.profile),
+        super::ssh::proxy_argument(&config.region)
     )
 }

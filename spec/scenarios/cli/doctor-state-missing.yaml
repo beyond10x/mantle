@@ -1,0 +1,22 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.operator",
+  "scenario": "doctor-state-missing",
+  "summary": "Read-only production doctor orchestration with bounded probe observations",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:00Z",
+      "command": "mantle.operator.DiagnoseWorker",
+      "input": {
+        "failure": "state"
+      },
+      "outcome": "returned",
+      "response": {
+        "healthy": false,
+        "failed_stage": "state",
+        "called": [],
+        "state_unchanged": true
+      }
+    }
+  ]
+}

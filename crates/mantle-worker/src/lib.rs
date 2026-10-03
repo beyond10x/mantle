@@ -460,6 +460,7 @@ struct TransportChild {
     child: Child,
     retiring: bool,
     retirement_requested: Arc<AtomicBool>,
+    deadline: Option<Instant>,
 }
 
 struct TransportRegistry {
@@ -511,6 +512,12 @@ impl TransportRegistry {
     fn reap_retired(&self) {
         if let Ok(mut children) = self.children.try_lock() {
             children.retain(|_, owned| {
+                if owned
+                    .deadline
+                    .is_some_and(|deadline| Instant::now() >= deadline)
+                {
+                    Self::retire(owned);
+                }
                 if owned.retirement_requested.load(Ordering::Acquire) {
                     Self::retire(owned);
                 }
@@ -605,6 +612,103 @@ struct OwnedTransport {
     pid: Pid,
     finished: bool,
     retirement_requested: Arc<AtomicBool>,
+}
+
+/// A silent live transport with a deadline enforced by the signal/cleanup coordinator.
+/// Descendants remain owned until group termination and direct-child reaping, including when
+/// the caller is blocked or the group leader has already exited. Dropping retires the group.
+pub struct BoundedProcess {
+    owned: OwnedTransport,
+    deadline: Instant,
+}
+
+impl BoundedProcess {
+    pub fn spawn(command: &mut Command, timeout: Duration) -> Result<Self> {
+        ensure!(
+            !timeout.is_zero(),
+            "live transport timeout must be positive"
+        );
+        command
+            .process_group(0)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        let registry = Arc::clone(transport_registry()?);
+        let mut children = registry.lock_until(Instant::now() + CLEANUP_TIMEOUT)?;
+        ensure!(
+            registry.interrupted.load(Ordering::Acquire) == 0,
+            "bounded child cancelled"
+        );
+        registry.default_when_idle.store(false, Ordering::Release);
+        let child = match command.spawn() {
+            Ok(child) => child,
+            Err(error) => {
+                registry
+                    .default_when_idle
+                    .store(children.is_empty(), Ordering::Release);
+                return Err(error).context("starting bounded live child");
+            }
+        };
+        let pid = Pid::from_raw(child.id() as i32);
+        let deadline = Instant::now() + timeout;
+        let retirement_requested = Arc::new(AtomicBool::new(false));
+        children.insert(
+            pid.as_raw(),
+            TransportChild {
+                child,
+                retiring: false,
+                retirement_requested: Arc::clone(&retirement_requested),
+                deadline: Some(deadline),
+            },
+        );
+        drop(children);
+        Ok(Self {
+            owned: OwnedTransport {
+                registry,
+                pid,
+                finished: false,
+                retirement_requested,
+            },
+            deadline,
+        })
+    }
+
+    pub fn check_running(&self) -> Result<()> {
+        ensure!(
+            Instant::now() < self.deadline,
+            "bounded live child exceeded deadline"
+        );
+        ensure!(
+            self.owned.registry.interrupted.load(Ordering::Acquire) == 0,
+            "bounded child cancelled"
+        );
+        let children = self.owned.registry.lock_until(self.deadline)?;
+        ensure!(
+            children
+                .get(&self.owned.pid.as_raw())
+                .is_some_and(|owned| !owned.retiring
+                    && Arc::ptr_eq(
+                        &owned.retirement_requested,
+                        &self.owned.retirement_requested
+                    )),
+            "bounded live child is retired"
+        );
+        ensure!(
+            matches!(
+                waitid(
+                    Id::Pid(self.owned.pid),
+                    WaitPidFlag::WEXITED | WaitPidFlag::WNOHANG | WaitPidFlag::WNOWAIT
+                )?,
+                WaitStatus::StillAlive
+            ),
+            "bounded live child exited"
+        );
+        Ok(())
+    }
+
+    pub fn finish(mut self) -> Result<()> {
+        self.owned.finish()
+    }
 }
 
 impl OwnedTransport {
@@ -702,6 +806,7 @@ pub fn run_bounded(
             child,
             retiring: false,
             retirement_requested: Arc::clone(&retirement_requested),
+            deadline: None,
         },
     );
     drop(children);
@@ -816,6 +921,69 @@ pub fn run_bounded(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn bounded_live_process_deadline_and_drop_retire_descendants_without_caller_progress() {
+        const MODE: &str = "MANTLE_LIVE_PROCESS_FIXTURE";
+        if let Some(path) = std::env::var_os(MODE) {
+            let mut child = Command::new("/usr/bin/sleep").arg("30").spawn().unwrap();
+            fs::write(path, child.id().to_string()).unwrap();
+            child.wait().unwrap();
+            std::process::exit(0);
+        }
+        if isolated_installer_test() {
+            return;
+        }
+        for expire in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let pidfile = root.path().join("pid");
+            let mut command = Command::new(std::env::current_exe().unwrap());
+            command.args(["--exact","tests::bounded_live_process_deadline_and_drop_retire_descendants_without_caller_progress"]).env(MODE,&pidfile);
+            let child = BoundedProcess::spawn(&mut command, Duration::from_millis(500)).unwrap();
+            let deadline = Instant::now() + Duration::from_secs(2);
+            while !pidfile.exists() {
+                assert!(Instant::now() < deadline);
+                std::thread::sleep(Duration::from_millis(5));
+            }
+            let pid = fs::read_to_string(pidfile).unwrap().parse::<i32>().unwrap();
+            if expire {
+                // Deliberately do not poll the guard. The registry's timer owns retirement.
+                std::thread::sleep(Duration::from_millis(700));
+                assert!(child.check_running().is_err());
+                assert!(
+                    !fixture_running(pid),
+                    "deadline requires no caller progress"
+                );
+            }
+            if expire {
+                child.finish().unwrap();
+            } else {
+                drop(child);
+            }
+            let deadline = Instant::now() + Duration::from_secs(2);
+            while fixture_running(pid) && Instant::now() < deadline {
+                std::thread::sleep(Duration::from_millis(5));
+            }
+            assert!(
+                !fixture_running(pid),
+                "owned descendant survives retirement"
+            );
+        }
+        assert!(
+            BoundedProcess::spawn(
+                &mut Command::new("/absent/live-transport"),
+                Duration::from_secs(1)
+            )
+            .is_err()
+        );
+        let child = BoundedProcess::spawn(
+            Command::new("/usr/bin/sleep").arg("30"),
+            Duration::from_secs(1),
+        )
+        .unwrap();
+        child.check_running().unwrap();
+        child.finish().unwrap();
+    }
 
     #[test]
     fn adversary_second_successful_child_exit_cleans_its_remaining_group() {
@@ -1007,6 +1175,7 @@ mod tests {
                 child,
                 retiring: false,
                 retirement_requested: current_registration,
+                deadline: None,
             },
         );
         // Model PID reuse after the previous Child was reaped: the old guard holds a different
@@ -1054,6 +1223,7 @@ mod tests {
                 child,
                 retiring: false,
                 retirement_requested: Arc::clone(&requested),
+                deadline: None,
             },
         );
         let mut owned = OwnedTransport {

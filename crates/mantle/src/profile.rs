@@ -19,11 +19,41 @@ pub struct Profile {
     pub state_dir: PathBuf,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Selection {
     pub profile: Option<String>,
     pub config_path: PathBuf,
     pub state_dir: PathBuf,
+}
+
+/// Read-only descriptor inspection for diagnostics, including legacy selections. Never creates
+/// directories and refuses special files before any potentially blocking read.
+pub fn inspect_regular(path: &Path, cap: u64) -> Result<File> {
+    let dir = directory(path.parent().context("file needs parent")?, false, false)?;
+    let file = File::from(openat(
+        &dir,
+        path.file_name().context("file needs name")?,
+        OFlags::RDONLY | OFlags::NONBLOCK | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+        Mode::empty(),
+    )?);
+    let meta = file.metadata()?;
+    ensure!(
+        meta.is_file() && meta.len() <= cap,
+        "diagnostic input must be a bounded regular file"
+    );
+    Ok(file)
+}
+
+pub fn read_bounded(path: &Path, cap: u64) -> Result<String> {
+    let mut text = String::new();
+    inspect_regular(path, cap)?
+        .take(cap + 1)
+        .read_to_string(&mut text)?;
+    ensure!(
+        text.len() as u64 <= cap,
+        "diagnostic input exceeds byte limit"
+    );
+    Ok(text)
 }
 
 pub fn validate_name(name: &str) -> Result<()> {
