@@ -2,14 +2,15 @@
 format: aep.planning-md/3
 id: task:reliability-hardening-mutations
 kind: task
-status: active
+status: implemented
 title: Verify green reliability rules with planted implementation defects
 relations:
 - delivers: epic:reliability-and-usability
-revision: 3
+revision: 4
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T13:50:43Z", actor: "human:timo", revision: 2}
 - {from: "proposed", to: "active", at: "2026-10-03T13:50:43Z", actor: "human:timo", revision: 3}
+- {from: "active", to: "implemented", at: "2026-10-03T14:24:57Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"test_result":1,"review_outcome":1,"verification":1}}}
 ---
 ## Outcome
 Run a bounded ESS hardening mutation audit against already-green Mantle reliability behavior, as the operator explicitly requested. Compile canonical IR and choose at least four independently observable rules spanning truthful exec outcomes, profile isolation/override refusal, read-only doctor and release verification. Use the native implementation and real retained scenarios; no interpreted model substituted for Mantle.

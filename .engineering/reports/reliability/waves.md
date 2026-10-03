@@ -166,3 +166,34 @@ HD-11 has a fixed outcome. HD-01 through HD-09 remain open, each recorded as esc
 task:reliability-conformance-boundary-expansion; none is called fixed or a reproduced runtime defect.
 This broader fixture/spec observation work is outside the bounded audit and five-item integration.
 HD-10 remains assigned to unit7. The small checksum mutation gap is corrected in the current audit.
+
+The mutation audit finished on five rules: four original detections, one whole-archive-digest
+survivor, and zero remaining observed survivors after a focused fixture correction. The report
+is preserved unchanged as review-result:reliability-hardening-mutations and its structured evidence
+is beside this log. Original 263 native CLI scenarios and15 release tests missed digest removal;
+the existing checksum scenario now changes TAR padding without changing length or payload bytes.
+The added real CLI regression and strengthened scenario fail with the guard removed, then pass
+with exact production restoration (263 ESS,16 release). Original truncation coverage stays.
+Formatting and relevant Clippy exited0 after a recorded test-style correction.
+
+Root reviewed the entire report/evidence and38-addition/1-deletion tests-only diff, committed it as
+bot30d5709 and merged it at1aabc06. The focused real CLI regression also passed on that merge,
+1 case/exit0, with raw root evidence integration/hardening-merged-case.*. Both bounded audit tasks
+are implemented; their open specification findings remain explicitly proposed follow-up work.
+The final full integration gate is still pending. The mutation agent removed only its reproducible
+target/tmp before root's cleanup reminder; raw scratch evidence and ignored generated drafts remain.
+No source tree or shared cache was removed. Source worktree retirement waits for publication.
+
+Unit5 correction a7ac0ca is bot-authored and clean: worker46, Mantle64/native273, formatting,
+Clippy, musl and exact-commit docs all exit0. The retained adversary function is byte-identical.
+Completed journals are now read-only observations rather than historical rollback authority;
+pending journals exclude the actual Installer before fetching, even after the OS lock is released.
+The initial bot commit request failed; one identical authorized retry succeeded, with both logs
+retained. Root recorded the correction and fixed outcome and handed the released tree to the same
+adversary for pass2. No third attack is authorized. Source and target remain owned by that reviewer.
+
+Additional read-only unit7 preparation found concrete implementation traps under its existing
+contract: early JSON routing before writable state initialization, bounded synchronous transport,
+provable first-created ownership, resolved selection/attestation binding and verified executable
+provenance across resume. The full report is recorded in the story and wave7-preparation.md,
+with brief references. It establishes no runtime defect or new live acceptance claim.

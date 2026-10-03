@@ -2,14 +2,15 @@
 format: aep.planning-md/3
 id: task:reliability-hardening-design
 kind: task
-status: active
+status: implemented
 title: Harden the green reliability specification against accepted design
 relations:
 - delivers: epic:reliability-and-usability
-revision: 5
+revision: 6
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T13:50:43Z", actor: "human:timo", revision: 2}
 - {from: "proposed", to: "active", at: "2026-10-03T13:50:43Z", actor: "human:timo", revision: 3}
+- {from: "active", to: "implemented", at: "2026-10-03T14:24:57Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"review_outcome":10,"verification":1}}}
 ---
 ## Outcome
 Run ESS hardening design/spec review of the already-green reliability slice, explicitly requested by the operator during implementation. Use the accepted command-correctness, named-profiles, worker-doctor and prebuilt-release-artifacts stories as the design contracts, their documented current behavior, and spec/README.md as the existing mapping. Broader architecture proposals are context, not silently promoted into current deliverables. Worker upgrades, retained lifecycle and acceptance remain governed by their own delivery reviews.
