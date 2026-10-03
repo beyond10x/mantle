@@ -8,19 +8,19 @@ relations:
 - decomposes: epic:reliability-and-usability
 - depends_on: story:command-correctness
 scope:
-- confidence: inferred
+- confidence: cited
   path: Cargo.lock
 - confidence: inferred
   path: README.md
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/Cargo.toml
 - confidence: cited
   path: crates/mantle/src/adapters/conformance.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
   path: crates/mantle/src/adapters/ssh.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/app/session.rs
 - confidence: cited
   path: crates/mantle/src/app/worker.rs
@@ -28,14 +28,14 @@ scope:
   path: crates/mantle/src/config.rs
 - confidence: cited
   path: crates/mantle/src/main.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/profile.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/tests/profiles.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/tests/support/ssh_fixture.rs
-- confidence: inferred
-  path: examples
+- confidence: cited
+  path: examples/config.toml
 - confidence: inferred
   path: generated/worker-model
 - confidence: inferred
@@ -48,7 +48,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 28
+revision: 29
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 26}
 - {from: "proposed", to: "active", at: "2026-10-03T09:01:15Z", actor: "human:timo", revision: 27}

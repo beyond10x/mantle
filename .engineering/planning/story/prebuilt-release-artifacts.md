@@ -40,7 +40,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 23
+revision: 24
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 19}
 ---
@@ -68,3 +68,7 @@ Prefer one library/CLI crate for deterministic packaging, strict verification, i
 ## Verified upstream license input
 
 The omitted SIMD license is available from the exact published source revision: https://raw.githubusercontent.com/Nugine/simd/d74c030d9dc4f3cae02146d1f497ff62726ef09a/LICENSE. Retrieved bytes have SHA256 71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d and identify the MIT grant with Copyright (c) 2021 Nugine. Retained local input: $HOME/.cache/mantle-reliability/release-preflight/simd-d74c030-LICENSE. Include the actual grant and attribution in distribution notices, with source/hash provenance; do not change generated crates or registry files.
+
+## Source identity verification
+
+Version equality alone cannot bind an artifact to a source commit: current development and release binaries can both report 0.1.4. The packaging path must either build from the verified clean exact checkout itself and retain that provenance, or verify embedded build source identity in each supplied binary. Do not accept arbitrary supplied binaries and label them with the current Git HEAD merely because --version matches. Include a same-version/wrong-source fixture. Publication verifies manifest source against the exact tag and all payload checksums; it must never relabel an existing version or overwrite assets. Keep the shared artifact verifier below worker and release CLI dependencies, without creating a Mantle-worker-release dependency cycle.

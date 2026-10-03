@@ -8,8 +8,14 @@ relations:
 - decomposes: epic:reliability-and-usability
 - depends_on: story:named-profiles
 scope:
+- confidence: cited
+  path: Cargo.lock
 - confidence: inferred
   path: README.md
+- confidence: cited
+  path: crates/mantle-worker/src/lib.rs
+- confidence: cited
+  path: crates/mantle/Cargo.toml
 - confidence: cited
   path: crates/mantle/src/adapters/aws.rs
 - confidence: cited
@@ -32,8 +38,12 @@ scope:
   path: crates/mantle/src/config.rs
 - confidence: cited
   path: crates/mantle/src/main.rs
+- confidence: cited
+  path: crates/mantle/src/profile.rs
 - confidence: inferred
   path: crates/mantle/tests/doctor.rs
+- confidence: inferred
+  path: crates/mantle/tests/support/doctor_fixture.rs
 - confidence: inferred
   path: generated/worker-model
 - confidence: inferred
@@ -46,7 +56,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 25
+revision: 29
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 21, decided_on: {"recorded":{"review_outcome":1}}}
 ---
@@ -63,7 +73,7 @@ Cited: worker.rs status/report_machine/ssh_for, adapters/{ssh,state,substrate,ku
 
 Fixing acceptance review: require the compiled SDK's admitted wire contract (currently0.17) and its pinned runtime version SUBSTRATE_VERSION (currently0.7.10). Compare the live discovery Machine.driver_version and SDK handshake to those expectations; inspect installed worker launcher/worker/egress versions separately against the CLI version. An installed --version or bootstrap record cannot establish the daemon currently serving requests. A missing/ambiguous observation is failed/unknown, never healthy. Test matching disk version with stale live daemon explicitly.
 
-No agent credential command means never call Config::claude_token, execute its token_command, read Codex credentials or emit provider credential values. Normal configured provider authentication may be used for read-only provider observations, including existing auth plugins; its bounded failure must be reported without dumping plugin stderr. No privilege or credential-policy expansion is implied. The checker itself writes no profile/state/key/known-host data; temporary socket/process resources are bounded, owned and cleaned up.
+No agent credential command means never call Config::claude_token, execute its token_command, read Codex credentials or emit provider credential values. Normal configured provider authentication may be used for read-only provider observations, including existing auth plugins; its bounded failure must be reported without dumping plugin stderr. No privilege or credential-policy expansion is implied. The checker never creates a state database, migrates its schema or modifies application records, profile references, keys or known-host contents. Use SQLite's supported read-only/query-only connection and bounded busy handling; ordinary SQLite locking/shared-memory coordination is permitted, and current committed WAL state must be observed. Do not invent a custom VFS or unsafe snapshot-copy protocol merely to suppress transient coordination. Tests compare schema and application records, include WAL data and prove zero application writes. Temporary socket/process resources are bounded, owned and cleaned up.
 
 ## Entry, failure and timeout boundaries
 
