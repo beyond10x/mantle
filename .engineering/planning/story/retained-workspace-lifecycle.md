@@ -34,7 +34,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 26
+revision: 27
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
 ---
@@ -64,3 +64,7 @@ Concurrent restart callers must claim the same pending attempt atomically in SQL
 ## Expected identity guards
 
 Provide an optional expected-session-id guard on stop, restart and destroy so automation can refuse a reused name before any remote mutation. Resolve a recorded session once, compare the expected immutable id, and carry that record's workspace/exec ids through the operation. Test stale-id refusal with zero remote mutation calls and preservation of a newer session using the same name. The acceptance runner requires these guards for all cleanup/mutation commands; a run-name prefix alone is not ownership proof.
+
+## Conflicting lifecycle commands
+
+Use atomic state/attempt claims for all lifecycle mutations, not only two restart callers. Stop or destroy must not act from a stale retained/running record while another caller admits a new exec for the same session id. A pending restart is reconciled before another destructive or retain transition proceeds; a pending stop/destroy prevents new restart admission. Re-read and compare the recorded generation/intent within the state transaction before remote work, without holding a SQLite transaction across network waits. Test stop-versus-restart and destroy-versus-restart using controlled interleavings and SQLite reopen; refusal or reconciliation must preserve the one recorded immutable attempt. Session-id guards protect name reuse, while durable intent protects concurrent operations on the same id. Keep interrupted initial starts honest too: no retained success when an admitted exec may be unrecorded and its termination cannot be observed.
