@@ -47,3 +47,7 @@ Name source changes, tests and their own output, limitations, all external files
 leases and cleanup status. An adversary closes with the required machine-readable findings block.
 Report observed behavior honestly: process readiness is not authenticated model qualification.
 Documentation describes development/unreleased behavior until an actual source release occurs.
+
+After release tooling lands, dependency or workspace-member changes also regenerate notices with
+`cargo run --locked -p mantle-release -- notices --source .`, then verify the same command with
+`--check`. Keep the locked graph, complete notices and source-bound release workflow coherent.
