@@ -34,7 +34,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 23
+revision: 25
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 23}
 ---
@@ -50,3 +50,13 @@ Cited: domain/session.rs, app/session.rs, adapters/state.rs, Session ESS lifecyc
 ## Migration and interrupted intent
 
 Legacy STOPPED records represent destroyed workspaces and stay terminal. Legacy STOPPING records may already have a destructive operation in flight; a migration must preserve their destructive intent instead of silently reinterpreting them as the new retain-only stop. New retain-stop and destroy intent must be distinguishable durably across interruption/reopen. Observe absent workspaces honestly. Older rows lacking a validated restart context must not fabricate agent settings or silently reconstruct a different session from current config. Cover these migration/retry boundaries with real SQLite reopen tests and named conformance scenarios, alongside fresh-session stop/restart/destroy. Restart reuses verified persisted context and workspace, with a new exec id; source files and private agent home are retained, while a same-conversation resume is not promised.
+
+## Restart admission and interrupted outcomes
+
+Pinned SDK revision 65304edf already provides CommandBuilder::operation_id, Client::operation and Client::get_exec; no new Substrate capability is needed. Before submitting a restart, durably record its operation id, immutable restart request/context and selected worker/workspace binding. Persist the returned exec id before any readiness sleep or refresh (current start_agent waits three seconds before start_recorded can persist its id). Recovery queries the recorded operation first and reconciles its resource through get_exec, validating identity/workspace. An accepted or unresolved operation never triggers another start with a fresh id. Operation terminal means that the admission operation answered, not that the agent process exited.
+
+Read-only SDK/source assessment by substrate_output_queue found exec.start stores its operation resource and provisional exec atomically before dispatch (Substrate daemon execs.rs and store execs.rs). Operation ids are retained within a deployment epoch; a changed deployment/subject/database can change lookup scope. Do not interpret a bare not-found after an unqualified reconnect as proof that no exec was admitted. If worker/deployment identity or recovery outcome cannot be established, leave restart incomplete with an actionable diagnostic rather than risking a duplicate. Add named interruption/reopen scenarios before submission, after accepted response and before exec-id persistence, plus unknown-outcome/no-duplicate observation. A normal eligible first restart still succeeds.
+
+## Concurrent restart ownership
+
+Concurrent restart callers must claim the same pending attempt atomically in SQLite rather than minting independent operation ids. On interrupted recovery, observe that attempt; do not rebuild and resubmit its request with a refreshed capability snapshot. The SDK's internal byte-identical transport retry differs from reconstructing a builder after reconnect. Test that two callers cannot start two agents for one retained session and that missing/conflicting operation observations leave the recorded attempt unresolved.

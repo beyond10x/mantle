@@ -17,7 +17,13 @@ scope:
 - confidence: cited
   path: Cargo.toml
 - confidence: inferred
+  path: LICENSE
+- confidence: inferred
   path: README.md
+- confidence: inferred
+  path: THIRD_PARTY_LICENSES.html
+- confidence: inferred
+  path: about.toml
 - confidence: inferred
   path: crates/mantle-conformance
 - confidence: inferred
@@ -34,7 +40,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 19
+revision: 23
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 19}
 ---
@@ -50,3 +56,15 @@ Inferred: new Rust release tooling crate or existing suitable crate; Cargo.toml/
 ## Publication authority
 
 Read-only preflight found Mantle exposes only the B10X_GATES_POLICY repository secret; no bot App publishing credential is configured there. Do not copy private App keys into Mantle or silently publish as github-actions. CI builds and retains immutable candidate/tag artifacts without publishing credentials. Provide an operator-invoked Rust release command which verifies the exact tag/source/version/artifact manifest and invokes the locally installed b10x-gates gh wrapper for release creation/upload; wrapper source confines the bot token to gh's child environment and supports release commands. No clobber/overwrite. The command and documentation complete the supported publication path; no new release is executed in this task. If later CI publishing is enabled, it must use an explicitly configured bot App route with immutable action pins and least permissions.
+
+## Packaging and license inputs
+
+Read-only preflight by attach_readiness_impl found root LICENSE absent although workspace metadata declares Apache-2.0. cargo-about 0.9.1 using Substrate's existing configuration, --workspace --locked --offline --fail and both supported Linux targets refused three entries: generated mantle-worker-model has no license metadata/file, minicbor 2.3.0 needs BlueOak-1.0.0, and webpki-roots 1.0.9 needs CDLA-Permissive-2.0. Add the root license and inspect actual dependency texts. Preserve generated-model ownership: ESS 0.50 has no license generation flag; use a checked cargo-about clarification referring to ../../LICENSE from the generated crate instead of hand-editing generated Cargo.toml. Substrate's standard Apache LICENSE hashes cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30; verify exact bytes before using that clarification.
+
+Use the Rust notice approach in substrate/xtask/src/licenses.rs as a reference, including composite aws-lc-sys/ring notices. Registry archives for base64-simd/vsimd 0.8.0 omit their license files; their recorded upstream commit is d74c030d9dc4f3cae02146d1f497ff62726ef09a. Obtain and pin the actual upstream text rather than silently relying on a generic fallback. Account for distributed Rust runtime and musl texts too. License generation/checking is Rust; CI may invoke pinned cargo-about but must not commit scripts.
+
+Prefer one library/CLI crate for deterministic packaging, strict verification, installation and operator publication. Archive path whitelist, bounded expansion, duplicate/link refusal, exact version and static ELF checks are implementation boundaries. Source archives and license inputs do not authorize publishing an actual release in this task.
+
+## Verified upstream license input
+
+The omitted SIMD license is available from the exact published source revision: https://raw.githubusercontent.com/Nugine/simd/d74c030d9dc4f3cae02146d1f497ff62726ef09a/LICENSE. Retrieved bytes have SHA256 71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d and identify the MIT grant with Copyright (c) 2021 Nugine. Retained local input: $HOME/.cache/mantle-reliability/release-preflight/simd-d74c030-LICENSE. Include the actual grant and attribution in distribution notices, with source/hash provenance; do not change generated crates or registry files.
