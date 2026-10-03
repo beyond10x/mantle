@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T07:33:15Z",
+  "actor": "human:timo",
+  "artifact": "task:release-0-1-4",
+  "kind": "task",
+  "revision": 4,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Exact candidate and tag CI passed; official release, downloaded source archive and live docs provenance verified",
+    "reference": "https://github.com/beyond10x/mantle/releases/tag/0.1.4"
+  }
+}
