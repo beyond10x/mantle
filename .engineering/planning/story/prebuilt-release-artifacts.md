@@ -32,7 +32,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 13
+revision: 14
 ---
 ## Outcome
 Build reproducible packaging and publishing support for Linux x86_64 laptop CLI and static x86_64 musl worker binaries, matching the existing supported worker architecture. Do not claim untested macOS/ARM packages. Typed ReleaseManifest/ReleaseArtifact values are declared in spec/domains/operator.yaml; all committed running tooling is Rust with clap.
@@ -42,3 +42,7 @@ Named ESS cases release-package-layout, release-manifest-identities, release-che
 
 ## Scope
 Inferred: new Rust release tooling crate or existing suitable crate; Cargo.toml/lock; .github/workflows release and CI; operator ESS commands/scenarios; generated provenance; README/site. Preserve fixed upstream identity and repository Gates conventions. Inspect current bot-authenticated gh capability for binary asset upload; never use personal gh writes.
+
+## Publication authority
+
+Read-only preflight found Mantle exposes only the B10X_GATES_POLICY repository secret; no bot App publishing credential is configured there. Do not copy private App keys into Mantle or silently publish as github-actions. CI builds and retains immutable candidate/tag artifacts without publishing credentials. Provide an operator-invoked Rust release command which verifies the exact tag/source/version/artifact manifest and invokes the locally installed b10x-gates gh wrapper for release creation/upload; wrapper source confines the bot token to gh's child environment and supports release commands. No clobber/overwrite. The command and documentation complete the supported publication path; no new release is executed in this task. If later CI publishing is enabled, it must use an explicitly configured bot App route with immutable action pins and least permissions.

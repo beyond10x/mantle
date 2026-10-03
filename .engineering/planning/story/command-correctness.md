@@ -16,6 +16,10 @@ scope:
 - confidence: cited
   path: crates/mantle/src/main.rs
 - confidence: inferred
+  path: crates/mantle/tests/command_correctness.rs
+- confidence: inferred
+  path: crates/mantle/tests/support/ssh_fixture.rs
+- confidence: inferred
   path: generated/worker-model
 - confidence: inferred
   path: spec/README.md
@@ -29,7 +33,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 17
+revision: 19
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:26:55Z", actor: "human:timo", revision: 13}
 - {from: "proposed", to: "active", at: "2026-10-03T08:26:55Z", actor: "human:timo", revision: 14}

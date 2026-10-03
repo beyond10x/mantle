@@ -1,6 +1,6 @@
 ## Wave execution record
 
-AEP implementing skill 0.19.1; interactive session with explicit standing approval (approval-record:reliability-standing-waves). Seven serial units: command-correctness, named-profiles, worker-doctor, prebuilt-release-artifacts, controlled-worker-upgrades, retained-workspace-lifecycle, repeatable-agent-acceptance. Each is reassessed after its predecessor lands. Upgrade acceptance/design remain unresolved after review round 2; no upgrade implementation dispatch until a concrete safe protocol exists. Other units are independently implementable.
+AEP implementing skill 0.19.1; interactive session with explicit standing approval (approval-record:reliability-standing-waves). Seven serial units: command-correctness, named-profiles, worker-doctor, prebuilt-release-artifacts, controlled-worker-upgrades, retained-workspace-lifecycle, repeatable-agent-acceptance. Each is reassessed after its predecessor lands. Review round 2 rejected the proposed online idle-check/stop upgrade. The revised story requires pre-established offline maintenance: masked and inactive services, no queued jobs and empty cgroups, with rollback and an explicit restart-required result. This resolves the planning assumption; implementation and adversarial tests must still establish that the protocol holds.
 
 The complete initial computed waves/collisions/unassessed output is retained in waves-all.json beside this report, including unrelated backlog items that are not selected. No unrelated story is approved by this selection.
 
@@ -11,4 +11,3 @@ Measured integration build: cargo build --locked -p mantle, exit 0, 4m10.425s, t
 Integration managed id mantle-reliability-integration; branch integration/mantle-reliability; lease codex-reliability-root. Checkout $HOME/.local/state/worktree/trees/b10x/mantle/mantle-reliability-integration; build $HOME/.cache/mantle-reliability/integration-target; scratch $HOME/.cache/mantle-reliability/integration.
 
 Unit 1 planned id mantle-command-correctness; branch unit/mantle-command-correctness; lease codex-command-correctness. Checkout $HOME/.local/state/worktree/trees/b10x/mantle/mantle-command-correctness; build /dev/shm/mantle-command-correctness-target; scratch $HOME/.cache/mantle-reliability/command-correctness. Later triples are recorded before dispatch. Every target is unique; external targets follow this repository's external-cache convention.
-
