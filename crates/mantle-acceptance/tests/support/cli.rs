@@ -121,6 +121,9 @@ fn main() {
             if mode == "reuse" {
                 std::process::exit(1);
             }
+            if mode == "destroy-failure" && verb == "destroy" {
+                std::process::exit(1);
+            }
             if mode == "flood" {
                 loop {
                     std::io::stdout().write_all(&[b'x'; 8192]).unwrap();

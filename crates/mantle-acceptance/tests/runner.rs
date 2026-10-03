@@ -344,3 +344,115 @@ fn unverified_release_and_replaced_selected_executable_refuse_before_mutation() 
     assert_eq!(bounded(&mut f.resume(&[])).status.code(), Some(1));
     assert_eq!(fs::read(f.root.path().join("calls")).unwrap(), before);
 }
+
+#[test]
+fn adversary_cleanup_preserves_failed_final_qualification_case() {
+    // README promises that cleanup preserves a prior failed qualification case.
+    // Drive the documented run/resume/cleanup path, without editing its checkpoint.
+    let f = Fixture::new();
+    assert_eq!(f.run("", "codex").status.code(), Some(2));
+    let out = bounded(
+        f.resume(&[
+            "--attest",
+            "login",
+            "--attest",
+            "model-tool",
+            "--attest",
+            "visual",
+        ])
+        .env("ACCEPTANCE_FIXTURE_MODE", "destroy-failure"),
+    );
+    assert_eq!(out.status.code(), Some(1));
+    let failed = f.read();
+    assert_eq!(failed["phase"], "destroy");
+    assert_eq!(
+        failed["results"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|r| r["status"] == "passed")
+            .count(),
+        9
+    );
+    assert_eq!(failed["results"][9]["status"], "failed");
+    let out = bounded(
+        f.command()
+            .args(["cleanup", "--real", "--checkpoint"])
+            .arg(f.path()),
+    );
+    assert!(
+        fs::read_to_string(f.root.path().join("session"))
+            .unwrap()
+            .ends_with("STOPPED")
+    );
+    let cleanup = f.read();
+    let report = bounded(f.command().args(["report", "--checkpoint"]).arg(f.path()));
+    assert_eq!(
+        (
+            out.status.code(),
+            report.status.code(),
+            cleanup["results"][9]["status"].as_str()
+        ),
+        (Some(1), Some(1), Some("failed")),
+        "successful cleanup must not erase a measured qualification failure: {cleanup}"
+    );
+}
+
+#[test]
+fn adversary_interrupted_machine_phase_cleanup_keeps_incomplete_and_exact_ownership() {
+    let f = Fixture::new();
+    assert_eq!(f.run("", "codex").status.code(), Some(2));
+    let mut command = f.resume(&[
+        "--attest",
+        "login",
+        "--attest",
+        "model-tool",
+        "--attest",
+        "visual",
+    ]);
+    command.env("ACCEPTANCE_FIXTURE_MODE", "pty-timeout");
+    let child =
+        mantle_worker::BoundedProcess::spawn(&mut command, Duration::from_secs(30)).unwrap();
+    let deadline = std::time::Instant::now() + Duration::from_secs(10);
+    while !f.root.path().join("descendant-pid").exists() {
+        assert!(
+            std::time::Instant::now() < deadline,
+            "PTY phase was never reached"
+        );
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    assert_eq!(f.read()["phase"], "detach-reconnect");
+    child.finish().unwrap();
+    let before = fs::read(f.root.path().join("session")).unwrap();
+    let refused = bounded(
+        f.command()
+            .env("ACCEPTANCE_FIXTURE_MODE", "reuse")
+            .args(["cleanup", "--real", "--checkpoint"])
+            .arg(f.path()),
+    );
+    assert_eq!(refused.status.code(), Some(1));
+    assert_eq!(fs::read(f.root.path().join("session")).unwrap(), before);
+    let out = bounded(
+        f.command()
+            .args(["cleanup", "--real", "--checkpoint"])
+            .arg(f.path()),
+    );
+    assert_ne!(out.status.code(), Some(0));
+    assert!(
+        fs::read_to_string(f.root.path().join("session"))
+            .unwrap()
+            .ends_with("STOPPED")
+    );
+    let data = f.read();
+    assert_eq!(data["session"]["id"], "owned");
+    assert_eq!(data["results"][5]["status"], "not-run");
+    assert_eq!(data["results"][8]["status"], "not-run");
+    for line in fs::read_to_string(f.root.path().join("calls"))
+        .unwrap()
+        .lines()
+    {
+        if line.starts_with("destroy ") {
+            assert!(line.contains("--expected-session-id owned"));
+        }
+    }
+}
