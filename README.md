@@ -7,7 +7,7 @@ Linux worker, confined by [Substrate](https://github.com/beyond10x/substrate). T
 the terminal; builds use the worker's CPU.
 
 ```console
-mantle worker up                 # one EC2 worker, reachable only through AWS SSM
+mantle worker up                 # start the configured AWS or KubeVirt worker
 mantle start examples/substrate.yaml
 mantle attach substrate-work     # Ctrl-] d detaches; the agent keeps running
 mantle status substrate-work
@@ -15,7 +15,14 @@ mantle stop substrate-work       # development: retain workspace; 0.1.4: destruc
 mantle worker down
 ```
 
-Status: first vertical slice, under construction. The design is
+Development source is an early preview. The commands below distinguish unreleased behavior from
+the historical 0.1.4 release. See [installation](#requirements-on-the-laptop),
+[named profiles](#named-profiles-development--unreleased),
+[worker diagnostics](#worker-diagnostics-development--unreleased),
+[repeatable acceptance](#repeatable-agent-acceptance-development--unreleased) and
+[offline upgrades](#offline-worker-upgrades-development--unreleased).
+
+The design is
 [docs/design/00-mantle-on-substrate.md](docs/design/00-mantle-on-substrate.md); its correction block
 lists what the slice does differently from the design and why.
 
@@ -35,7 +42,8 @@ mantle status codex-example
 
 Worker provisioning installs and verifies the pinned Codex binary. Mantle 0.1.4 requires its
 matching worker binaries and Substrate 0.7.10, plus the gateway allowlist including
-`auth.openai.com:443` and `chatgpt.com:443`. Follow the existing-worker guidance below before
+`auth.openai.com:443` and `chatgpt.com:443`. Follow the
+[offline upgrade guidance](#offline-worker-upgrades-development--unreleased) for development workers before
 upgrading a running worker. Codex does not need a Claude
 OAuth token or an API key. A manifest without an agent kind continues to select Claude Code.
 
@@ -65,7 +73,7 @@ It does not promise same-conversation resume. Attach never starts an agent. A mi
 is refused and is never recreated. Retained names remain reserved until explicit destruction.
 Ordinary `mantle exec` continues to use the existing workspace without injecting agent credentials.
 
-Stop, restart and destroy accept `--expected-session-id ID` for automation. The CLI checks that
+Attach, exec, stop, restart and destroy accept `--expected-session-id ID` for automation. The CLI checks that
 immutable identity before remote mutation; use the recorded ID, not merely a reusable name.
 Concurrent commands claim a durable generation and intent. Interrupted restart observes its
 original admission operation instead of launching another process. Retry the same command to
@@ -84,7 +92,18 @@ Local launcher, confinement and integration checks are recorded in the
 [qualification evidence](docs/evidence/codex-compatibility.md). Real device login, authenticated
 model/tool turns and token refresh have not yet been verified end to end.
 
-## Version 0.1.4
+## Command results (development / unreleased)
+
+The development CLI preserves remote exit codes (0–255), maps supported INT/TERM/KILL signals to
+130/143/137, and returns failure for refused, missing, contradictory or indeterminate results.
+Command stdout and stderr retain their bytes after a valid Substrate response has decoded; the
+existing status diagnostic follows remote stderr. Malformed responses fail without recovering raw
+output. This corrects the false-success behavior in release 0.1.4.
+
+Repository branches, lightweight and annotated tags, and full commit IDs are supported;
+materialization records the actual checked-out commit.
+
+## Historical release 0.1.4
 
 This patch release integrates the final release and acceptance records and updates the public
 documentation. Runtime behavior is unchanged from 0.1.3. The operator confirmed that attachment
@@ -129,7 +148,7 @@ A real KubeVirt worker completed a confined `cargo check --locked -p b10x-substr
 including native dependencies. Two live Codex workspaces passed marker-isolation checks;
 OpenAI TLS access through the gateway worked, while unlisted destinations and direct egress
 were denied. These supplementary-command checks do not establish authenticated Codex tool use.
-See the [current acceptance audit](.engineering/reports/codex-acceptance-audit-2026-10-02/audit.md).
+See the [historical 2026-10-02 acceptance audit](.engineering/reports/codex-acceptance-audit-2026-10-02/audit.md).
 
 Standalone `mantle exec` commands need an explicit proxy setting for networked Cargo builds:
 
@@ -137,28 +156,29 @@ Standalone `mantle exec` commands need an explicit proxy setting for networked C
 mantle exec SESSION -- cargo --config 'http.proxy="http://127.0.0.1:3128"' check --locked --manifest-path /workspace/PROJECT/Cargo.toml
 ```
 
-The CLI preserves remote exit codes (0–255), maps the supported INT/TERM/KILL signals to
-130/143/137, and
-returns failure for refused, missing, contradictory or indeterminate results. Command stdout
-and stderr retain their bytes after a valid Substrate response has decoded; the existing
-status diagnostic follows remote stderr. Malformed responses fail without recovering raw output.
-This corrects the false-success behavior in release 0.1.4.
-Repository branches, lightweight and annotated tags, and full commit IDs are supported;
-materialization records the actual checked-out commit. Release archives contain source;
-no prebuilt Mantle binaries are provided.
+The 0.1.4 release archives contain source, without prebuilt Mantle binaries. Development candidate
+bundles and their verifier are described below; their availability does not announce another release.
 
 ## Requirements on the laptop
 
-- Linux, Rust 1.97 (`rust-toolchain.toml`), [go-task](https://taskfile.dev)
-- AWS CLI v2 with an SSO profile that may create EC2, IAM and CloudWatch resources, and
-  `session-manager-plugin`
-- `ssh`
+- Linux x86-64 and `ssh`; GNU candidate binaries require the libc environment recorded in their manifest
+- for AWS: AWS CLI v2, an authenticated profile allowed to create the required EC2, IAM and
+  CloudWatch resources, and `session-manager-plugin`
+- for KubeVirt: `kubectl` and access to the configured cluster; the local `task k3d-up` test bed
+  additionally needs Docker, k3d and nested virtualization
 - for Claude Code, an OAuth token from `claude setup-token`; for Codex, ChatGPT device login
+
+Source builds additionally need Rust 1.97 (`rust-toolchain.toml`), [go-task](https://taskfile.dev),
+the `x86_64-unknown-linux-musl` Rust target and a musl C toolchain for worker binaries. Verified
+[candidate bundles](#verified-prebuilt-bundles-development--unreleased) do not require a local
+Rust compiler; fresh worker provisioning accepts their static helpers via `worker up --binaries`.
 
 Copy [examples/config.toml](examples/config.toml) to `~/.config/mantle/config.toml` and fill it in.
 
-Named profiles are available in **development source, not release 0.1.4**. After building that
-source, register separate absolute configuration and private state paths:
+## Named profiles (development / unreleased)
+
+Named profiles are available in **development source and candidate bundles, not release 0.1.4**.
+Register separate absolute configuration and private state paths:
 
 ```console
 mantle profile add personal --config "$HOME/.config/mantle/personal.toml" --state-dir "$HOME/.local/state/mantle-personal"
@@ -186,7 +206,9 @@ and `${...}` expressions are refused because OpenSSH interprets them rather than
 
 Agent and contributor instructions are in [AGENTS.md](AGENTS.md).
 
-Worker diagnostics are also **development/unreleased, not part of 0.1.4**:
+## Worker diagnostics (development / unreleased)
+
+Worker diagnostics are **development/unreleased, not part of 0.1.4**:
 
 ```console
 mantle --profile personal doctor
@@ -209,12 +231,100 @@ from 1 to 120 seconds); timed-out process groups are retired, including tunnel d
 Configuration input is capped at 1 MiB, database/sidecar files at 64 MiB, and SQLite busy/query
 handling at 250 milliseconds. Refused or unavailable observations never become a healthy result.
 
+## Metadata for automation (development / unreleased)
+
+Use the versioned metadata interface for scripts. Human status can print launcher diagnostics and
+is not a transcript-free input format.
+
+```console
+mantle --profile personal list --json
+mantle --profile personal status my-project --json --timeout-secs 10
+mantle --profile personal status --session-id SESSION_ID --json
+```
+
+JSON list includes terminal records and reports local state without contacting a worker. JSON
+status separates recorded identity/state from bounded Substrate observations, including unavailable
+or refused observations. An exact session-id lookup also works for destroyed records. Neither JSON
+command fetches terminal output pages. Authentication method is metadata, not proof of login.
+
+For an ownership receipt, use `mantle start MANIFEST --detached --receipt PATH`. Choose a new path
+in a private directory. The receipt is tied to that successful creation, including its immutable
+session id and selected profile binding. Persist it before dependent operations; a name lookup
+cannot replace a lost receipt. An interrupted start may have created resources even when no receipt
+arrived. Treat that result as unresolved rather than automatically claiming or destroying a name.
+
+## Repeatable agent acceptance (development / unreleased)
+
+`mantle-acceptance` exercises the installed Mantle CLI with disposable Claude Code or Codex
+sessions. It belongs to the GNU candidate bundle alongside `mantle` and `mantle-release`; it is
+not part of historical release 0.1.4. Choose an already configured qualification worker and named
+profile. The runner does not provision workers or adopt existing user sessions.
+
+Start a fresh run with a new private checkpoint directory:
+
+```console
+mkdir -m 0700 "$HOME/.cache/mantle-acceptance-run"
+mantle-acceptance run --real --mantle "$HOME/.local/mantle/bin/mantle" \
+  --profile personal --agent codex --manifest examples/codex.yaml \
+  --checkpoint "$HOME/.cache/mantle-acceptance-run/run.json"
+```
+
+For Claude Code, select `--agent claude-code` and a Claude manifest such as
+`examples/substrate.yaml`, using a profile with its existing Claude credential source configured.
+Add `--release-manifest /absolute/path/to/bundle/manifest.json` when the complete verified bundle
+is available. The runner creates its own uniquely named disposable session.
+
+Login, a model/tool turn and visual terminal checks happen in the operator's own terminal through
+the exact attach command printed by the runner. They are explicit operator attestations, separate
+from machine observations. The runner does not read authentication caches, store terminal transcripts
+or infer authentication from a running process. Missing manual evidence leaves the run incomplete.
+
+Use the printed attach command unchanged: it selects the run's private copy of the CLI and pins
+the resolved configuration/state paths, rather than resolving a possibly changed profile again.
+After completing the requested actions, submit only the attestations you actually observed, with
+the current run and exec IDs from that handoff:
+
+```console
+mantle-acceptance resume --real \
+  --checkpoint "$HOME/.cache/mantle-acceptance-run/run.json" \
+  --expected-run-id RUN_ID --expected-exec-id EXEC_ID \
+  --attest login --attest model-tool --attest visual
+mantle-acceptance report --checkpoint "$HOME/.cache/mantle-acceptance-run/run.json"
+```
+
+Follow any subsequent handoff with its current IDs. Exit 2 means incomplete/operator action
+required, exit 1 means failure, and exit 0 means all required cases are complete. `report` reads
+the checkpoint without contacting a worker. `cleanup` also returns the aggregate qualification
+status: successful cleanup after an aborted run can still return 2, and a prior failed case remains
+failed. To explicitly remove only the owned disposable
+workspace and its private login state:
+
+```console
+mantle-acceptance cleanup --real --checkpoint "$HOME/.cache/mantle-acceptance-run/run.json"
+```
+
+Checkpoints bind the run to its selected CLI, resolved profile and exact owned session identities.
+Cleanup requires a proven creation identity; a matching name or name prefix is insufficient. A lost
+or interrupted creation receipt remains unresolved and cannot authorize automatic cleanup. Resume
+must revalidate those bindings before continuing. Retained-workspace checks establish that workspace
+identity and a synthetic marker survive a fresh agent execution, not that a conversation resumes.
+
+For known source provenance, supply the verified release manifest with both sibling archives and
+match its CLI payload digest to the chosen executable. A version string or installed generation
+directory name is not source proof. Without `--release-manifest`, source identity stays explicitly
+unknown. A supplied manifest with missing/invalid archives or a mismatching executable is refused.
+The runner's controlled CLI/PTY tests verify its behavior; they do not establish a fully authenticated
+live Claude or Codex qualification. Historical qualification limits remain in the
+[recorded evidence](docs/evidence/codex-compatibility.md).
+
 ## Executable specification
 
 [spec/README.md](spec/README.md) describes the implemented contract, its source mappings and
-coverage gaps. `task spec` validates it; `task conformance` synthesizes and executes the local
-session-store and default-allowlist scenarios against production Rust code. `task check` includes
-that test through the workspace suite. Contributors need ESS 0.50.x and AEP on `PATH`.
+coverage gaps. `task spec` validates all six domains. `task conformance` exercises the production
+SQLite store, manifest parser, egress proxy, launcher PTYs, application orchestration and operator
+workflows over controlled external IO. `task check` includes the complete native suite and repository
+checks. Contributors need ESS 0.50.x and AEP 0.68.0 on `PATH`. Green local tests do not establish
+authenticated Claude or Codex qualification; see the separate historical evidence above.
 
 ## Verified prebuilt bundles (development / unreleased)
 
@@ -222,8 +332,8 @@ The new `mantle-release` tooling is **not included in release 0.1.4**. This sect
 candidate artifacts produced from development source; this integration does not publish a new
 release. CI builds and retains candidates without publication credentials.
 
-Each candidate contains `manifest.json`, `SHA256SUMS`, a GNU Linux x86-64 archive with `mantle`
-and `mantle-release`, and a static musl x86-64 archive with `mantle-egress`, `mantle-launch` and
+Each candidate contains `manifest.json`, `SHA256SUMS`, a GNU Linux x86-64 archive with `mantle`,
+`mantle-release` and `mantle-acceptance`, and a static musl x86-64 archive with `mantle-egress`, `mantle-launch` and
 `mantle-worker`. Archives contain the Apache license, complete third-party notices and the matching
 Rust runtime notice; workers also contain the musl 1.2.5 notice. The manifest records the exact Git
 commit, Substrate revision/version, Rust toolchain, targets, GNU libc build environment and every
@@ -231,8 +341,9 @@ payload's digest, size and mode. GNU compatibility is limited to the recorded bu
 we do not claim older libc, macOS or ARM support. Deterministic archive metadata does not promise
 bit-identical compilation across different toolchains or hosts.
 
-For a published bundle, obtain the manifest from the trusted release for the intended tag and
-check its source commit. Download both named archives and `SHA256SUMS` into one directory. Hashes
+Obtain a candidate from the trusted CI run for the intended source commit and check that commit
+in its manifest. For a future published bundle, use the trusted release for the intended tag.
+Keep `manifest.json`, both named archives and `SHA256SUMS` in one directory. Hashes
 provide integrity against that trusted manifest; an adjacent checksum file is not independent
 publisher authentication. With `jq`, `sha256sum` and `tar` installed, bootstrap the bundled Rust
 verifier without compiling it:

@@ -17,6 +17,9 @@ use std::time::Duration;
 mod upgrade_fixture;
 
 pub(super) fn operator(command: &str, input: &Value) -> Result<Reply> {
+    if command == "mantle.operator.AssessAcceptance" {
+        return acceptance(input);
+    }
     if command == "mantle.operator.UpgradeWorker" {
         return upgrade_worker(input);
     }
@@ -1403,5 +1406,163 @@ fn release(command: &str, input: &Value) -> Result<Reply> {
         .unwrap_or(0);
     Ok(Reply::returned(
         json!({"accepted":verified.is_ok(),"payload_count":payload_count,"source_matches":verified.as_ref().is_ok_and(|b|b.manifest.source_commit==source)}),
+    ))
+}
+
+fn acceptance(input: &Value) -> Result<Reply> {
+    use mantle_acceptance::runner::{
+        Checkpoint, Evidence, INVENTORY, attest, inventory, invoke, validate_receipt,
+    };
+    use mantle_acceptance::{CreationReceipt, SelectionBinding, Session, encoded};
+    let selection = SelectionBinding {
+        profile: Some("fixture".into()),
+        config_path: "/fixture/config".into(),
+        state_dir: "/fixture/state".into(),
+        config_sha256: "a".repeat(64),
+    };
+    let session = Session {
+        id: "owned".into(),
+        name: "fixture".into(),
+        agent: "codex".into(),
+        authentication: "chatgpt-device".into(),
+        recorded_state: "RUNNING".into(),
+        generation: 0,
+        workspace_id: Some("ws".into()),
+        exec_id: Some("exec".into()),
+        source_commits: vec![],
+        observed: None,
+    };
+    let mut run = Checkpoint {
+        format: "mantle-acceptance/v1".into(),
+        run_id: "run".into(),
+        agent: "codex".into(),
+        profile: "fixture".into(),
+        selection: selection.clone(),
+        executable: "/fixture/mantle".into(),
+        executable_sha256: "b".repeat(64),
+        executable_version: "mantle 0.1.4".into(),
+        source_commit: None,
+        run_dir: "/fixture/run".into(),
+        phase: "manual".into(),
+        session: Some(session.clone()),
+        results: INVENTORY
+            .iter()
+            .map(|case| Evidence {
+                case: (*case).into(),
+                status: if matches!(*case, "login" | "model-tool" | "visual") {
+                    "operator-required"
+                } else {
+                    "passed"
+                }
+                .into(),
+                origin: if matches!(*case, "login" | "model-tool" | "visual") {
+                    "operator"
+                } else {
+                    "machine"
+                }
+                .into(),
+                phase: "initial".into(),
+                exec_id: Some("exec".into()),
+                observed_at: "time".into(),
+            })
+            .collect(),
+    };
+    let accepted = match input["case"].as_str().unwrap_or("inventory") {
+        "inventory" => {
+            inventory("codex")? == inventory("claude-code")? && inventory("other").is_err()
+        }
+        "command-path" => {
+            let directory = tempfile::tempdir()?;
+            let binary = directory.path().join("cli");
+            let config = b"synthetic config";
+            std::fs::write(directory.path().join("config.toml"), config)?;
+            std::fs::write(
+                directory.path().join("manifest.yaml"),
+                "metadata:\n  name: fixture\nagent:\n  kind: codex\n",
+            )?;
+            let output = invoke(
+                std::process::Command::new("rustc")
+                    .args([
+                        "--edition=2024",
+                        concat!(
+                            env!("CARGO_MANIFEST_DIR"),
+                            "/../mantle-acceptance/tests/support/cli.rs"
+                        ),
+                        "-o",
+                    ])
+                    .arg(&binary)
+                    .env("ACCEPTANCE_BUILD_ROOT", directory.path())
+                    .env("ACCEPTANCE_BUILD_SHA", mantle_artifact::sha256(config)),
+                Duration::from_secs(10),
+            )?;
+            anyhow::ensure!(
+                output.status.success(),
+                "acceptance CLI fixture failed compilation"
+            );
+            let checkpoint = directory.path().join("checkpoint.json");
+            let status = mantle_acceptance::runner::run(
+                &binary,
+                "fixture",
+                "codex",
+                &directory.path().join("manifest.yaml"),
+                &checkpoint,
+                None,
+            )?;
+            let saved: Checkpoint = serde_json::from_slice(&std::fs::read(checkpoint)?)?;
+            status == 2 && saved.session.as_ref().is_some_and(|s| s.id == "owned")
+        }
+        "auth-required" => {
+            run.exit_code() == 2
+                && run
+                    .results
+                    .iter()
+                    .filter(|r| r.status == "operator-required")
+                    .count()
+                    == 3
+        }
+        "no-transcript" => {
+            let mut data = serde_json::to_value(&run)?;
+            data["raw_terminal"] = json!("untrusted transcript");
+            serde_json::from_value::<Checkpoint>(data).is_err()
+                && !String::from_utf8(encoded(&run)?)?.contains("raw_terminal")
+        }
+        "failure-exit" => {
+            run.results[0].status = "failed".into();
+            run.exit_code() == 1
+        }
+        "resume" => {
+            let stale = attest(&mut run, "wrong", "exec", &["login"]).is_err();
+            attest(&mut run, "run", "exec", &["login", "model-tool", "visual"])?;
+            stale && run.exit_code() == 0
+        }
+        "owned-cleanup" => {
+            let mut legacy = selection.clone();
+            legacy.profile = None;
+            let mut receipt = CreationReceipt {
+                format: mantle_acceptance::RECEIPT_FORMAT.into(),
+                selection: legacy,
+                session,
+                created_at: "time".into(),
+            };
+            let own = validate_receipt(&receipt, &selection, "fixture", "codex").is_ok();
+            receipt.session.name = "unrelated".into();
+            own && validate_receipt(&receipt, &selection, "fixture", "codex").is_err()
+        }
+        "no-fabricated-pass" => {
+            attest(&mut run, "run", "exec", &["login"])?;
+            run.exit_code() == 2
+        }
+        other => bail!("unknown acceptance case {other}"),
+    };
+    let directory = tempfile::tempdir()?;
+    mantle_acceptance::write_new(&directory.path().join("checkpoint"), &run)?;
+    use std::os::unix::fs::PermissionsExt;
+    let private = std::fs::metadata(directory.path().join("checkpoint"))?
+        .permissions()
+        .mode()
+        & 0o077
+        == 0;
+    Ok(Reply::returned(
+        json!({"accepted":accepted,"complete":run.exit_code()==0,"count":run.results.len(),"private":private}),
     ))
 }

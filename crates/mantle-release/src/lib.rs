@@ -150,7 +150,7 @@ pub fn install(bundle: &VerifiedBundle, prefix: &Path, target: &str) -> Result<P
     let bin = prefix.join("bin");
     create_directory(&bin, 0o755)?;
     // Refuse every destination before creating managed links or activating any binary.
-    for name in ["mantle", "mantle-release"] {
+    for name in ["mantle", "mantle-release", "mantle-acceptance"] {
         expected_link(
             &bin.join(name),
             &PathBuf::from(format!("../.mantle/current/bin/{name}")),
@@ -250,7 +250,7 @@ pub fn install(bundle: &VerifiedBundle, prefix: &Path, target: &str) -> Result<P
         File::open(&generations)?.sync_all()?;
     }
     // Under the lock, re-check links in case another installer activated while we waited.
-    for name in ["mantle", "mantle-release"] {
+    for name in ["mantle", "mantle-release", "mantle-acceptance"] {
         let target = PathBuf::from(format!("../.mantle/current/bin/{name}"));
         if !expected_link(&bin.join(name), &target)? {
             symlink(target, bin.join(name))?;

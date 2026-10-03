@@ -53,7 +53,11 @@ impl Fixture {
         let dir = tempfile::tempdir().unwrap();
         let mut artifacts = Vec::new();
         for (target, binary, names) in [
-            (GNU, &binaries().1, vec!["mantle", "mantle-release"]),
+            (
+                GNU,
+                &binaries().1,
+                vec!["mantle", "mantle-release", "mantle-acceptance"],
+            ),
             (
                 MUSL,
                 &binaries().2,
@@ -212,6 +216,18 @@ fn install_is_managed_and_atomic_and_refuses_unmanaged_collision() {
             .unwrap()
             .file_type()
             .is_symlink()
+    );
+    assert_eq!(
+        fs::read_link(prefix.path().join("bin/mantle-acceptance")).unwrap(),
+        std::path::PathBuf::from("../.mantle/current/bin/mantle-acceptance")
+    );
+    assert!(
+        Command::new(prefix.path().join("bin/mantle-acceptance"))
+            .arg("--version")
+            .output()
+            .unwrap()
+            .status
+            .success()
     );
     let out = Command::new(prefix.path().join("bin/mantle"))
         .arg("--version")

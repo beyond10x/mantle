@@ -62,7 +62,7 @@ fn hex(value: &str, length: usize) -> bool {
 }
 pub fn inventory(target: &str) -> Result<BTreeMap<String, u32>> {
     let names: &[&str] = match target {
-        GNU => &["mantle", "mantle-release"],
+        GNU => &["mantle", "mantle-release", "mantle-acceptance"],
         MUSL => &["mantle-egress", "mantle-launch", "mantle-worker"],
         _ => anyhow::bail!("unsupported target"),
     };
