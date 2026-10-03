@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:repeatable-agent-acceptance
 kind: story
-status: draft
+status: proposed
 title: Run and record a bounded real-agent lifecycle acceptance suite
 relations:
 - decomposes: epic:reliability-and-usability
@@ -36,7 +36,9 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 18
+revision: 19
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
 ---
 ## Outcome
 Provide a Rust/clap acceptance runner plus operator procedure for disposable Claude and Codex sessions through the installed Mantle CLI, not duplicated orchestration. AcceptanceResult is typed in spec/domains/operator.yaml. Bound duration/output/disk; keep only non-secret metadata, exact version/source identities and explicit case outcomes.

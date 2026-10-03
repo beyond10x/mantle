@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:command-correctness
 kind: story
-status: active
+status: implemented
 title: Propagate remote command outcomes and verify repository references
 relations:
 - decomposes: epic:reliability-and-usability
@@ -33,10 +33,11 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 21
+revision: 22
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:26:55Z", actor: "human:timo", revision: 13}
 - {from: "proposed", to: "active", at: "2026-10-03T08:26:55Z", actor: "human:timo", revision: 14}
+- {from: "active", to: "implemented", at: "2026-10-03T09:01:15Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"test_result":1,"review_outcome":1,"ess_conformance_coverage_v1":2}}}
 ---
 ## Problem
 

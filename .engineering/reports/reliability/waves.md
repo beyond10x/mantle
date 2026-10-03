@@ -13,3 +13,17 @@ Integration managed id mantle-reliability-integration; branch integration/mantle
 Unit 1 planned id mantle-command-correctness; branch unit/mantle-command-correctness; lease codex-command-correctness. Checkout $HOME/.local/state/worktree/trees/b10x/mantle/mantle-command-correctness; build /dev/shm/mantle-command-correctness-target; scratch $HOME/.cache/mantle-reliability/command-correctness. Later triples are recorded before dispatch. Every target is unique; external targets follow this repository's external-cache convention.
 
 Storage correction during unit 1: unrelated concurrent builds reduced root availability below 1GiB. The completed, unused integration preflight target (2.1GiB) was removed after its process finished and logs were retained. With implementor compiler calls paused, the task-owned cache server at 43179 was stopped and its cache moved to /dev/shm/mantle-reliability-compiler-cache, then restarted with the same 1GiB bound. Other cache servers and tasks were untouched. Unit 1 temporary build/test files use /dev/shm/mantle-command-correctness-tmp. Future integration builds use /dev/shm/mantle-reliability-integration-target with temporary files in /dev/shm/mantle-reliability-integration-tmp. Root now stores only source and small retained logs; its revised floor is 1GiB, while the tmpfs floor remains 3GiB. Available after relocation: root 4.2GiB, tmpfs 12GiB. Check both before every large command and remove only this task's completed disposable outputs.
+
+Unit 1 source commit ebab85f28be1fcd76465a7befc26233a7dcb49e1 passed package tests (46→48 top-level cases), clippy, formatting, specification and generated-model drift checks. Its actual CLI test covers 20 wire observations and a dropped connection. Real Git fixtures disproved the suspected tag defect; production checkout was left unchanged, and forcing the wrong branch made the verifier fail. The separate coordinator review found no issue; source merged at 8022fec. The complete task check exited 0 on that integration source plus planning-only clarifications: workspace formatting, clippy/tests, complete conformance inventory, ESS/AEP validation and site build all ran. Detailed local red/green evidence remains under the recorded scratch root; no user terminal or credential data was collected. Retained complete/CLI reports and exact CLI suite are beside this report. The story is implemented.
+
+Integration runner output, verbatim:
+
+```text
+Complete ESS inventory: 348 passed; 0 failed, skipped, unsupported, outside or refused
+mantle v1 — 8 file(s), 241 scenario(s), valid
+Mantle documentation built at website/build
+```
+
+The remaining accepted proposals were recomputed with the store's waves verb. Complete waves, collisions and unassessed output is retained verbatim in waves-remaining-after-command.json. It contains six sequential units, no unassessed items and no dependency cycle. All five roadmap priorities remain selected.
+
+Unit 2 planned id mantle-named-profiles; branch unit/mantle-named-profiles; lease codex-named-profiles. Checkout $HOME/.local/state/worktree/trees/b10x/mantle/mantle-named-profiles; build /dev/shm/mantle-named-profiles-target; scratch $HOME/.cache/mantle-reliability/named-profiles; temporary files /dev/shm/mantle-named-profiles-tmp. It is not dispatched until the command-correctness integration gate passes. Source threading, registry and tests are scoped; the prior short random socket path behavior must remain intact.

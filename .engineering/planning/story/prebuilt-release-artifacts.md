@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:prebuilt-release-artifacts
 kind: story
-status: draft
+status: proposed
 title: Produce verified installable CLI and worker release artifacts
 relations:
 - decomposes: epic:reliability-and-usability
@@ -34,7 +34,9 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 18
+revision: 19
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 19}
 ---
 ## Outcome
 Build reproducible packaging and publishing support for Linux x86_64 laptop CLI and static x86_64 musl worker binaries, matching the existing supported worker architecture. Do not claim untested macOS/ARM packages. Typed ReleaseManifest/ReleaseArtifact values are declared in spec/domains/operator.yaml; all committed running tooling is Rust with clap.

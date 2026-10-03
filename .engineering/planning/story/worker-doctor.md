@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:worker-doctor
 kind: story
-status: draft
+status: proposed
 title: Diagnose worker readiness without changing it
 relations:
 - decomposes: epic:reliability-and-usability
@@ -34,7 +34,9 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 20
+revision: 21
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 21, decided_on: {"recorded":{"review_outcome":1}}}
 ---
 ## Contract and design
 DiagnosticCheck and DiagnosticReport are typed in spec/domains/operator.yaml. Add mantle [--profile NAME] doctor [--json] with bounded read-only checks in order: selected configuration, existing local state/worker placement, provider reachability, strict SSH, Substrate service/socket, installed/runtime compatibility and required common confinement facts. Report healthy/failed/skipped per stage, actionable fixed advice, and local nonzero for any required failed/unknown stage. Stop dependent probes after a failure. A provider's Running/Ready cannot establish guest or Substrate health. Authentication is never claimed from readiness.
