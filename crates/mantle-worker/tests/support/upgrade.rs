@@ -42,6 +42,15 @@ impl Host for FixtureHost {
         self.calls.borrow_mut().push(args.join(" "));
         let fault = self.fault.borrow();
         ensure!(*fault != "unknown", "controlled observation failure");
+        if args[0] == "sha256sum" {
+            let path = args.last().unwrap();
+            let bytes = self.fs.read(
+                path,
+                mantle_worker::MAX_HELPER_BYTES,
+                Instant::now() + Duration::from_secs(10),
+            )?;
+            return Ok(format!("{}  {path}\n", mantle_artifact::sha256(&bytes)).into_bytes());
+        }
         if args[0] == "/usr/local/bin/substrate-daemon" {
             return Ok(format!(
                 "substrate-daemon {}\n",

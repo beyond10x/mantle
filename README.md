@@ -306,6 +306,9 @@ exact prior directory is observed restored. A disconnected SSH transport can lea
 An interrupted journal takes precedence over a new candidate: `recovered-other-bundle` names the
 earlier recovered source and returns nonzero. Review that result and repeat apply for the intended
 candidate. A written bundle marker alone does not establish `current` while recovery is pending.
+Codex installation refuses an unfinished helper transaction until recovery completes. Completed
+journals are checked without replaying rollback: a later supported Codex installation is preserved,
+and unexpected inventory changes refuse without restoring an older directory over current files.
 
 After a successful upgrade, deliberately leave maintenance on the worker:
 

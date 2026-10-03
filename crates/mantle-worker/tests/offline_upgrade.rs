@@ -396,3 +396,197 @@ fn fresh_provisioning_uses_private_delivery_and_defers_active_existing_helpers()
         assert!(!f.root.join("bin/mantle-worker.new").exists());
     }
 }
+
+#[test]
+fn adversary_completed_upgrade_retry_preserves_later_codex_installation() {
+    let f = Fixture::new();
+    // Legacy workers may have the three helpers and Claude before Codex is first installed.
+    fs::remove_file(f.root.join("bin/codex")).unwrap();
+    fs::remove_dir_all(f.root.join("agents/codex")).unwrap();
+    let first = upgrade::apply(&f.host, &f.root, &f.manifest, &()).unwrap();
+    assert_eq!(first.outcome, "applied-restart-required");
+    let installed_helper = fs::read(f.root.join("bin/mantle-worker")).unwrap();
+    // Model Installer::install_with's published filesystem effect (lib.rs stable-link branch),
+    // serialized by the same real host lock. No concurrent administrator change is involved.
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _host_lock = upgrade::HostLock::acquire(&f.root).unwrap();
+        // A synthetic agent generation, with the same content-addressed layout and manifest
+        // used by the existing installer fixtures. The actual download is outside this test.
+        let digest = mantle_artifact::sha256(&installed_helper);
+        let generation = f.root.join("agents/codex").join(&digest);
+        fs::create_dir_all(&generation).unwrap();
+        fs::write(generation.join("codex"), &installed_helper).unwrap();
+        fs::set_permissions(generation.join("codex"), fs::Permissions::from_mode(0o755)).unwrap();
+        fs::write(
+            generation.join("manifest.json"),
+            serde_json::to_vec(&mantle_worker::InstallationFacts {
+                version: "0.1.4".into(),
+                architecture: mantle_worker::ARCHITECTURE.into(),
+                compressed_sha256: "1".repeat(64),
+                binary_sha256: digest.clone(),
+            })
+            .unwrap(),
+        )
+        .unwrap();
+        std::os::unix::fs::symlink(&digest, f.root.join("agents/codex/current")).unwrap();
+        std::os::unix::fs::symlink("../agents/codex/current/codex", f.root.join("bin/codex"))
+            .unwrap();
+    }
+    let agent_generation = fs::read_link(f.root.join("agents/codex/current")).unwrap();
+    let retry = upgrade::apply(&f.host, &f.root, &f.manifest, &());
+    assert!(
+        f.root.join("bin/codex").symlink_metadata().is_ok(),
+        "retry of a completed upgrade removed the subsequently installed Codex link: {retry:?}"
+    );
+    assert_eq!(
+        fs::read_link(f.root.join("bin/codex")).unwrap(),
+        std::path::Path::new("../agents/codex/current/codex")
+    );
+    assert_eq!(
+        mantle_artifact::sha256(&fs::read(f.root.join("bin/mantle-worker")).unwrap()),
+        mantle_artifact::sha256(&installed_helper),
+        "retry changed the already applied helper bundle"
+    );
+    assert_eq!(
+        fs::read_link(f.root.join("agents/codex/current")).unwrap(),
+        agent_generation
+    );
+}
+
+#[test]
+fn terminal_journals_do_not_replay_rollback_after_a_supported_later_writer() {
+    for state in ["applied", "rolled-back", "not-applied"] {
+        let f = Fixture::new();
+        fs::remove_file(f.root.join("bin/codex")).unwrap();
+        match state {
+            "applied" => {
+                assert_eq!(
+                    upgrade::apply(&f.host, &f.root, &f.manifest, &())
+                        .unwrap()
+                        .outcome,
+                    "applied-restart-required"
+                );
+            }
+            "rolled-back" => {
+                assert_eq!(
+                    upgrade::apply(
+                        &f.host,
+                        &f.root,
+                        &f.manifest,
+                        &Fault {
+                            point: "postcheck",
+                            rollback: false
+                        }
+                    )
+                    .unwrap()
+                    .outcome,
+                    state
+                );
+            }
+            _ => {
+                assert!(
+                    upgrade::apply(
+                        &f.host,
+                        &f.root,
+                        &f.manifest,
+                        &Fault {
+                            point: "after-journal",
+                            rollback: false
+                        }
+                    )
+                    .is_err()
+                );
+                assert_eq!(
+                    upgrade::recover(&f.host, &f.root, &()).unwrap().outcome,
+                    state
+                );
+            }
+        }
+        {
+            let _lock = upgrade::HostLock::acquire(&f.root).unwrap();
+            std::os::unix::fs::symlink("../agents/codex/current/codex", f.root.join("bin/codex"))
+                .unwrap();
+        }
+        let before = f.snapshot();
+        let journal = fs::read(f.root.join("upgrade-pending.json")).unwrap();
+        let observed = upgrade::recover(
+            &f.host,
+            &f.root,
+            &Fault {
+                point: "postcheck",
+                rollback: false,
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            observed.outcome,
+            if state == "applied" { "current" } else { state }
+        );
+        assert_eq!(f.snapshot(), before, "{state}");
+        assert_eq!(
+            fs::read(f.root.join("upgrade-pending.json")).unwrap(),
+            journal,
+            "terminal observation must not rewrite history"
+        );
+        if state == "applied" {
+            assert_eq!(
+                upgrade::check(&f.host, &f.root, &f.manifest)
+                    .unwrap()
+                    .outcome,
+                "current"
+            );
+            assert_eq!(
+                upgrade::remote_check(&f.host, &mantle_artifact::verify(&f.manifest).unwrap())
+                    .outcome,
+                "current"
+            );
+        }
+        let mut selected: serde_json::Value =
+            serde_json::from_slice(&fs::read(&f.manifest).unwrap()).unwrap();
+        selected["source_commit"] = serde_json::Value::String("2".repeat(40));
+        fs::write(&f.manifest, serde_json::to_vec(&selected).unwrap()).unwrap();
+        assert_eq!(
+            upgrade::apply(&f.host, &f.root, &f.manifest, &())
+                .unwrap()
+                .outcome,
+            "applied-restart-required"
+        );
+        assert_eq!(f.snapshot()["codex"], before["codex"]);
+        assert_eq!(f.snapshot()["claude"], before["claude"]);
+    }
+}
+
+#[test]
+fn terminal_journal_refusal_never_restores_stale_inventory() {
+    for changed in ["helper", "extra", "claude"] {
+        let f = Fixture::new();
+        fs::remove_file(f.root.join("bin/codex")).unwrap();
+        upgrade::apply(&f.host, &f.root, &f.manifest, &()).unwrap();
+        {
+            let _lock = upgrade::HostLock::acquire(&f.root).unwrap();
+            std::os::unix::fs::symlink("../agents/codex/current/codex", f.root.join("bin/codex"))
+                .unwrap();
+            fs::write(
+                f.root.join("bin").join(match changed {
+                    "helper" => "mantle-worker",
+                    "claude" => "claude",
+                    _ => "unsupported",
+                }),
+                b"changed later",
+            )
+            .unwrap();
+        }
+        let before = f.snapshot();
+        let journal = fs::read(f.root.join("upgrade-pending.json")).unwrap();
+        assert!(
+            upgrade::apply(&f.host, &f.root, &f.manifest, &()).is_err(),
+            "{changed}"
+        );
+        assert_eq!(f.snapshot(), before, "{changed}");
+        assert_eq!(
+            fs::read(f.root.join("upgrade-pending.json")).unwrap(),
+            journal
+        );
+    }
+}

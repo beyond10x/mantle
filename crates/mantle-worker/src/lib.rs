@@ -182,6 +182,7 @@ impl Installer {
         let deadline = Instant::now() + TRANSACTION_TIMEOUT;
         // Every writer takes the host lock before Codex's narrower agent lock.
         let _host_lock = upgrade::HostLock::acquire(&self.root)?;
+        upgrade::ensure_agent_install_permitted(&self.root)?;
         create_trusted_dir(&self.root)?;
         create_trusted_dir(&self.root.join("agents"))?;
         create_trusted_dir(&self.agent_root())?;

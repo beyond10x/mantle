@@ -194,6 +194,19 @@ fn parse_journal(bytes: &[u8]) -> Result<Journal> {
 fn pending(j: &Journal) -> bool {
     !matches!(j.status.as_str(), "applied" | "rolled-back" | "not-applied")
 }
+/// Called only while holding HostLock. A crashed transaction retains its inventory ownership
+/// until recovery completes, even though its original process released the advisory lock.
+pub(crate) fn ensure_agent_install_permitted(root: &Path) -> Result<()> {
+    match root.join(JOURNAL).symlink_metadata() {
+        Ok(_) => ensure!(
+            !pending(&read_journal(root)?),
+            "unfinished helper transaction requires recovery before agent installation"
+        ),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(error.into()),
+    }
+    Ok(())
+}
 fn versions(path: &Path, version: &str, deadline: Instant) -> Result<()> {
     for name in HELPERS {
         let result = crate::run_bounded(
@@ -230,6 +243,19 @@ fn verify_side(path: &Path, id: &Identity, files: &Inventory) -> Result<()> {
     ensure!(
         &identity(path)? == id && &inventory(path)? == files,
         "journal directory identity or inventory mismatch"
+    );
+    Ok(())
+}
+/// A completed transaction no longer owns the active directory's entire lifetime. The Codex
+/// installer may add its stable link later under the host lock; all recorded entries stay exact.
+fn verify_completed_side(path: &Path, id: &Identity, files: &Inventory) -> Result<()> {
+    let mut observed = inventory(path)?;
+    if !files.contains_key("codex") {
+        observed.remove("codex");
+    }
+    ensure!(
+        &identity(path)? == id && &observed == files,
+        "completed bundle identity or inventory changed; no historical rollback attempted"
     );
     Ok(())
 }
@@ -285,6 +311,26 @@ fn recover_locked(
         "recovery requires verified offline maintenance"
     );
     let stage = root.join(&j.stage);
+    if !pending(j) {
+        // Never run postcheck/rollback against a terminal journal: a supported writer may have
+        // changed the agent inventory since this transaction relinquished ownership.
+        if j.status == "applied" {
+            verify_completed_side(&root.join("bin"), &j.next, &j.next_files)?;
+            verify_side(&stage.join("bin"), &j.previous, &j.previous_files)?;
+        } else {
+            verify_completed_side(&root.join("bin"), &j.previous, &j.previous_files)?;
+            verify_side(&stage.join("bin"), &j.next, &j.next_files)?;
+        }
+        return Ok(outcome(
+            assessment,
+            if j.status == "applied" {
+                "current"
+            } else {
+                &j.status
+            },
+            "Completed transaction verified without replay; later supported Codex installation is preserved.",
+        ));
+    }
     let active = identity(&root.join("bin"))?;
     let other = identity(&stage.join("bin"))?;
     if active == j.previous && other == j.next {
@@ -348,7 +394,8 @@ fn check_bundle(
     if root.join(MARKER).symlink_metadata().is_ok() {
         let installed: Journal = serde_json::from_slice(&read_regular(&root.join(MARKER), 65536)?)?;
         if installed.manifest_sha256 == bundle.manifest_sha256
-            && verify_side(&root.join("bin"), &installed.next, &installed.next_files).is_ok()
+            && verify_completed_side(&root.join("bin"), &installed.next, &installed.next_files)
+                .is_ok()
             && a.applicable
         {
             a.outcome = "current".into();
@@ -423,10 +470,22 @@ pub fn remote_check(host: &impl Host, bundle: &mantle_artifact::VerifiedBundle) 
         }
         let names = host.entries("/opt/mantle/bin", deadline)?;
         ensure!(
-            names.len() == installed.next_files.len()
-                && names.iter().all(|n| installed.next_files.contains_key(n)),
+            installed.next_files.keys().all(|n| names.contains(n))
+                && names
+                    .iter()
+                    .all(|n| installed.next_files.contains_key(n) || n == "codex"),
             "managed inventory changed"
         );
+        if !installed.next_files.contains_key("codex") && names.iter().any(|n| n == "codex") {
+            let path = "/opt/mantle/bin/codex";
+            let m = host.metadata(path, deadline)?;
+            ensure!(
+                m.kind == "link"
+                    && m.uid == host.owner()
+                    && host.link(path, deadline)? == "../agents/codex/current/codex",
+                "unsupported later Codex entry"
+            );
+        }
         for (name, entry) in installed.next_files {
             ensure!(
                 HELPERS.contains(&name.as_str()) || name == "claude" || name == "codex",
@@ -683,4 +742,57 @@ pub fn reconcile_helpers(
         sync_dir(&root.join("bin"))?;
     }
     Ok(deferred)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pending_helper_transaction_excludes_codex_writer_before_fetch_or_agent_paths() {
+        let root = tempfile::tempdir().unwrap();
+        let previous = Identity {
+            dev: 1,
+            ino: 1,
+            uid: nix::unistd::Uid::effective().as_raw(),
+            gid: nix::unistd::Gid::effective().as_raw(),
+            mode: 0o755,
+        };
+        let mut journal = Journal {
+            format: "mantle-offline-upgrade/1".into(),
+            stage: ".upgrade-fixture".into(),
+            status: "prepared".into(),
+            manifest_sha256: "1".repeat(64),
+            source_commit: "2".repeat(40),
+            version: "0.1.4".into(),
+            next: Identity {
+                ino: 2,
+                ..previous.clone()
+            },
+            previous,
+            previous_files: Inventory::new(),
+            next_files: Inventory::new(),
+        };
+        let installer = crate::Installer {
+            root: root.path().into(),
+            candidate: crate::candidate(),
+            version_output: String::new(),
+        };
+        for status in ["prepared", "exchanged", "recovery-required"] {
+            journal.status = status.into();
+            json_write(root.path(), JOURNAL, &journal).unwrap();
+            let before = fs::read(root.path().join(JOURNAL)).unwrap();
+            let error = installer
+                .install_with("x86_64", |_, _| {
+                    panic!("unfinished helper transaction must exclude fetching")
+                })
+                .unwrap_err();
+            assert!(
+                error.to_string().contains("unfinished helper transaction"),
+                "{error:#}"
+            );
+            assert!(!root.path().join("agents").exists());
+            assert_eq!(fs::read(root.path().join(JOURNAL)).unwrap(), before);
+        }
+    }
 }
