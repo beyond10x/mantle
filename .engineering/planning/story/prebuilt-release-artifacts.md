@@ -31,6 +31,10 @@ scope:
 - confidence: inferred
   path: crates/mantle-release
 - confidence: inferred
+  path: crates/mantle/Cargo.toml
+- confidence: inferred
+  path: crates/mantle/src/adapters/orchestration.rs
+- confidence: inferred
   path: generated/worker-model
 - confidence: inferred
   path: spec/components.yaml
@@ -42,7 +46,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 30
+revision: 33
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 19}
 - {from: "proposed", to: "active", at: "2026-10-03T10:29:47Z", actor: "human:timo", revision: 30}
@@ -86,4 +90,8 @@ Include the Rust verifier/installer executable in the GNU CLI artifact alongside
 
 ## Shared verifier dependency layout
 
-Read-only implementation preparation identified a concrete dependency cycle if the shared verifier remains in mantle-release: release commands need mantle-worker's existing bounded subprocess ownership, while worker upgrades need the verifier. Put strict manifest/archive/ELF verification in a small leaf crate crates/mantle-artifact, with no dependency on the application or worker. mantle-release depends on mantle-artifact plus mantle-worker; the later upgrade adds mantle-worker to mantle-artifact dependency only. Reuse the existing process owner instead of copying it or extracting a second orchestration library. This models existing ReleaseManifest/ReleaseArtifact values and does not introduce a new product noun.
+Read-only implementation preparation identified a concrete dependency cycle if the shared verifier remains in mantle-release: release commands need mantle-worker's existing bounded subprocess ownership, while worker upgrades need the verifier. Put strict manifest/archive/ELF verification in a small leaf crate crates/mantle-artifact, with no dependency on the application or worker. mantle-release depends on mantle-artifact plus mantle-worker; the later upgrade makes mantle-worker depend on mantle-artifact. Reuse the existing process owner instead of copying it or extracting a second orchestration library. This models existing ReleaseManifest/ReleaseArtifact values and does not introduce a new product noun.
+
+## CLI installation and worker activation
+
+The release install command atomically installs the GNU CLI bundle. Worker bundles are verified and staged for fresh worker delivery or the following explicit offline upgrade transaction. Do not offer an unguarded command that replaces helpers on an existing worker outside that transaction, and do not replace /opt/mantle/bin with a generation symlink: the existing Codex installation requires a real bin directory. The shared verifier has no activation-layout assumptions. Fresh CLI prefixes may use their own immutable-generation/current-pointer scheme.

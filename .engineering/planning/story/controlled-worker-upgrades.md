@@ -42,7 +42,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 24
+revision: 26
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"review_outcome":2}}}
 ---
@@ -65,4 +65,12 @@ Cited: crates/mantle/src/app/worker.rs, crates/mantle/src/adapters/ssh.rs, crate
 
 ## Shared verifier dependency layout
 
-Read-only implementation preparation identified a concrete dependency cycle if the shared verifier remains in mantle-release: release commands need mantle-worker's existing bounded subprocess ownership, while worker upgrades need the verifier. Put strict manifest/archive/ELF verification in a small leaf crate crates/mantle-artifact, with no dependency on the application or worker. mantle-release depends on mantle-artifact plus mantle-worker; the later upgrade adds mantle-worker to mantle-artifact dependency only. Reuse the existing process owner instead of copying it or extracting a second orchestration library. This models existing ReleaseManifest/ReleaseArtifact values and does not introduce a new product noun.
+Read-only implementation preparation identified a concrete dependency cycle if the shared verifier remains in mantle-release: release commands need mantle-worker's existing bounded subprocess ownership, while worker upgrades need the verifier. Put strict manifest/archive/ELF verification in a small leaf crate crates/mantle-artifact, with no dependency on the application or worker. mantle-release depends on mantle-artifact plus mantle-worker; the later upgrade makes mantle-worker depend on mantle-artifact. Reuse the existing process owner instead of copying it or extracting a second orchestration library. This models existing ReleaseManifest/ReleaseArtifact values and does not introduce a new product noun.
+
+## Existing layout and first adoption
+
+Read-only preparation found that /opt/mantle/bin must remain a real directory: mantle-worker Installer::inspect/trusted_ancestors requires it and requires bin/codex to point to ../agents/codex/current/codex. The smallest atomic legacy-compatible transaction stages a complete sibling bin directory on the same filesystem, preserves Claude bytes/mode/ownership and Codex's exact relative symlink, adds the three verified helpers, and exchanges the directories with Linux renameat2(RENAME_EXCHANGE). The existing nix fs feature exposes that primitive. Refuse unsupported layouts or exchange semantics without falling back to sequential replacement. Retain the exchanged old directory for exact rollback. Journal and sync both directory identities/inventories before exchange; reconcile an exchange-before-journal-update crash from actual identities/digests, not a phase flag alone. Do not modify agents/codex/current.
+
+The existing app/worker.rs install_binaries path replaces helpers independently using shared .new names and starts egress. Managed bundle installations must refuse legacy binary reconciliation or route through the supported transaction; ordinary worker up must not silently invalidate the selected bundle. Serialize directory exchange and Codex installation through a shared host-wide lock with consistent lock ordering; its current agent-specific install.lock alone does not cover this race.
+
+An older installed mantle-worker has no upgrade command. First apply may upload and execute an explicitly verified temporary helper outside installed paths, with bounded transport and owned cleanup. Read-only check must not upload a helper or provision anything; use bounded existing read-only observations. The supplied Substrate unit delegates its execution descendants under /sys/fs/cgroup/system.slice/substrate.service, so inspect the full validated subtree rather than only MainPID. Keep the offline-only and no-live-operation boundaries already stated.
