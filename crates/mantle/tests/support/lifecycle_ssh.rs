@@ -49,6 +49,17 @@ fn main() {
         stream.read_exact(&mut body).unwrap();
         header.extend(body);
         fs::write(root.join(format!("request-{index}")), header).unwrap();
+        // Test-owned response barrier for concurrent, separate CLI callers.
+        if root.join(format!("pause-{index}")).exists() {
+            let deadline = std::time::Instant::now() + Duration::from_secs(15);
+            while !root.join(format!("release-{index}")).exists() {
+                assert!(
+                    std::time::Instant::now() < deadline,
+                    "response barrier timed out"
+                );
+                std::thread::sleep(Duration::from_millis(5));
+            }
+        }
         if text.starts_with("DELETE /v1/workspaces/ws ") {
             let workspace = PathBuf::from(std::env::var_os("MANTLE_LIFECYCLE_WORKSPACE").unwrap());
             fs::remove_dir_all(workspace).unwrap();
