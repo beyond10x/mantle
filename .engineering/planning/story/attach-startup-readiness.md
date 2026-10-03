@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:attach-startup-readiness
 kind: story
-status: active
+status: implemented
 title: Keep attachment replay behind client readiness
 relations:
 - informed_by: story:codex-interactive-start
@@ -27,10 +27,11 @@ scope:
   path: spec/scenarios/cli/codex-start.yaml
 - confidence: cited
   path: spec/scenarios/cli/orchestration-attach-request.yaml
-revision: 9
+revision: 11
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T21:46:38Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"test_result":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T21:46:38Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"test_result":1}}}
+- {from: "active", to: "implemented", at: "2026-10-03T00:11:33Z", actor: "human:timo", revision: 11, decided_on: {"recorded":{"test_result":3,"verification":4}}}
 ---
 ## Problem
 Real Codex attach fails with session.output-backpressure before device login. A continuously drained100x50 PTY reproduced it twice; metadata-only evidence is in .engineering/reports/attach-startup-2026-10-02/diagnosis.md. Agent/workspace survive but the terminal cannot be used.
@@ -55,3 +56,7 @@ Continue the original release intent after operator instruction to keep working.
 ## Installed verification
 
 The public installed-runtime-proof report records the published signed Substrate0.7.10 daemon, exact source/image/layer/binary identities and real Codex0.153.4 attachment with Mantle implementationfac3b79. Two100x50PTY runs drained329157 and346630bytes with exit0, normal detach, zero CLIstderr and the same observed Running agent. Original worker/sessions were preserved. Full integration gate and336nativeESS scenarios passed. Independent reviewer found no source or artifact-binding defect. Authentication and terminal-app visual rendering remain unverified. Patch release0.1.3 publication is the remaining story acceptance step.
+
+## Release completion
+
+Mantle0.1.3 is released at exact source367c7beb440feaec842ba5f8fe141b0fcd0f0cf1, with required exact-candidate and tagged checks successful. Updated public site provenance resolves to the identical merged tree6058df06. Full integration, independent review and two real installed Codex attach/reconnect passes are recorded above and in installed-runtime-proof.md. The disposable proof session stopped and workspace destruction was confirmed. Original wave9 remains on0.7.8 intentionally to preserve existing user sessions; attaching through that old profile does not use this fix. Actual authenticated model/tool turns and GUI rendering remain separate unverified acceptance.
