@@ -590,3 +590,130 @@ fn terminal_journal_refusal_never_restores_stale_inventory() {
         );
     }
 }
+
+#[test]
+fn adversary_later_codex_survives_next_bundle_marker_crash_and_recovery() {
+    use std::os::unix::fs::{PermissionsExt, symlink};
+    let f = Fixture::new();
+    fs::remove_file(f.root.join("bin/codex")).unwrap();
+    fs::remove_dir_all(f.root.join("agents/codex")).unwrap();
+    assert_eq!(
+        upgrade::apply(&f.host, &f.root, &f.manifest, &())
+            .unwrap()
+            .outcome,
+        "applied-restart-required"
+    );
+    // Model a completed first Codex installation under the actual writer lock.
+    let agent = fs::read(f.root.join("bin/mantle-worker")).unwrap();
+    let digest = mantle_artifact::sha256(&agent);
+    {
+        let _lock = upgrade::HostLock::acquire(&f.root).unwrap();
+        let generation = f.root.join("agents/codex").join(&digest);
+        fs::create_dir_all(&generation).unwrap();
+        fs::write(generation.join("codex"), &agent).unwrap();
+        fs::set_permissions(generation.join("codex"), fs::Permissions::from_mode(0o755)).unwrap();
+        fs::write(
+            generation.join("manifest.json"),
+            serde_json::to_vec(&mantle_worker::InstallationFacts {
+                version: "0.1.4".into(),
+                architecture: mantle_worker::ARCHITECTURE.into(),
+                compressed_sha256: "1".repeat(64),
+                binary_sha256: digest.clone(),
+            })
+            .unwrap(),
+        )
+        .unwrap();
+        symlink(&digest, f.root.join("agents/codex/current")).unwrap();
+        symlink("../agents/codex/current/codex", f.root.join("bin/codex")).unwrap();
+    }
+    let before = f.snapshot();
+    let mut manifest: serde_json::Value =
+        serde_json::from_slice(&fs::read(&f.manifest).unwrap()).unwrap();
+    manifest["source_commit"] = serde_json::Value::String("2".repeat(40));
+    fs::write(&f.manifest, serde_json::to_vec(&manifest).unwrap()).unwrap();
+    let mut child = std::process::Command::new(std::env::current_exe().unwrap());
+    child
+        .args(["--exact", "interrupted_upgrade_child", "--nocapture"])
+        .env("MANTLE_UPGRADE_FIXTURE_HOST", &f.host.fs.root)
+        .env("MANTLE_UPGRADE_FIXTURE_ROOT", &f.root)
+        .env("MANTLE_UPGRADE_FIXTURE_MANIFEST", &f.manifest)
+        .env("MANTLE_UPGRADE_FIXTURE_POINT", "after-marker");
+    let out = mantle_worker::run_bounded(&mut child, None, Duration::from_secs(30), 65536).unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(77),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let selected = mantle_artifact::verify(&f.manifest).unwrap();
+    for pending in [
+        upgrade::check(&f.host, &f.root, &f.manifest).unwrap(),
+        upgrade::remote_check(&f.host, &selected),
+    ] {
+        assert_ne!(pending.outcome, "current", "{pending:?}");
+        assert!(pending.diagnostic.contains("recovery"), "{pending:?}");
+    }
+    let recovered = upgrade::apply(&f.host, &f.root, &f.manifest, &()).unwrap();
+    assert_eq!(recovered.outcome, "applied-restart-required");
+    assert_eq!(recovered.candidate_source, "2".repeat(40));
+    assert_eq!(f.snapshot(), before);
+    assert_eq!(
+        fs::read_link(f.root.join("agents/codex/current")).unwrap(),
+        std::path::Path::new(&digest)
+    );
+    assert_eq!(fs::read(f.root.join("bin/codex")).unwrap(), agent);
+    assert_eq!(
+        upgrade::apply(&f.host, &f.root, &f.manifest, &())
+            .unwrap()
+            .outcome,
+        "current"
+    );
+    assert_eq!(f.snapshot(), before);
+}
+
+#[test]
+fn adversary_invalid_later_codex_entry_refuses_without_historical_restore() {
+    for kind in ["wrong-target", "regular-file"] {
+        let f = Fixture::new();
+        fs::remove_file(f.root.join("bin/codex")).unwrap();
+        assert_eq!(
+            upgrade::apply(&f.host, &f.root, &f.manifest, &())
+                .unwrap()
+                .outcome,
+            "applied-restart-required"
+        );
+        {
+            let _lock = upgrade::HostLock::acquire(&f.root).unwrap();
+            if kind == "wrong-target" {
+                std::os::unix::fs::symlink("../agents/codex/other/codex", f.root.join("bin/codex"))
+                    .unwrap();
+            } else {
+                fs::write(f.root.join("bin/codex"), b"unsupported executable").unwrap();
+            }
+        }
+        let before = f.snapshot();
+        let journal = fs::read(f.root.join("upgrade-pending.json")).unwrap();
+        let marker = fs::read(f.root.join("managed-bundle.json")).unwrap();
+        let bundle = mantle_artifact::verify(&f.manifest).unwrap();
+        assert_ne!(
+            upgrade::check(&f.host, &f.root, &f.manifest)
+                .unwrap()
+                .outcome,
+            "current",
+            "{kind}"
+        );
+        let remote = upgrade::remote_check(&f.host, &bundle);
+        assert_eq!(remote.outcome, "unknown", "{kind}: {remote:?}");
+        assert!(!remote.applicable, "{kind}: {remote:?}");
+        assert!(upgrade::apply(&f.host, &f.root, &f.manifest, &()).is_err());
+        assert_eq!(f.snapshot(), before, "{kind}");
+        assert_eq!(
+            fs::read(f.root.join("upgrade-pending.json")).unwrap(),
+            journal
+        );
+        assert_eq!(
+            fs::read(f.root.join("managed-bundle.json")).unwrap(),
+            marker
+        );
+    }
+}
