@@ -12,7 +12,8 @@ it does not claim to precede that dispatch. Source base: `4d5af8c00e38378080912a
 - Scratch: `$HOME/.cache/mantle-reliability/worker-doctor`.
 - Baseline: 55 Mantle package tests, 28 worker tests, 243 CLI conformance scenarios.
 
-Implement an early read-only `worker doctor` path and structured JSON even when selection fails.
+Implement an early read-only `mantle [--profile NAME] doctor [--json]` path and structured JSON even
+when selection fails.
 Configuration reads are bounded and reject nonregular files. SQLite opens read-only without
 creation/migration; ordinary locking/SHM coordination is permitted and committed WAL data must
 remain visible. No custom snapshot protocol is needed.
