@@ -52,7 +52,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 35
+revision: 36
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"review_outcome":2}}}
 - {from: "proposed", to: "active", at: "2026-10-03T12:22:48Z", actor: "human:timo", revision: 29, decided_on: {"recorded":{"review_outcome":2}}}
@@ -111,3 +111,9 @@ The implementation also needs to examine serialization of the current worker-up 
 ## Implementation scope refinement
 
 Implementor inspection at the published c63d5a6 base identified three additional cited seams: crates/mantle/src/adapters/orchestration.rs hosts the native ESS routing for the named upgrade cases; crates/mantle/Cargo.toml needs artifact verification as a production dependency; Cargo.lock records worker artifact/serde dependency edges. Typed scope now includes them. Shared unit rendering moves into the worker library and existing render_user_data_for reuses it. This is within the accepted offline upgrade behavior; implementation remains serial and does not overlap a second writing unit.
+
+## Mask observation correction during implementation
+
+The implementor requested a bounded coordinator source check of its maintenance parser before formal adversary review. systemd v255 resolves a mask to the link source while loading, not /dev/null: [unit-file.c:304](https://github.com/systemd/systemd/blob/v255/src/basic/unit-file.c#L304) and the false resolve_destination_target call at495–498; [load-fragment.c:5672](https://github.com/systemd/systemd/blob/v255/src/core/load-fragment.c#L5672) stores that fragment path, exposed by dbus-unit.c:826. Therefore an effective supported mask normally reports /etc/systemd/system/UNIT or /run/systemd/system/UNIT. The initial fixture and parser's /dev/null FragmentPath requirement were inaccurate. Route this source-derived correction to the implementor: add a failing case with actual mask-source metadata, verify that source is the supported root-owned /dev/null link, then fix without relaxing effective-mask requirements. This has not been called a reproduced failure until the case runs.
+
+The existing empty no-job listing expectation is supported by [systemctl-list-jobs.c:58](https://github.com/systemd/systemd/blob/v255/src/systemctl/systemctl-list-jobs.c#L58): --no-legend produces no stdout when n=0. Use --full for complete job unit names and keep explicit --system --no-ask-password and show --all from the existing brief. [systemctl-show.c:1023](https://github.com/systemd/systemd/blob/v255/src/systemctl/systemctl-show.c#L1023) renders no Job as empty. No live services were queried. This implementation-time source consultation is not the later independent adversary pass.
