@@ -10,9 +10,11 @@ relations:
 scope:
 - confidence: inferred
   path: .github/workflows
-- confidence: inferred
+- confidence: cited
+  path: .github/workflows/ci.yml
+- confidence: cited
   path: Cargo.lock
-- confidence: inferred
+- confidence: cited
   path: Cargo.toml
 - confidence: inferred
   path: README.md
@@ -24,7 +26,7 @@ scope:
   path: generated/worker-model
 - confidence: inferred
   path: spec/components.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/domains/operator.yaml
 - confidence: inferred
   path: spec/ess-inputs.yaml
@@ -32,7 +34,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 14
+revision: 18
 ---
 ## Outcome
 Build reproducible packaging and publishing support for Linux x86_64 laptop CLI and static x86_64 musl worker binaries, matching the existing supported worker architecture. Do not claim untested macOS/ARM packages. Typed ReleaseManifest/ReleaseArtifact values are declared in spec/domains/operator.yaml; all committed running tooling is Rust with clap.

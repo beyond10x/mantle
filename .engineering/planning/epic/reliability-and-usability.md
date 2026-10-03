@@ -2,11 +2,14 @@
 format: aep.planning-md/3
 id: epic:reliability-and-usability
 kind: epic
-status: draft
+status: active
 title: Deliver all five Mantle reliability and usability improvements
 relations:
 - informed_by: epic:codex-parity
-revision: 5
+revision: 7
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-03T08:32:53Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"review_outcome":2}}}
+- {from: "proposed", to: "active", at: "2026-10-03T08:32:53Z", actor: "human:timo", revision: 7, decided_on: {"recorded":{"review_outcome":2}}}
 ---
 ## Outcome
 

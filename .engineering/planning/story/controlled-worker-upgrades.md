@@ -14,12 +14,20 @@ scope:
   path: crates/mantle-release
 - confidence: inferred
   path: crates/mantle-worker
-- confidence: inferred
+- confidence: cited
+  path: crates/mantle-worker/src/lib.rs
+- confidence: cited
+  path: crates/mantle-worker/src/main.rs
+- confidence: cited
   path: crates/mantle/src/adapters/ssh.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/app/worker.rs
 - confidence: inferred
   path: crates/mantle/src/main.rs
+- confidence: cited
+  path: deploy/mantle-egress.service
+- confidence: cited
+  path: deploy/substrate.service
 - confidence: inferred
   path: generated/worker-model
 - confidence: inferred
@@ -32,7 +40,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 15
+revision: 21
 ---
 ## Outcome
 Provide mantle worker upgrade --check and explicit --apply consuming a verified matching release bundle. This is an OFFLINE Mantle binary upgrade, not an online daemon drain or a Substrate version migration. The pinned SDK has no global inventory/quiesce endpoint. Keeping that responsibility upstream avoids a freeze/encrypted/SQL workaround. UpgradeAssessment and ReleaseManifest are typed in spec/domains/operator.yaml; existing Worker owns placement.

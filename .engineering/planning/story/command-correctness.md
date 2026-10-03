@@ -3,7 +3,7 @@ format: aep.planning-md/3
 id: story:command-correctness
 kind: story
 status: active
-title: Propagate remote command outcomes and resolve repository tags
+title: Propagate remote command outcomes and verify repository references
 relations:
 - decomposes: epic:reliability-and-usability
 scope:
@@ -33,13 +33,14 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 19
+revision: 21
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:26:55Z", actor: "human:timo", revision: 13}
 - {from: "proposed", to: "active", at: "2026-10-03T08:26:55Z", actor: "human:timo", revision: 14}
 ---
 ## Problem
-Source inspection: crates/mantle/src/app/session.rs:470 returns Ok after any SDK execution result, and main.rs:142 forwards it, so remote nonzero exits report laptop success. materialize at session.rs:303 promises manifest branch/tag/commit resolution but clones --no-tags --branch for symbolic references. Existing adapters/orchestration.rs:55 merely supplies canned Git success, so real Git must establish the tag defect.
+
+The actual production mantle binary returned zero for remote exits 1/42/255, POSIX INT/TERM/KILL, and missing/contradictory/unknown/expired/cancelled/running wire outcomes in the implementor's red run. This confirms the exec bug at the process boundary, not merely by source inspection. Existing materialize with clone --no-tags --branch DOES resolve branch, lightweight tag and annotated tag correctly: production InitPort ran real Git against local and file:// upload-pack repositories before implementation edits. Exact commits resolved and missing refs refused too. Therefore the suspected tag defect is rejected; retain real Git/native conformance regression coverage and documentation without an unnecessary checkout rewrite. The implementation report retains full red output and baseline Git evidence.
 
 ## Acceptance
 Named ESS cases: exec-exit-zero, exec-exit-nonzero, exec-signal, exec-indeterminate, exec-output, source-branch, source-lightweight-tag, source-annotated-tag, source-pinned-commit, source-missing-ref. Remote normal exit0/1/42/255 becomes the same laptop code. POSIX signals map to128+signal within1..255; invalid codes, missing/contradictory results, refusal, Unknown/Expired/Cancelled and transport errors never become success and retain truthful diagnostics. Output streams retain exact bytes. A subprocess regression covers the actual CLI termination boundary, not only a pure mapping. Real local Git fixtures execute production materialization argv and verify resolved/persisted commit for branch, lightweight/annotated tag and exact commit; missing ref never starts agent or invents source. Preserve proxy, aperture, argument validation and secret-free supplementary requests.

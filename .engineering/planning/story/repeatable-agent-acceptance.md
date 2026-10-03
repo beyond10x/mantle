@@ -8,9 +8,9 @@ relations:
 - decomposes: epic:reliability-and-usability
 - depends_on: story:retained-workspace-lifecycle
 scope:
-- confidence: inferred
+- confidence: cited
   path: Cargo.lock
-- confidence: inferred
+- confidence: cited
   path: Cargo.toml
 - confidence: inferred
   path: README.md
@@ -18,13 +18,17 @@ scope:
   path: crates/mantle-acceptance
 - confidence: inferred
   path: crates/mantle-conformance
+- confidence: cited
+  path: crates/mantle/src/main.rs
+- confidence: cited
+  path: crates/mantle/tests/codex_preflight.rs
 - confidence: inferred
   path: docs/evidence
 - confidence: inferred
   path: generated/worker-model
 - confidence: inferred
   path: spec/components.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/domains/operator.yaml
 - confidence: inferred
   path: spec/ess-inputs.yaml
@@ -32,7 +36,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 13
+revision: 18
 ---
 ## Outcome
 Provide a Rust/clap acceptance runner plus operator procedure for disposable Claude and Codex sessions through the installed Mantle CLI, not duplicated orchestration. AcceptanceResult is typed in spec/domains/operator.yaml. Bound duration/output/disk; keep only non-secret metadata, exact version/source identities and explicit case outcomes.

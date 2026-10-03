@@ -12,13 +12,13 @@ scope:
   path: README.md
 - confidence: inferred
   path: crates/mantle/src/adapters/orchestration.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/adapters/ssh.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/app/worker.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/config.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/main.rs
 - confidence: inferred
   path: examples
@@ -34,7 +34,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 14
+revision: 18
 ---
 ## Contract and design
 New values Profile and Selection have their typed home in spec/domains/operator.yaml. Inferred design: mantle profile add NAME --config ABS --state-dir ABS stores only these absolute path references under the owner's configuration directory, with strict names and private permissions. mantle profile list/show inspect those references without loading provider config or executing credential commands. No overwrite on duplicate name, no credential copy. Global --profile NAME (or MANTLE_PROFILE, explicit flag wins) selects both paths together. When a named profile is selected, legacy MANTLE_CONFIG/MANTLE_STATE_DIR overrides are refused to prevent mixing workers and state. Without profile selection, legacy environment/default behavior remains unchanged. No automatic active-profile migration is required.

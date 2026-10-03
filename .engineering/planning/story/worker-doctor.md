@@ -10,17 +10,17 @@ relations:
 scope:
 - confidence: inferred
   path: README.md
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/adapters/ssh.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/adapters/state.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/adapters/substrate.rs
 - confidence: inferred
   path: crates/mantle/src/app/doctor.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/app/worker.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/main.rs
 - confidence: inferred
   path: generated/worker-model
@@ -34,7 +34,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 15
+revision: 20
 ---
 ## Contract and design
 DiagnosticCheck and DiagnosticReport are typed in spec/domains/operator.yaml. Add mantle [--profile NAME] doctor [--json] with bounded read-only checks in order: selected configuration, existing local state/worker placement, provider reachability, strict SSH, Substrate service/socket, installed/runtime compatibility and required common confinement facts. Report healthy/failed/skipped per stage, actionable fixed advice, and local nonzero for any required failed/unknown stage. Stop dependent probes after a failure. A provider's Running/Ready cannot establish guest or Substrate health. Authentication is never claimed from readiness.

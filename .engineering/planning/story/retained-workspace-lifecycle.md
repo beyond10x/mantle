@@ -10,23 +10,23 @@ relations:
 scope:
 - confidence: inferred
   path: README.md
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/adapters/orchestration.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/adapters/state.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/app/session.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/domain/session.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/main.rs
 - confidence: inferred
   path: generated/session-model
 - confidence: inferred
   path: generated/worker-model
-- confidence: inferred
+- confidence: cited
   path: spec/domains/orchestration.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/ess-inputs.yaml
@@ -34,7 +34,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 14
+revision: 22
 ---
 ## Outcome
 Separate process lifetime from workspace destruction using the existing mantle.session.Session entity and Workspace SDK handle. Extend ESS states/commands before implementation. Proposed CLI: stop NAME ends the agent but preserves files and login state; destroy NAME --yes is explicit irreversible deletion; restart NAME starts a fresh agent execution in a retained workspace without cloning over files. Do not call a fresh process a same-conversation resume. Reattach alone never restarts. Document the intentional stop-semantics compatibility change prominently.
@@ -44,3 +44,7 @@ Named scenarios retain-stop, retain-repeat-stop, retain-interrupted-stop, retain
 
 ## Scope
 Cited: domain/session.rs, app/session.rs, adapters/state.rs, Session ESS lifecycle, orchestration Stop command and native tests. Inferred: restart request context persistence/migration, CLI/help/docs and lifecycle cases. Serialized after earlier session/worker changes. No VM-loss recovery guarantee or agent-specific conversation-resume protocol.
+
+## Migration and interrupted intent
+
+Legacy STOPPED records represent destroyed workspaces and stay terminal. Legacy STOPPING records may already have a destructive operation in flight; a migration must preserve their destructive intent instead of silently reinterpreting them as the new retain-only stop. New retain-stop and destroy intent must be distinguishable durably across interruption/reopen. Observe absent workspaces honestly. Older rows lacking a validated restart context must not fabricate agent settings or silently reconstruct a different session from current config. Cover these migration/retry boundaries with real SQLite reopen tests and named conformance scenarios, alongside fresh-session stop/restart/destroy. Restart reuses verified persisted context and workspace, with a new exec id; source files and private agent home are retained, while a same-conversation resume is not promised.
