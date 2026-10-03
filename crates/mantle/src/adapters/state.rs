@@ -81,6 +81,39 @@ CREATE TABLE IF NOT EXISTS sources (
 ";
 
 impl Store {
+    /// Diagnostics use SQLite's supported current committed view, including WAL. This permits
+    /// ordinary SQLite lock/SHM coordination, but neither schema nor application writes.
+    pub fn open_readonly(path: &Path) -> Result<Self> {
+        let _file = crate::profile::inspect_regular(path, 64 * 1024 * 1024)?;
+        for suffix in ["-wal", "-shm", "-journal"] {
+            let mut name = path.as_os_str().to_os_string();
+            name.push(suffix);
+            let sidecar = std::path::PathBuf::from(name);
+            match std::fs::symlink_metadata(&sidecar) {
+                Ok(_) => {
+                    crate::profile::inspect_regular(&sidecar, 64 * 1024 * 1024)?;
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error.into()),
+            }
+        }
+        let connection = Connection::open_with_flags(
+            path,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NOFOLLOW,
+        )?;
+        connection.busy_timeout(std::time::Duration::from_millis(250))?;
+        let deadline = std::time::Instant::now() + std::time::Duration::from_millis(250);
+        connection.progress_handler(1000, Some(move || std::time::Instant::now() >= deadline));
+        connection.pragma_update(None, "query_only", true)?;
+        let kind: String = connection.query_row(
+            "SELECT type FROM sqlite_schema WHERE name='workers'",
+            [],
+            |row| row.get(0),
+        )?;
+        anyhow::ensure!(kind == "table", "worker records must be a table");
+        Ok(Self { connection })
+    }
+
     pub fn open(path: &Path) -> Result<Self> {
         let mut connection =
             Connection::open(path).with_context(|| format!("opening {}", path.display()))?;
@@ -352,6 +385,42 @@ fn finish_session(raw: RawSession) -> Result<SessionRecord> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn readonly_diagnostics_observe_wal_and_refuse_writes_without_migrating_legacy_schema() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("state.db");
+        assert!(Store::open_readonly(&path).is_err());
+        assert!(!path.exists());
+        let writer = Connection::open(&path).unwrap();
+        writer.execute_batch("CREATE TABLE workers(name TEXT PRIMARY KEY,instance TEXT,region TEXT,data_volume TEXT); PRAGMA journal_mode=WAL; INSERT INTO workers VALUES('default','fresh-wal','kubevirt/fixture/fixture',NULL)").unwrap();
+        let store = Store::open_readonly(&path).unwrap();
+        assert_eq!(
+            store.worker("default").unwrap().unwrap().instance,
+            "fresh-wal"
+        );
+        assert!(
+            store
+                .connection
+                .execute("UPDATE workers SET instance='changed'", [])
+                .is_err()
+        );
+        assert!(
+            store
+                .connection
+                .execute("CREATE TABLE forbidden(value TEXT)", [])
+                .is_err()
+        );
+        assert_eq!(writer.query_row("SELECT COUNT(*) FROM sqlite_master WHERE name IN ('sessions','sources','forbidden')",[],|r|r.get::<_,i64>(0)).unwrap(),0);
+        assert_eq!(
+            writer
+                .query_row("SELECT instance FROM workers", [], |r| r
+                    .get::<_, String>(0))
+                .unwrap(),
+            "fresh-wal"
+        );
+        assert!(store.connection.query_row("WITH RECURSIVE x(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM x) SELECT sum(n) FROM x",[],|r|r.get::<_,i64>(0)).is_err(),"query VM budget must interrupt unbounded read");
+    }
 
     fn session(id: &str, name: &str) -> SessionRecord {
         SessionRecord {

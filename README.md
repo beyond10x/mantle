@@ -150,6 +150,29 @@ and `${...}` expressions are refused because OpenSSH interprets them rather than
 
 Agent and contributor instructions are in [AGENTS.md](AGENTS.md).
 
+Worker diagnostics are also **development/unreleased, not part of 0.1.4**:
+
+```console
+mantle --profile personal doctor
+mantle --profile personal doctor --json --timeout-secs 5
+```
+
+Doctor checks the selected configuration, existing worker record and placement, provider, strict
+SSH access, Substrate service/socket, installed Mantle binaries, live Substrate version/wire
+compatibility, and required common confinement facts. Each check reports `healthy`, `failed` or
+`skipped`; an early failure suppresses dependent probes and exits nonzero. JSON remains structured
+even when selection or configuration fails. Human and JSON reports use fixed advice and omit raw
+provider, SSH and configuration contents. A healthy worker does not establish agent authentication.
+
+Doctor needs an existing SSH key and pinned known host. It never creates keys, accepts new hosts,
+invokes an agent credential command, initializes or migrates a database, modifies application
+records, or restarts services. SQLite opens read-only/query-only and observes committed WAL data;
+ordinary SQLite locking/shared-memory coordination is permitted. Normal provider authentication
+may run its existing plugins. External probes default to a 10-second deadline each (configurable
+from 1 to 120 seconds); timed-out process groups are retired, including tunnel descendants.
+Configuration input is capped at 1 MiB, database/sidecar files at 64 MiB, and SQLite busy/query
+handling at 250 milliseconds. Refused or unavailable observations never become a healthy result.
+
 ## Executable specification
 
 [spec/README.md](spec/README.md) describes the implemented contract, its source mappings and

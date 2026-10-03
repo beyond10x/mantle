@@ -13,6 +13,9 @@ use std::cell::{Cell, RefCell};
 use std::time::Duration;
 
 pub(super) fn operator(command: &str, input: &Value) -> Result<Reply> {
+    if command == "mantle.operator.DiagnoseWorker" {
+        return doctor(input);
+    }
     use crate::profile::{Profile, Registry, Selection};
     use std::os::unix::fs::{PermissionsExt, symlink};
     let temporary = tempfile::tempdir()?;
@@ -144,6 +147,129 @@ pub(super) fn operator(command: &str, input: &Value) -> Result<Reply> {
         }
         other => bail!("unsupported operator command {other}"),
     }
+}
+
+fn doctor(input: &Value) -> Result<Reply> {
+    use crate::app::doctor::{self, Probes};
+    use crate::config::RuntimeContext;
+    struct Probe {
+        failure: String,
+        calls: RefCell<Vec<String>>,
+    }
+    impl Probe {
+        fn call(&self, stage: &str) -> Result<()> {
+            self.calls.borrow_mut().push(stage.into());
+            anyhow::ensure!(
+                self.failure != stage && !(stage == "provider" && self.failure == "timeout"),
+                "controlled probe refusal"
+            );
+            Ok(())
+        }
+    }
+    impl Probes for Probe {
+        fn provider(&self, _: &RuntimeContext, _: &WorkerRecord, _: Duration) -> Result<()> {
+            self.call("provider")
+        }
+        fn ssh(&self, _: &RuntimeContext, _: &WorkerRecord, _: Duration) -> Result<()> {
+            self.call("ssh")
+        }
+        fn service(&self, _: &RuntimeContext, _: &WorkerRecord, _: Duration) -> Result<()> {
+            self.call("service")
+        }
+        async fn compatibility(
+            &self,
+            _: &RuntimeContext,
+            _: &WorkerRecord,
+            _: Duration,
+        ) -> Result<b10x_substrate_sdk::Machine> {
+            self.call("compatibility")?;
+            let scenario: Value = serde_json::from_str(include_str!(
+                "../../../../spec/scenarios/cli/orchestration-observe-all-required-facts.yaml"
+            ))?;
+            let facts: Value = if self.failure == "facts" {
+                json!({"operation.ledger-subject-max-rows":1000,"operation.ledger-subject-max-bytes":1048576,"operation.ledger-global-max-rows":10000,"operation.ledger-global-max-bytes":10485760})
+            } else {
+                serde_json::from_str(
+                    scenario["timeline"][0]["input"]["facts_json"]
+                        .as_str()
+                        .unwrap(),
+                )?
+            };
+            Ok(serde_json::from_value(
+                json!({"capability_snapshot":"fixture","driver_version":if self.failure=="version" {"0.0.0"} else {worker::SUBSTRATE_VERSION},"configuration_generation":1,"probed_at":"2026-10-03T00:00:00Z","valid_until":null,"facts":facts,"guarded_workspace_io":true,"exec_argv_only":true,"exec_no_egress":true,"exec_cgroup_limits":true,"exec_cgroup_kill":true,"events_pull":true,"events_stream":true}),
+            )?)
+        }
+    }
+    let temporary = tempfile::tempdir()?;
+    let failure = input["failure"].as_str().context("failure")?;
+    let config = temporary.path().join("config.toml");
+    std::fs::write(
+        &config,
+        if failure == "configuration" {
+            "invalid"
+        } else {
+            "provider='kubevirt'\nubuntu_serial='20260926'\n[kubevirt]\ncontext='fixture'\nnamespace='fixture'\ncpu=2\nmemory_gib=4\nroot_disk_gib=8\ndata_disk_gib=8\n"
+        },
+    )?;
+    let state = temporary.path().join("state");
+    let store = if failure == "state" {
+        None
+    } else {
+        crate::config::ensure_private_dir(&state)?;
+        let store = Store::open(&state.join("state.db"))?;
+        store.put_worker(&WorkerRecord {
+            name: worker::WORKER.into(),
+            instance: "fixture".into(),
+            region: if failure == "placement" {
+                "wrong".into()
+            } else {
+                "kubevirt/fixture/fixture".into()
+            },
+            data_volume: None,
+        })?;
+        Some(store)
+    };
+    let before = store.as_ref().map(|s| s.connection.total_changes());
+    let schema = store
+        .as_ref()
+        .map(|s| {
+            s.connection
+                .query_row("SELECT group_concat(sql) FROM sqlite_master", [], |row| {
+                    row.get::<_, String>(0)
+                })
+        })
+        .transpose()?;
+    let probes = Probe {
+        failure: failure.into(),
+        calls: RefCell::new(vec![]),
+    };
+    let selection = crate::profile::Selection {
+        profile: None,
+        config_path: config,
+        state_dir: state.clone(),
+    };
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?;
+    let report = runtime.block_on(doctor::diagnose(
+        Ok(selection),
+        &probes,
+        Duration::from_secs(1),
+    ));
+    let unchanged = if let Some(store) = store {
+        Some(store.connection.total_changes()) == before
+            && Some(store.connection.query_row(
+                "SELECT group_concat(sql) FROM sqlite_master",
+                [],
+                |row| row.get::<_, String>(0),
+            )?) == schema
+            && store.worker(worker::WORKER)?.is_some()
+    } else {
+        !state.exists()
+    };
+    Ok(Reply::returned(
+        json!({"healthy":report.healthy,"failed_stage":report.checks.iter().find(|c|c.status=="failed").map_or("",|c|c.stage),"called":probes.calls.into_inner(),"state_unchanged":unchanged}),
+    ))
 }
 
 struct Plane {

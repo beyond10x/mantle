@@ -45,7 +45,7 @@ pub struct UpOptions<'a> {
 
 /// Where a recorded worker lives, written into the record so a changed configuration cannot point
 /// Mantle at a different machine under the same name.
-fn location(config: &RuntimeContext) -> Result<String> {
+pub(crate) fn location(config: &RuntimeContext) -> Result<String> {
     Ok(match config.provider {
         Provider::Aws => format!("aws/{}", config.aws()?.region),
         Provider::Kubevirt => {

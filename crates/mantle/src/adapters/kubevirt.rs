@@ -269,10 +269,13 @@ impl Kubevirt {
     /// `virtctl` tunnels port 22 of the VM over the Kubernetes API, as SSM does for EC2.
     pub fn proxy_command(&self, worker: &str) -> String {
         format!(
-            "virtctl --context {} port-forward --stdio=true vmi/{}/{} %p",
-            self.config.context,
-            vm_name(worker),
-            self.config.namespace
+            "virtctl --context {} port-forward --stdio=true {} %p",
+            super::ssh::proxy_argument(&self.config.context),
+            super::ssh::proxy_argument(&format!(
+                "vmi/{}/{}",
+                vm_name(worker),
+                self.config.namespace
+            ))
         )
     }
 }
