@@ -90,6 +90,51 @@ fn expected_link(path: &Path, target: &Path) -> Result<bool> {
         Err(e) => Err(e.into()),
     }
 }
+
+fn generation_inventory(
+    root: &Path,
+    files: &std::collections::BTreeMap<String, Vec<u8>>,
+) -> Result<()> {
+    let mut expected = std::collections::BTreeMap::new();
+    for path in files.keys().map(Path::new) {
+        expected.insert(path.to_path_buf(), false);
+        for parent in path
+            .ancestors()
+            .skip(1)
+            .filter(|p| !p.as_os_str().is_empty())
+        {
+            expected.insert(parent.to_path_buf(), true);
+        }
+    }
+    let mut pending = vec![PathBuf::new()];
+    while let Some(parent) = pending.pop() {
+        for entry in fs::read_dir(root.join(&parent))? {
+            let entry = entry?;
+            let relative = parent.join(entry.file_name());
+            let is_dir = expected
+                .remove(&relative)
+                .context("existing generation inventory was modified")?;
+            let kind = entry.file_type()?;
+            ensure!(
+                if is_dir {
+                    kind.is_dir()
+                } else {
+                    kind.is_file()
+                },
+                "existing generation entry type was modified"
+            );
+            if is_dir {
+                directory(&entry.path())?;
+                pending.push(relative);
+            }
+        }
+    }
+    ensure!(
+        expected.is_empty(),
+        "existing generation inventory is incomplete"
+    );
+    Ok(())
+}
 /// Single GNU generation activation. Worker replacement belongs to the offline worker upgrader.
 pub fn install(bundle: &VerifiedBundle, prefix: &Path, target: &str) -> Result<PathBuf> {
     ensure!(
@@ -161,6 +206,7 @@ pub fn install(bundle: &VerifiedBundle, prefix: &Path, target: &str) -> Result<P
     let files = bundle.artifacts.get(GNU).context("GNU artifact missing")?;
     if destination.symlink_metadata().is_ok() {
         directory(&destination)?;
+        generation_inventory(&destination, files)?;
         for (path, bytes) in files {
             ensure!(
                 fs::symlink_metadata(destination.join(path))?

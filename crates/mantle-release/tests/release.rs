@@ -682,3 +682,276 @@ fn actual_git_archive_exports_exact_source_and_still_refuses_source_symlinks() {
         .contains("unsupported links")
     );
 }
+
+#[test]
+fn adversary_untracked_git_attributes_cannot_change_exact_source_export() {
+    let source = tempfile::tempdir().unwrap();
+    let work = tempfile::tempdir().unwrap();
+    let git = |args: &[&str]| {
+        Command::new("git")
+            .arg("-C")
+            .arg(source.path())
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    assert!(git(&["init", "--quiet"]).status.success());
+    let tracked = b"fn main() { println!(\"$Format:%H$\"); }\n";
+    fs::write(source.path().join("main.rs"), tracked).unwrap();
+    assert!(git(&["add", "main.rs"]).status.success());
+    assert!(
+        git(&[
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--quiet",
+            "-m",
+            "exact source fixture"
+        ])
+        .status
+        .success()
+    );
+    let head = String::from_utf8(git(&["rev-parse", "HEAD"]).stdout).unwrap();
+    // Git permits local, untracked attributes that do not make the checkout dirty.
+    fs::write(
+        source.path().join(".git/info/attributes"),
+        b"main.rs export-subst\n",
+    )
+    .unwrap();
+    assert!(
+        git(&["status", "--porcelain=v1", "--untracked-files=all"])
+            .stdout
+            .is_empty()
+    );
+    assert_eq!(
+        mantle_release::build::source_identity(source.path(), head.trim()).unwrap(),
+        head.trim()
+    );
+    let export = work.path().join("export");
+    let result = mantle_release::build::export_source(source.path(), head.trim(), &export);
+    if result.is_ok() {
+        assert_eq!(
+            fs::read(export.join("main.rs")).unwrap(),
+            tracked,
+            "accepted exact-source export changed committed Rust bytes using untracked Git attributes"
+        );
+    }
+}
+
+#[test]
+fn adversary_modified_generation_inventory_is_refused_without_activation() {
+    let fixture = Fixture::new();
+    let prefix = tempfile::tempdir().unwrap();
+    let prefix_arg = prefix.path().to_str().unwrap();
+    assert!(
+        fixture
+            .cli("install", &["--prefix", prefix_arg])
+            .status
+            .success()
+    );
+    let active = prefix.path().join(".mantle/current");
+    let before = fs::read_link(&active).unwrap();
+    let unverified = prefix
+        .path()
+        .join(".mantle")
+        .join(&before)
+        .join("bin/unverified-helper");
+    fs::write(
+        &unverified,
+        b"unmanaged bytes outside the verified generation inventory",
+    )
+    .unwrap();
+    let result = fixture.cli("install", &["--prefix", prefix_arg]);
+    assert_eq!(fs::read_link(&active).unwrap(), before);
+    assert_eq!(
+        fs::read(&unverified).unwrap(),
+        b"unmanaged bytes outside the verified generation inventory"
+    );
+    assert!(
+        !result.status.success(),
+        "installer accepted an existing generation with an extra unmanaged payload"
+    );
+}
+
+#[test]
+fn exact_source_export_checks_attributes_inventory_modes_and_replacement_objects() {
+    use std::os::unix::fs::PermissionsExt;
+    for case in [
+        "export-ignore",
+        "tracked-export-subst",
+        "executable",
+        "replace-blob",
+        "replace-commit",
+    ] {
+        let source = tempfile::tempdir().unwrap();
+        let work = tempfile::tempdir().unwrap();
+        let git = |args: &[&str]| {
+            let out = Command::new("git")
+                .arg("-C")
+                .arg(source.path())
+                .args(args)
+                .output()
+                .unwrap();
+            assert!(
+                out.status.success(),
+                "{case}: {}",
+                String::from_utf8_lossy(&out.stderr)
+            );
+            out.stdout
+        };
+        git(&["init", "--quiet"]);
+        fs::create_dir(source.path().join("nested")).unwrap();
+        let tracked = b"fn main() { println!(\"$Format:%H$\"); }\n";
+        fs::write(source.path().join("nested/main.rs"), tracked).unwrap();
+        if case == "tracked-export-subst" {
+            fs::write(
+                source.path().join(".gitattributes"),
+                b"nested/main.rs export-subst\n",
+            )
+            .unwrap();
+        }
+        if case == "executable" {
+            fs::set_permissions(
+                source.path().join("nested/main.rs"),
+                fs::Permissions::from_mode(0o755),
+            )
+            .unwrap();
+        }
+        git(&["add", "."]);
+        git(&[
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--quiet",
+            "-m",
+            "source fixture",
+        ]);
+        let head = String::from_utf8(git(&["rev-parse", "HEAD"]))
+            .unwrap()
+            .trim()
+            .to_owned();
+        if case == "export-ignore" {
+            fs::write(
+                source.path().join(".git/info/attributes"),
+                b"nested/main.rs export-ignore\n",
+            )
+            .unwrap();
+        }
+        if case.starts_with("replace-") {
+            let old_blob = String::from_utf8(git(&["rev-parse", "HEAD:nested/main.rs"]))
+                .unwrap()
+                .trim()
+                .to_owned();
+            fs::write(
+                source.path().join("nested/main.rs"),
+                b"fn main() { panic!(\"replacement\"); }\n",
+            )
+            .unwrap();
+            git(&["add", "."]);
+            git(&[
+                "-c",
+                "user.name=Fixture",
+                "-c",
+                "user.email=fixture@example.invalid",
+                "commit",
+                "--quiet",
+                "-m",
+                "replacement fixture",
+            ]);
+            let replacement = String::from_utf8(git(&[
+                "rev-parse",
+                if case == "replace-blob" {
+                    "HEAD:nested/main.rs"
+                } else {
+                    "HEAD"
+                },
+            ]))
+            .unwrap()
+            .trim()
+            .to_owned();
+            git(&["reset", "--hard", &head]);
+            git(&[
+                "replace",
+                if case == "replace-blob" {
+                    &old_blob
+                } else {
+                    &head
+                },
+                &replacement,
+            ]);
+        }
+        let export = work.path().join("export");
+        let result = mantle_release::build::export_source(source.path(), &head, &export);
+        if matches!(case, "export-ignore" | "tracked-export-subst") {
+            assert!(
+                result.is_err(),
+                "altered or incomplete export accepted: {case}"
+            );
+        } else {
+            result.unwrap();
+            assert_eq!(
+                fs::read(export.join("nested/main.rs")).unwrap(),
+                tracked,
+                "{case}"
+            );
+            assert_eq!(
+                fs::metadata(export.join("nested/main.rs"))
+                    .unwrap()
+                    .permissions()
+                    .mode()
+                    & 0o777,
+                if case == "executable" { 0o755 } else { 0o644 }
+            );
+        }
+    }
+}
+
+#[test]
+fn generation_reuse_checks_all_entry_locations_and_types() {
+    let fixture = Fixture::new();
+    for case in [
+        "root-file",
+        "root-directory",
+        "bin-directory",
+        "extra-symlink",
+        "payload-symlink",
+        "missing-payload",
+    ] {
+        let prefix = tempfile::tempdir().unwrap();
+        let prefix_arg = prefix.path().to_str().unwrap();
+        assert!(
+            fixture
+                .cli("install", &["--prefix", prefix_arg])
+                .status
+                .success()
+        );
+        let active = prefix.path().join(".mantle/current");
+        let before = fs::read_link(&active).unwrap();
+        let root = prefix.path().join(".mantle").join(&before);
+        match case {
+            "root-file" => fs::write(root.join("extra"), b"extra").unwrap(),
+            "root-directory" => fs::create_dir(root.join("extra")).unwrap(),
+            "bin-directory" => fs::create_dir(root.join("bin/extra")).unwrap(),
+            "extra-symlink" => std::os::unix::fs::symlink("/outside", root.join("extra")).unwrap(),
+            "payload-symlink" => {
+                fs::remove_file(root.join("LICENSE")).unwrap();
+                std::os::unix::fs::symlink("RUST_RUNTIME_LICENSE.html", root.join("LICENSE"))
+                    .unwrap();
+            }
+            "missing-payload" => fs::remove_file(root.join("LICENSE")).unwrap(),
+            _ => unreachable!(),
+        }
+        assert!(
+            !fixture
+                .cli("install", &["--prefix", prefix_arg])
+                .status
+                .success(),
+            "{case}"
+        );
+        assert_eq!(fs::read_link(&active).unwrap(), before, "{case}");
+    }
+}

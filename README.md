@@ -214,7 +214,7 @@ export PATH="$HOME/.local/mantle/bin:$PATH"
 ```
 
 The GNU installer refuses unmanaged destination collisions, links in the installation prefix,
-unsupported targets, and modified existing generations. It stages verified files under the prefix,
+unsupported targets, and modified existing generations, including extra files or directories. It stages verified files under the prefix,
 serializes installers with a five-second bounded lock, and activates the whole generation with
 one symlink rename. It preserves previous generations and leaves configuration and credentials
 outside installation. Interruptions before activation retain the prior installation. The worker
@@ -232,7 +232,9 @@ cargo run --locked -p mantle-release -- build --source "$PWD" \
 
 Install `cargo-about 0.9.1`, the Rust musl target and a musl C toolchain first. Regenerate the committed
 notice with `mantle-release notices` when the locked dependency graph changes. Build uses an isolated
-Git export and fresh target, verifies both supported artifacts with actual version execution, and
+Git export checked against the raw committed tree and blob bytes, and a fresh target. Export
+attributes that rewrite or omit committed files are refused; Git replacement objects are ignored.
+Build verifies both supported artifacts with actual version execution and
 retains source and compiler logs in the supplied work directory. Pre-existing same-version binaries
 cannot be supplied or relabeled as the chosen commit.
 

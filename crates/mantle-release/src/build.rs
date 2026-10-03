@@ -1,9 +1,123 @@
 use crate::{command, text, write_new};
 use anyhow::{Context, Result, ensure};
 use mantle_artifact::{Artifact, GNU, MUSL, Manifest, Payload, sha256};
-use std::{collections::BTreeMap, fs, io::Cursor, path::Path, process::Command, time::Duration};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fs,
+    io::{Cursor, Read},
+    path::{Component, Path, PathBuf},
+    process::Command,
+    time::Duration,
+};
 fn git(source: &Path, args: &[&str]) -> Result<String> {
-    text(Command::new("git").arg("-C").arg(source).args(args))
+    text(
+        Command::new("git")
+            .arg("--no-replace-objects")
+            .arg("-C")
+            .arg(source)
+            .args(args),
+    )
+}
+
+struct SourceTree {
+    entries: BTreeMap<PathBuf, (String, String)>,
+    blobs: BTreeMap<String, Vec<u8>>,
+}
+
+// Git archive attributes are not source identity: export-subst can rewrite bytes and
+// export-ignore can omit files without dirtying the checkout. Read the raw committed
+// tree and blobs, without replacement refs, as the independent export oracle.
+fn source_tree(source: &Path, revision: &str) -> Result<SourceTree> {
+    let tree = command(
+        Command::new("git")
+            .arg("--no-replace-objects")
+            .arg("-C")
+            .arg(source)
+            .args(["ls-tree", "--full-tree", "-r", "-t", "-z", revision]),
+        30,
+        4 * 1024 * 1024,
+    )?;
+    let mut entries = BTreeMap::new();
+    let mut requested = BTreeSet::new();
+    for entry in tree.split(|b| *b == 0).filter(|entry| !entry.is_empty()) {
+        let tab = entry
+            .iter()
+            .position(|b| *b == b'\t')
+            .context("invalid Git tree entry")?;
+        let metadata: Vec<_> = std::str::from_utf8(&entry[..tab])?.split(' ').collect();
+        ensure!(metadata.len() == 3, "invalid Git tree metadata");
+        let (mode, kind, oid) = (metadata[0], metadata[1], metadata[2]);
+        ensure!(
+            matches!(
+                (mode, kind),
+                ("040000", "tree") | ("100644" | "100755", "blob")
+            ),
+            "source export contains unsupported links or objects"
+        );
+        ensure!(
+            oid.len() == 40 && oid.bytes().all(|b| b.is_ascii_hexdigit()),
+            "invalid Git object identity"
+        );
+        use std::os::unix::ffi::OsStrExt;
+        let path = PathBuf::from(std::ffi::OsStr::from_bytes(&entry[tab + 1..]));
+        ensure!(
+            !path.as_os_str().is_empty()
+                && path.components().all(|c| matches!(c, Component::Normal(_))),
+            "unsafe Git source path"
+        );
+        ensure!(
+            entries
+                .insert(path, (mode.to_owned(), oid.to_owned()))
+                .is_none(),
+            "duplicate Git source path"
+        );
+        if kind == "blob" {
+            requested.insert(oid.to_owned());
+        }
+    }
+    let input = requested
+        .iter()
+        .map(|oid| format!("{oid}\n"))
+        .collect::<String>();
+    let output = mantle_worker::run_bounded(
+        Command::new("git")
+            .arg("--no-replace-objects")
+            .arg("-C")
+            .arg(source)
+            .args(["cat-file", "--batch"]),
+        Some(input.as_bytes()),
+        Duration::from_secs(30),
+        64 * 1024 * 1024,
+    )?;
+    ensure!(
+        output.status.success(),
+        "reading committed Git blobs failed"
+    );
+    let mut remaining = output.stdout.as_slice();
+    let mut blobs = BTreeMap::new();
+    for oid in requested {
+        let newline = remaining
+            .iter()
+            .position(|b| *b == b'\n')
+            .context("missing Git blob header")?;
+        let header: Vec<_> = std::str::from_utf8(&remaining[..newline])?
+            .split(' ')
+            .collect();
+        ensure!(
+            header.len() == 3 && header[0] == oid && header[1] == "blob",
+            "Git blob identity mismatch"
+        );
+        let size: usize = header[2].parse()?;
+        remaining = &remaining[newline + 1..];
+        ensure!(
+            size < remaining.len() && remaining[size] == b'\n',
+            "truncated Git blob"
+        );
+        blobs.insert(oid, remaining[..size].to_vec());
+        remaining = &remaining[size + 1..];
+    }
+    ensure!(remaining.is_empty(), "unexpected Git blob output");
+    Ok(SourceTree { entries, blobs })
 }
 pub fn source_identity(source: &Path, revision: &str) -> Result<String> {
     ensure!(
@@ -73,9 +187,11 @@ pub fn archive(
 }
 pub fn export_source(source: &Path, revision: &str, export: &Path) -> Result<()> {
     let source_commit = source_identity(source, revision)?;
+    let expected = source_tree(source, &source_commit)?;
     fs::create_dir(export)?;
     let bytes = command(
         Command::new("git")
+            .arg("--no-replace-objects")
             .arg("-C")
             .arg(source)
             .args(["archive", "--format=tar", &source_commit]),
@@ -84,6 +200,7 @@ pub fn export_source(source: &Path, revision: &str, export: &Path) -> Result<()>
     )?;
     let mut source_tar = tar::Archive::new(Cursor::new(bytes));
     let mut provenance = false;
+    let mut seen = BTreeSet::new();
     for entry in source_tar.entries()? {
         let mut entry = entry?;
         if entry.header().entry_type().is_pax_global_extensions() {
@@ -110,9 +227,47 @@ pub fn export_source(source: &Path, revision: &str, export: &Path) -> Result<()>
             entry.header().entry_type().is_dir() || entry.header().entry_type().is_file(),
             "source export contains unsupported links"
         );
-        ensure!(entry.unpack_in(export)?, "source export escaped root");
+        let path = entry.path()?.into_owned();
+        let (mode, oid) = expected
+            .entries
+            .get(&path)
+            .context("unexpected source export member")?;
+        ensure!(seen.insert(path), "duplicate source export member");
+        ensure!(
+            entry.header().entry_type().is_dir() == (mode == "040000"),
+            "source export type mismatch"
+        );
+        if mode != "040000" {
+            let blob = &expected.blobs[oid];
+            ensure!(
+                entry.size() == blob.len() as u64,
+                "source export size differs from committed blob"
+            );
+            let mut observed = Vec::new();
+            entry.read_to_end(&mut observed)?;
+            ensure!(
+                observed == *blob,
+                "source export bytes differ from committed blob"
+            );
+            ensure!(
+                entry.header().mode()? & 0o111 == if mode == "100755" { 0o111 } else { 0 },
+                "source export mode differs from committed blob"
+            );
+            // The entry has been consumed for verification; write the verified bytes ourselves.
+            let path = export.join(entry.path()?);
+            if let Some(parent) = path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            write_new(&path, blob, if mode == "100755" { 0o755 } else { 0o644 })?;
+        } else {
+            ensure!(entry.unpack_in(export)?, "source export escaped root");
+        }
     }
     ensure!(provenance, "Git archive has no source identity");
+    ensure!(
+        seen.len() == expected.entries.len(),
+        "source export omitted committed entries"
+    );
     Ok(())
 }
 pub fn build(source: &Path, revision: &str, output: &Path, work: &Path) -> Result<()> {
