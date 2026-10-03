@@ -2,6 +2,17 @@ domain: mantle.session
 summary: Local records and decisions over explicit worker observations; a recorded Running state never asserts a live process.
 
 types:
+  # Stored alongside Session in session_lifecycle. Generation fences every completion;
+  # operation IDs and terminal proof survive process interruption and SQLite reopen.
+  - name: mantle.session.LifecycleAttempt
+    kind: struct
+    fields:
+      - {name: generation, type: Integer}
+      - {name: intent, type: String}
+      - {name: operation_id, type: String}
+      - {name: launch_context, type: 'Optional<String>'}
+      - {name: terminal_exec, type: 'Optional<String>'}
+      - {name: retirement_operation, type: 'Optional<String>'}
   # Persisted identities. The SQLite migration resolves legacy rows to Claude values.
   - name: mantle.session.AgentKind
     kind: enum
@@ -60,15 +71,19 @@ entities:
     # Wire states are SCREAMING_SNAKE_CASE (SessionState::Display), not the ESS spelling.
     lifecycle:
       initial: Materializing
-      states: [Materializing, Starting, Running, Stopping, Stopped, FailedMaterialization, FailedAgentStart]
+      states: [Materializing, Starting, Running, Stopping, Stopped, FailedMaterialization, FailedAgentStart, Retaining, Retained, Restarting, Destroying]
       terminal: [Stopped]
       transitions:
         - {name: materialized, from: [Materializing], to: Starting}
         - {name: materialization_failed, from: [Materializing], to: FailedMaterialization}
-        - {name: started, from: [Starting], to: Running}
+        - {name: started, from: [Starting, Restarting], to: Running}
         - {name: start_failed, from: [Starting], to: FailedAgentStart}
         - {name: stopping, from: [Materializing, Starting, Running, FailedMaterialization, FailedAgentStart], to: Stopping}
-        - {name: stopped, from: [Stopping], to: Stopped}
+        - {name: stopped, from: [Stopping, Destroying], to: Stopped}
+        - {name: retaining, from: [Running, FailedAgentStart, Retained], to: Retaining}
+        - {name: retained, from: [Retaining], to: Retained}
+        - {name: restarting, from: [Retained], to: Restarting}
+        - {name: destroying, from: [Running, Retained, FailedMaterialization, FailedAgentStart, Stopping], to: Destroying}
 
   # crates/mantle/src/adapters/state.rs:22,106: an upserted record, not provider liveness.
   - name: mantle.session.Worker
@@ -97,6 +112,72 @@ errors:
 # These are internal store operations invoked by app/session.rs, not new public CLI verbs.
 # Events denote local writes only; Mantle has no event bus and publishes none of them.
 commands:
+  - name: mantle.session.BeginRetain
+    input: [{name: session_id, type: String}]
+    outcomes:
+      - name: moved
+        moves: mantle.session.Session.retaining
+        instance: session_id
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: wrong-state
+        wrong_state: true
+        error: mantle.session.InvalidTransition
+      - name: missing
+        unknown_instance: true
+        error: mantle.session.RecordVanished
+  - name: mantle.session.FinishRetain
+    input: [{name: session_id, type: String}]
+    outcomes:
+      - name: moved
+        moves: mantle.session.Session.retained
+        instance: session_id
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: wrong-state
+        wrong_state: true
+        error: mantle.session.InvalidTransition
+      - name: missing
+        unknown_instance: true
+        error: mantle.session.RecordVanished
+  - name: mantle.session.BeginRestart
+    input: [{name: session_id, type: String}]
+    outcomes:
+      - name: moved
+        moves: mantle.session.Session.restarting
+        instance: session_id
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: wrong-state
+        wrong_state: true
+        error: mantle.session.InvalidTransition
+      - name: missing
+        unknown_instance: true
+        error: mantle.session.RecordVanished
+  - name: mantle.session.BeginDestroy
+    input: [{name: session_id, type: String}]
+    outcomes:
+      - name: moved
+        moves: mantle.session.Session.destroying
+        instance: session_id
+        emits: [mantle.session.SessionChanged]
+        payload:
+          mantle.session.SessionChanged: {session_id: input.session_id}
+      - name: wrong-state
+        wrong_state: true
+        error: mantle.session.InvalidTransition
+      - name: missing
+        unknown_instance: true
+        error: mantle.session.RecordVanished
+  # Native scenarios invoke production atomic claims, fenced writes and orchestration with
+  # controlled IO, real SQLite reopen and private filesystem workspace markers.
+  - name: mantle.session.RetainedLifecycle
+    input: [{name: case, type: String, example: retain-stop}]
+    response: [{name: verified, type: Boolean}]
+    outcomes: [{name: returned, returns: true}]
   - name: mantle.session.IdentityMigration
     # Real legacy SQLite initialization, reopen and malformed row tests.
     response:

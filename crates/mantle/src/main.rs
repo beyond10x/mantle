@@ -7,6 +7,7 @@ mod adapters {
 }
 mod app {
     pub mod doctor;
+    pub mod lifecycle;
     pub mod session;
     pub mod terminal;
     pub mod worker;
@@ -77,8 +78,26 @@ enum Command {
     List,
     /// Show a session: recorded intent, then what Substrate observes now.
     Status { name: String },
-    /// Stop the agent and destroy the session's workspace.
-    Stop { name: String },
+    /// Stop the agent and retain its workspace and private login state (unreleased semantics).
+    Stop {
+        name: String,
+        #[arg(long)]
+        expected_session_id: Option<String>,
+    },
+    /// Start a fresh agent process in a retained workspace; does not resume a conversation.
+    Restart {
+        name: String,
+        #[arg(long)]
+        expected_session_id: Option<String>,
+    },
+    /// Permanently destroy a session workspace, including private login state.
+    Destroy {
+        name: String,
+        #[arg(long, required = true)]
+        yes: bool,
+        #[arg(long)]
+        expected_session_id: Option<String>,
+    },
     /// Run one command in a session's workspace under the agent's confinement, without its credential.
     Exec {
         name: String,
@@ -255,7 +274,46 @@ async fn run() -> Result<std::process::ExitCode> {
         Command::Attach { name } => app::session::attach(&config, &store, &name).await,
         Command::List => app::session::list(&store),
         Command::Status { name } => app::session::status(&config, &store, &name).await,
-        Command::Stop { name } => app::session::stop(&config, &store, &name).await,
+        Command::Stop {
+            name,
+            expected_session_id,
+        } => {
+            app::session::lifecycle(
+                &config,
+                &store,
+                &name,
+                expected_session_id.as_deref(),
+                "retain",
+            )
+            .await
+        }
+        Command::Restart {
+            name,
+            expected_session_id,
+        } => {
+            app::session::lifecycle(
+                &config,
+                &store,
+                &name,
+                expected_session_id.as_deref(),
+                "admit",
+            )
+            .await
+        }
+        Command::Destroy {
+            name,
+            expected_session_id,
+            ..
+        } => {
+            app::session::lifecycle(
+                &config,
+                &store,
+                &name,
+                expected_session_id.as_deref(),
+                "destroy",
+            )
+            .await
+        }
         Command::Exec { name, argv } => {
             return app::session::exec(&config, &store, &name, &argv)
                 .await

@@ -50,6 +50,10 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
     if command == "mantle.session.IdentityMigration" {
         return Ok(Reply::returned(identity_migration()?));
     }
+    if command == "mantle.session.RetainedLifecycle" {
+        super::orchestration::retained_case(text(&input["case"])?)?;
+        return Ok(Reply::returned(json!({"verified":true})));
+    }
     if command.starts_with("mantle.orchestration.") {
         return super::orchestration::execute(command, input);
     }
@@ -174,6 +178,7 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
             });
         }
         let result = store.insert_session(&SessionRecord {
+            generation: 0,
             id: id.into(),
             name: text(&input["name"])?.into(),
             worker: text(&input["worker"])?.into(),
@@ -231,6 +236,10 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
         "mantle.session.AgentStartFailed" => SessionState::FailedAgentStart,
         "mantle.session.BeginStop" => SessionState::Stopping,
         "mantle.session.FinishStop" => SessionState::Stopped,
+        "mantle.session.BeginRetain" => SessionState::Retaining,
+        "mantle.session.FinishRetain" => SessionState::Retained,
+        "mantle.session.BeginRestart" => SessionState::Restarting,
+        "mantle.session.BeginDestroy" => SessionState::Destroying,
         other => bail!("unsupported command {other}"),
     };
     match store.move_session(id, next, input["failure"].as_str()) {
@@ -312,6 +321,7 @@ impl Boundary for CliBoundary {
             "unsupported arrangement {outcome}"
         );
         self.0.insert_session(&SessionRecord {
+            generation: 0,
             id: "pre-existing-session".into(),
             name: "conformance-session".into(),
             worker: "w".into(),
@@ -406,6 +416,7 @@ fn identity_migration() -> Result<Value> {
     )? == 1
         && store
             .insert_session(&SessionRecord {
+                generation: 0,
                 id: "duplicate".into(),
                 ..before
             })

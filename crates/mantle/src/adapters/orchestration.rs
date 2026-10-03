@@ -356,6 +356,33 @@ struct Plane {
     calls: RefCell<Vec<String>>,
     reads: Cell<usize>,
 }
+
+#[test]
+fn stop_retains_workspace_and_reserves_name() -> Result<()> {
+    let store = Store::in_memory()?;
+    let mut record = record(SessionState::Running);
+    record.workspace = Some("workspace-1".into());
+    record.agent_exec = Some("exec-1".into());
+    store.insert_session(&record)?;
+    let plane = Plane::new(&json!({"exec":"terminal"}));
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?
+        .block_on(session::stop_recorded(&plane, &store, &record, "fixture"))?;
+    assert!(
+        !plane.calls.borrow().iter().any(|call| call == "destroy"),
+        "stop must preserve workspace contents"
+    );
+    assert_eq!(
+        store
+            .live_session("fixture")?
+            .context("retained name was released")?
+            .state
+            .to_string(),
+        "RETAINED"
+    );
+    Ok(())
+}
 impl Plane {
     fn new(input: &Value) -> Self {
         Self {
@@ -419,6 +446,14 @@ impl session::InitPort for &Plane {
 }
 impl session::StartPort for &Plane {
     type Workspace = Self;
+    fn worker_binding(&self) -> WorkerRecord {
+        WorkerRecord {
+            name: "default".into(),
+            instance: "fixture".into(),
+            region: "fixture".into(),
+            data_volume: None,
+        }
+    }
     async fn create(&self, _: &str, _: &manifest::Resolved) -> Result<Self> {
         self.call("create")?;
         Ok(*self)
@@ -426,9 +461,12 @@ impl session::StartPort for &Plane {
     fn workspace_id<'a>(&self, _: &'a Self) -> &'a str {
         "workspace-1"
     }
-    async fn start_agent(&self, _: &Self, _: &manifest::Resolved) -> Result<String> {
+    async fn start_agent(&self, _: &Self, _: &session::RunRequest, _: &str) -> Result<String> {
         self.call("agent")?;
         Ok("exec-1".into())
+    }
+    async fn ready(&self, _: &Self, _: &str) -> Result<()> {
+        Ok(())
     }
     async fn attach(&self, _: &Self, _: &str, _: &crate::domain::session::AgentKind) -> Result<()> {
         self.call("attach")
@@ -461,14 +499,20 @@ impl session::StopPort for Plane {
     fn terminal(&self, exec: &ExecState) -> bool {
         exec.terminal()
     }
+    fn binding<'a>(&self, _: &'a ExecState) -> (&'a str, &'a str) {
+        ("exec-1", "workspace-1")
+    }
     async fn signal(&self, _: &mut ExecState) -> Result<()> {
         self.call("signal")
     }
-    async fn wait(&self, _: &mut ExecState) -> Result<()> {
-        self.call("wait")
+    async fn wait(&self, exec: &mut ExecState) -> Result<()> {
+        self.call("wait")?;
+        *exec = ExecState::Exited;
+        Ok(())
     }
-    async fn retire(&self, _: ExecState) -> Result<()> {
-        self.call("retire")
+    async fn retire(&self, _: ExecState, _: &str) -> Result<bool> {
+        self.call("retire")?;
+        Ok(true)
     }
     async fn get_workspace(&self, _: &str) -> Result<(), SdkError> {
         self.call("get-workspace")
@@ -572,6 +616,7 @@ impl worker::KubevirtPort for Plane {
 }
 fn record(state: SessionState) -> SessionRecord {
     SessionRecord {
+        generation: 0,
         id: "session-1".into(),
         name: "fixture".into(),
         worker: "default".into(),
@@ -585,6 +630,361 @@ fn record(state: SessionState) -> SessionRecord {
         agent_kind: crate::domain::session::AgentKind::V0,
         authentication: crate::domain::session::AuthenticationMethod::V1,
     }
+}
+
+struct LifecycleExec {
+    id: String,
+    workspace: String,
+    state: ExecState,
+}
+struct LifecyclePlane {
+    root: std::path::PathBuf,
+    exec: RefCell<Option<(String, ExecState)>>,
+    operation: RefCell<Option<b10x_substrate_sdk::Operation>>,
+    starts: Cell<usize>,
+    destroys: Cell<usize>,
+    failure: Cell<&'static str>,
+    requests: RefCell<Vec<Value>>,
+}
+impl session::StopPort for LifecyclePlane {
+    type Exec = LifecycleExec;
+    type Workspace = std::path::PathBuf;
+    async fn get_exec(&self, id: &str) -> Result<Self::Exec, SdkError> {
+        match self.exec.borrow().as_ref() {
+            Some((actual, state)) if actual == id => Ok(LifecycleExec {
+                id: id.into(),
+                workspace: "workspace-1".into(),
+                state: *state,
+            }),
+            _ => Err(refusal("resource.not-found")),
+        }
+    }
+    fn terminal(&self, exec: &Self::Exec) -> bool {
+        exec.state.terminal()
+    }
+    fn binding<'a>(&self, exec: &'a Self::Exec) -> (&'a str, &'a str) {
+        (&exec.id, &exec.workspace)
+    }
+    async fn signal(&self, _: &mut Self::Exec) -> Result<()> {
+        anyhow::ensure!(self.failure.get() != "signal", "fixture interrupted signal");
+        Ok(())
+    }
+    async fn wait(&self, exec: &mut Self::Exec) -> Result<()> {
+        anyhow::ensure!(
+            self.failure.get() != "wait",
+            "fixture unresolved termination"
+        );
+        exec.state = ExecState::Exited;
+        *self.exec.borrow_mut() = Some((exec.id.clone(), ExecState::Exited));
+        Ok(())
+    }
+    async fn retire(&self, _: Self::Exec, _: &str) -> Result<bool> {
+        self.exec.borrow_mut().take();
+        anyhow::ensure!(
+            self.failure.get() != "retire",
+            "fixture crash after retirement"
+        );
+        Ok(self.failure.get() != "not-absent")
+    }
+    async fn get_workspace(&self, id: &str) -> Result<Self::Workspace, SdkError> {
+        if id == "workspace-1" && self.root.exists() {
+            Ok(self.root.clone())
+        } else {
+            Err(refusal("resource.not-found"))
+        }
+    }
+    async fn destroy(&self, path: Self::Workspace) -> Result<(), SdkError> {
+        self.destroys.set(self.destroys.get() + 1);
+        std::fs::remove_dir_all(path).map_err(|e| SdkError::Transport(e.to_string()))?;
+        if self.failure.get() == "destroy-unknown" {
+            Err(refusal("operation.outcome-unknown"))
+        } else {
+            Ok(())
+        }
+    }
+}
+impl crate::app::lifecycle::AdmissionPort for LifecyclePlane {
+    async fn operation(&self, id: &str) -> Result<b10x_substrate_sdk::Operation> {
+        let operation = self
+            .operation
+            .borrow()
+            .clone()
+            .context("fixture missing operation after reconnect")?;
+        anyhow::ensure!(operation.id == id, "fixture operation mismatch");
+        Ok(operation)
+    }
+    async fn admit(
+        &self,
+        _: &Self::Workspace,
+        request: &session::RunRequest,
+        operation: &str,
+    ) -> Result<String> {
+        self.starts.set(self.starts.get() + 1);
+        self.requests
+            .borrow_mut()
+            .push(serde_json::to_value(request)?);
+        let id = format!("exec-restart-{}", self.starts.get());
+        *self.exec.borrow_mut() = Some((id.clone(), ExecState::Running));
+        *self.operation.borrow_mut() = Some(serde_json::from_value(
+            json!({"id":operation,"kind":"exec.start","state":"Terminal","resource":id,"result":{"state":"running"},"refusal":null}),
+        )?);
+        anyhow::ensure!(
+            self.failure.get() != "admit-unknown",
+            "fixture accepted before response was lost"
+        );
+        Ok(id)
+    }
+    async fn ready(&self, _: &mut Self::Exec) -> Result<()> {
+        anyhow::ensure!(
+            self.failure.get() != "ready",
+            "fixture interrupted readiness"
+        );
+        Ok(())
+    }
+    fn running(&self, exec: &Self::Exec) -> bool {
+        exec.state == ExecState::Running
+    }
+}
+
+/// Each named native case drives real state transitions and remote-boundary calls. Files under
+/// the fixture workspace are observable user bytes, not precomputed expected response fields.
+pub(super) fn retained_case(case: &str) -> Result<()> {
+    use crate::app::lifecycle as life;
+    let temporary = tempfile::tempdir()?;
+    let database = temporary.path().join("state.db");
+    let mut store = Store::open(&database)?;
+    let root = temporary.path().join("workspace");
+    std::fs::create_dir_all(root.join(".mantle/home/.codex"))?;
+    std::fs::write(root.join("marker"), b"user changes\0\xff")?;
+    std::fs::write(
+        root.join(".mantle/home/.codex/auth.json"),
+        b"fixture login bytes, never real credentials",
+    )?;
+    let other = temporary.path().join("other-workspace");
+    std::fs::create_dir(&other)?;
+    std::fs::write(other.join("marker"), b"other session")?;
+    let plane = LifecyclePlane {
+        root: root.clone(),
+        exec: RefCell::new(Some(("exec-1".into(), ExecState::Running))),
+        operation: RefCell::new(None),
+        starts: Cell::new(0),
+        destroys: Cell::new(0),
+        failure: Cell::new(""),
+        requests: RefCell::new(vec![]),
+    };
+    let mut r = record(SessionState::Materializing);
+    r.workspace = Some("workspace-1".into());
+    store.insert_session(&r)?;
+    let context = life::LaunchContext {
+        version: 1,
+        worker: WorkerRecord {
+            name: "default".into(),
+            instance: "fixture".into(),
+            region: "fixture".into(),
+            data_volume: None,
+        },
+        request: session::agent_request(&manifest::parse(include_str!(
+            "../../../../examples/codex.yaml"
+        ))?),
+        cpu_time_secs: b10x_substrate_sdk::MAX_EXEC_DURATION.as_secs(),
+        output_bytes: b10x_substrate_sdk::MAX_IO_BYTES,
+    };
+    let initial = store.initialize_session(&r.id, &serde_json::to_string(&context)?)?;
+    if case != "retain-initial-materialization" {
+        store.lifecycle_write(
+            &r.id,
+            &initial,
+            SessionState::Running,
+            None,
+            Some("exec-1"),
+            true,
+        )?;
+    }
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?;
+    runtime.block_on(async {
+        tokio::time::pause();
+        let current=|s:&Store|s.session_by_id("session-1")?.context("session vanished");
+        match case {
+            "retain-initial-materialization"=>{
+                let r=current(&store)?;
+                anyhow::ensure!(life::stop(&plane,&store,&r,false).await.is_err(),"stop passed active initialization");
+                anyhow::ensure!(life::stop(&plane,&store,&r,true).await.is_err(),"destroy passed active initialization");
+                store.assert_attempt(&r.id,&initial)?;
+                drop(store);store=Store::open(&database)?;
+                anyhow::ensure!(life::stop(&plane,&store,&current(&store)?,false).await.is_err(),"reopen fabricated idle initialization");
+            }
+            "retain-expected-session-id"=>{
+                anyhow::ensure!(store.selected_session("fixture",Some("prior-session")).is_err(),"stale id accepted");
+                anyhow::ensure!(plane.starts.get()==0&&plane.destroys.get()==0&&current(&store)?.agent_exec.as_deref()==Some("exec-1"),"stale guard mutated session");
+            }
+            "retain-migration-reopen" | "retain-legacy-stopped"=>{
+                store.connection.execute_batch("DELETE FROM session_lifecycle; PRAGMA user_version=0; UPDATE sessions SET state='STOPPING'; INSERT INTO sources VALUES('session-1','source','https://example.invalid/repo','main','fixed','repo');")?;
+                drop(store);store=Store::open(&database)?;
+                anyhow::ensure!(current(&store)?.state==SessionState::Destroying && store.attempt("session-1")?.unwrap().intent=="destroy","legacy destructive intent lost");
+                life::stop(&plane,&store,&current(&store)?,false).await?;
+                drop(store);store=Store::open(&database)?;
+                anyhow::ensure!(current(&store)?.state==SessionState::Stopped && store.sources("session-1")?.len()==1 && store.live_session("fixture")?.is_none(),"legacy destroyed row or source changed");
+                anyhow::ensure!(life::restart(&plane,&store,&current(&store)?).await.is_err(),"legacy row fabricated restart context");
+                let mut next=record(SessionState::Materializing);next.id="next-session".into();store.insert_session(&next)?;
+            }
+            "retain-interrupted-stop" | "retain-retirement-crash"=>{
+                plane.failure.set(if case=="retain-interrupted-stop"{"wait"}else{"retire"});
+                anyhow::ensure!(life::stop(&plane,&store,&current(&store)?,false).await.is_err(),"interruption reported success");
+                anyhow::ensure!(current(&store)?.state==SessionState::Retaining,"intent not durable");
+                drop(store);store=Store::open(&database)?;plane.failure.set("");
+                life::stop(&plane,&store,&current(&store)?,false).await?;
+                anyhow::ensure!(current(&store)?.state==SessionState::Retained,"retry did not retain");
+            }
+            "retain-missing-terminal-proof" | "retain-retirement-not-absent"=>{
+                if case=="retain-missing-terminal-proof"{plane.exec.borrow_mut().take();}else{plane.failure.set("not-absent");}
+                anyhow::ensure!(life::stop(&plane,&store,&current(&store)?,false).await.is_err(),"unproved retirement reported retained");
+                anyhow::ensure!(current(&store)?.state==SessionState::Retaining,"unproved stop lost its intent");
+            }
+            _=>{
+                life::stop(&plane,&store,&current(&store)?,false).await?;
+                anyhow::ensure!(current(&store)?.state==SessionState::Retained,"stop did not retain");
+                anyhow::ensure!(store.insert_session(&record(SessionState::Materializing)).is_err(),"retained name became reusable");
+                match case {
+                    "retain-stop" | "retain-files-auth"=>{},
+                    "retain-repeat-stop"=>life::stop(&plane,&store,&current(&store)?,false).await?,
+                    "retain-attach-refusal"=>anyhow::ensure!(life::attachable(&current(&store)?).is_err(),"attach restarted retained session"),
+                    "destroy-repeat" | "destroy-readback" | "retain-other-session-survives" | "destroy-explicit-confirmation"=>{
+                        if case=="destroy-explicit-confirmation" {
+                            use clap::Parser;
+                            anyhow::ensure!(crate::Cli::try_parse_from(["mantle","destroy","fixture"]).is_err(),"destroy accepted without confirmation");
+                            anyhow::ensure!(crate::Cli::try_parse_from(["mantle","destroy","fixture","--yes"]).is_ok(),"confirmed destroy refused");
+                        }
+                        if case=="destroy-readback"{plane.failure.set("destroy-unknown");}
+                        life::stop(&plane,&store,&current(&store)?,true).await?;
+                        life::stop(&plane,&store,&current(&store)?,true).await?;
+                        anyhow::ensure!(!root.exists()&&other.join("marker").exists()&&plane.destroys.get()==1,"destruction escaped selected workspace or repeated");
+                    }
+                    "retain-restart"=>{
+                        life::restart(&plane,&store,&current(&store)?).await?;
+                        anyhow::ensure!(current(&store)?.agent_exec.as_deref()==Some("exec-restart-1") && plane.starts.get()==1,"restart did not admit fresh exec");
+                        anyhow::ensure!(plane.requests.borrow()[0]==serde_json::to_value(&context.request)?,"restart changed launch request");
+                    }
+                    "retain-restart-failure"=>{
+                        std::fs::remove_dir_all(&root)?;
+                        anyhow::ensure!(life::restart(&plane,&store,&current(&store)?).await.is_err() && plane.starts.get()==0 && !root.exists(),"missing workspace was recreated");
+                    }
+                    "retain-unsupported-policy"=>{
+                        let mut invalid=serde_json::to_value(&context)?;invalid["version"]=json!(999);
+                        store.connection.execute("UPDATE session_lifecycle SET launch_context=?1",[invalid.to_string()])?;
+                        anyhow::ensure!(life::restart(&plane,&store,&current(&store)?).await.is_err()&&plane.starts.get()==0,"unsupported launch contract admitted");
+                    }
+                    "retain-concurrent-restart"=>{
+                        let barrier=std::sync::Arc::new(std::sync::Barrier::new(2));
+                        let claims=std::thread::scope(|scope| {
+                            let handles:Vec<_>=(0..2).map(|_|{
+                                let path=&database;let barrier=barrier.clone();
+                                scope.spawn(move||->Result<(super::lifecycle::Attempt,bool)>{
+                                    let store=Store::open(path)?;
+                                    let record=store.session_by_id("session-1")?.context("missing")?;
+                                    barrier.wait();store.claim(&record,"admit")
+                                })
+                            }).collect();
+                            handles.into_iter().map(|h|h.join().unwrap()).collect::<Vec<_>>()
+                        });
+                        let claims:Vec<_>=claims.into_iter().filter_map(Result::ok).filter(|(_,fresh)|*fresh).collect();
+                        anyhow::ensure!(claims.len()==1,"concurrent callers won more than one admission");
+                        life::admit_recorded(&plane,&store,&current(&store)?,&claims[0].0,&context.request,true).await?;
+                        anyhow::ensure!(plane.starts.get()==1,"concurrent admission duplicated");
+                    }
+                    "retain-restart-before-dispatch" | "retain-unknown-no-duplicate" | "retain-stop-versus-restart" | "retain-destroy-versus-restart" | "retain-stale-completion"=>{
+                        let stale=current(&store)?;
+                        let (attempt,fresh)=store.claim(&stale,"admit")?;anyhow::ensure!(fresh,"first claim lost");
+                        let second=Store::open(&database)?;
+                        anyhow::ensure!(second.claim(&stale,"admit").is_err(),"stale second caller claimed start");
+                        anyhow::ensure!(life::stop(&plane,&second,&stale,case=="retain-destroy-versus-restart").await.is_err(),"stale stop or destroy acted on admission");
+                        anyhow::ensure!(life::restart(&plane,&second,&current(&second)?).await.is_err() && plane.starts.get()==0,"missing operation caused resubmission");
+                        if case=="retain-stale-completion" {
+                            anyhow::ensure!(second.lifecycle_write("session-1",&initial,SessionState::Stopped,None,None,true).is_err(),"stale completion changed newer attempt");
+                        }
+                        store.assert_attempt("session-1",&attempt)?;
+                    }
+                    "retain-restart-accepted-before-persist" | "retain-restart-readiness"=>{
+                        plane.failure.set(if case=="retain-restart-readiness"{"ready"}else{"admit-unknown"});
+                        anyhow::ensure!(life::restart(&plane,&store,&current(&store)?).await.is_err(),"interruption reported success");
+                        if case=="retain-restart-readiness" {anyhow::ensure!(current(&store)?.agent_exec.as_deref()==Some("exec-restart-1"),"exec not persisted before readiness");}
+                        drop(store);store=Store::open(&database)?;plane.failure.set("");
+                        life::restart(&plane,&store,&current(&store)?).await?;
+                        anyhow::ensure!(plane.starts.get()==1 && current(&store)?.state==SessionState::Running,"recovery admitted duplicate");
+                    }
+                    "retain-failed-admission-cleanup"=>{
+                        plane.failure.set("ready");
+                        anyhow::ensure!(life::restart(&plane,&store,&current(&store)?).await.is_err(),"failed readiness reported success");
+                        let id=current(&store)?.agent_exec.context("admission exec missing")?;
+                        *plane.exec.borrow_mut()=Some((id,ExecState::Exited));plane.failure.set("");
+                        life::cleanup(&plane,&store,&current(&store)?,false).await?;
+                        anyhow::ensure!(current(&store)?.state==SessionState::Retained&&plane.starts.get()==1,"confirmed terminal admission remained uncleansable");
+                    }
+                    "retain-binding-refusal"=>{
+                        plane.failure.set("admit-unknown");
+                        anyhow::ensure!(life::restart(&plane,&store,&current(&store)?).await.is_err(),"fixture interruption lost");
+                        plane.operation.borrow_mut().as_mut().unwrap().kind="workspace.create".into();
+                        anyhow::ensure!(life::restart(&plane,&store,&current(&store)?).await.is_err(),"operation kind mismatch accepted");
+                        anyhow::ensure!(life::cleanup(&plane,&store,&current(&store)?,true).await.is_err(),"cleanup bypassed operation binding");
+                        anyhow::ensure!(plane.starts.get()==1 && plane.destroys.get()==0,"binding refusal mutated resources");
+                    }
+                    "retain-fenced-completion-same-state"=>{
+                        let stale=current(&store)?;
+                        life::restart(&plane,&store,&current(&store)?).await?;
+                        life::stop(&plane,&store,&current(&store)?,false).await?;
+                        anyhow::ensure!(current(&store)?.state==stale.state && current(&store)?.agent_exec==stale.agent_exec,"fixture did not return to same visible state");
+                        anyhow::ensure!(life::cleanup(&plane,&store,&stale,true).await.is_err(),"stale generation destroyed same-state workspace");
+                    }
+                    _=>bail!("unknown retained lifecycle scenario {case}"),
+                }
+            }
+        }
+        if root.exists(){
+            anyhow::ensure!(std::fs::read(root.join("marker"))?==b"user changes\0\xff" && std::fs::read(root.join(".mantle/home/.codex/auth.json"))?==b"fixture login bytes, never real credentials","private home or user files changed");
+        }
+        anyhow::ensure!(std::fs::read(other.join("marker"))?==b"other session","unselected session changed");
+        Ok(())
+    })
+}
+
+#[test]
+fn retained_lifecycle_reconciles_durable_intents_and_preserves_files() -> Result<()> {
+    for case in [
+        "retain-stop",
+        "retain-repeat-stop",
+        "retain-interrupted-stop",
+        "retain-files-auth",
+        "retain-restart",
+        "retain-restart-failure",
+        "retain-attach-refusal",
+        "destroy-explicit-confirmation",
+        "destroy-readback",
+        "destroy-repeat",
+        "retain-legacy-stopped",
+        "retain-other-session-survives",
+        "retain-migration-reopen",
+        "retain-restart-before-dispatch",
+        "retain-restart-accepted-before-persist",
+        "retain-restart-readiness",
+        "retain-unknown-no-duplicate",
+        "retain-concurrent-restart",
+        "retain-stop-versus-restart",
+        "retain-destroy-versus-restart",
+        "retain-retirement-crash",
+        "retain-initial-materialization",
+        "retain-stale-completion",
+        "retain-unsupported-policy",
+        "retain-expected-session-id",
+        "retain-missing-terminal-proof",
+        "retain-retirement-not-absent",
+        "retain-failed-admission-cleanup",
+        "retain-binding-refusal",
+        "retain-fenced-completion-same-state",
+    ] {
+        retained_case(case).with_context(|| case.to_owned())?;
+    }
+    Ok(())
 }
 
 /// Executes production materialization against real Git, with only sandbox paths redirected.
@@ -620,15 +1020,26 @@ fn source_fixture(reference: &str) -> Result<Value> {
     }
     impl session::StartPort for &GitPlane {
         type Workspace = Self;
+        fn worker_binding(&self) -> WorkerRecord {
+            WorkerRecord {
+                name: "default".into(),
+                instance: "fixture".into(),
+                region: "fixture".into(),
+                data_volume: None,
+            }
+        }
         async fn create(&self, _: &str, _: &manifest::Resolved) -> Result<Self> {
             Ok(*self)
         }
         fn workspace_id<'a>(&self, _: &'a Self) -> &'a str {
             "workspace-1"
         }
-        async fn start_agent(&self, _: &Self, _: &manifest::Resolved) -> Result<String> {
+        async fn start_agent(&self, _: &Self, _: &session::RunRequest, _: &str) -> Result<String> {
             self.agents.set(self.agents.get() + 1);
             Ok("exec-1".into())
+        }
+        async fn ready(&self, _: &Self, _: &str) -> Result<()> {
+            Ok(())
         }
         async fn attach(
             &self,
@@ -823,12 +1234,12 @@ pub(super) fn execute(command: &str, input: &Value) -> Result<Reply> {
                 store.insert_session(&record(SessionState::Materializing))?;
                 session::start_recorded(&store,"session-1",&resolved,&&plane,input["attach"].as_bool().unwrap_or(false)).await
             }
-            "mantle.orchestration.Stop" => {
+            "mantle.orchestration.Destroy" => {
                 let mut r = record(plane.text("state").parse()?);
                 r.workspace = input["has_workspace"].as_bool().unwrap_or(false).then(||"workspace-1".into());
                 r.agent_exec = input["has_exec"].as_bool().unwrap_or(false).then(||"exec-1".into());
                 store.insert_session(&r)?;
-                session::stop_recorded(&plane,&store,&r,"fixture").await
+                crate::app::lifecycle::stop(&plane,&store,&r,true).await
             }
             "mantle.orchestration.Worker" => {
                 let up = plane.text("action") == "up";
