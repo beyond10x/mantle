@@ -1,0 +1,8 @@
+accepted = ["Apache-2.0", "Apache-2.0 WITH LLVM-exception", "BSD-1-Clause", "BSD-2-Clause", "BSD-3-Clause", "BSL-1.0", "ISC", "MIT", "MIT-0", "Unicode-3.0", "Unlicense", "Zlib", "BlueOak-1.0.0", "CDLA-Permissive-2.0"]
+workarounds = ["ring"]
+
+[mantle-worker-model.clarify]
+license = "Apache-2.0"
+[[mantle-worker-model.clarify.files]]
+path = "../../LICENSE"
+checksum = "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"

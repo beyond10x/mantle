@@ -25,6 +25,13 @@ types:
       - {name: selection, type: 'Optional<mantle.operator.Selection>'}
       - {name: checks, type: 'List<mantle.operator.DiagnosticCheck>'}
       - {name: healthy, type: Boolean}
+  - name: mantle.operator.ReleasePayload
+    kind: struct
+    fields:
+      - {name: path, type: String}
+      - {name: sha256, type: String}
+      - {name: size_bytes, type: Integer}
+      - {name: mode, type: Integer}
   - name: mantle.operator.ReleaseArtifact
     kind: struct
     fields:
@@ -32,12 +39,18 @@ types:
       - {name: target, type: String}
       - {name: sha256, type: String}
       - {name: size_bytes, type: Integer}
+      - {name: payloads, type: 'List<mantle.operator.ReleasePayload>'}
   - name: mantle.operator.ReleaseManifest
     kind: struct
     fields:
+      - {name: format, type: String}
       - {name: version, type: String}
       - {name: source_commit, type: String}
+      - {name: substrate_revision, type: String}
       - {name: substrate_version, type: String}
+      - {name: rustc, type: String}
+      - {name: gnu_runtime, type: String}
+      - {name: musl_runtime, type: String}
       - {name: artifacts, type: 'List<mantle.operator.ReleaseArtifact>'}
   - name: mantle.operator.UpgradeAssessment
     kind: struct
@@ -56,6 +69,21 @@ types:
       - {name: exec_after, type: 'Optional<String>'}
       - {name: observation, type: String}
 commands:
+  - name: mantle.operator.VerifyRelease
+    input:
+      - {name: alteration, type: String, example: none}
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: payload_count, type: Integer}
+      - {name: source_matches, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
+  - name: mantle.operator.InstallRelease
+    input:
+      - {name: collision, type: Boolean, example: true}
+    response:
+      - {name: accepted, type: Boolean}
+      - {name: previous_preserved, type: Boolean}
+    outcomes: [{name: returned, returns: true}]
   - name: mantle.operator.ProfileRegistry
     input:
       - {name: action, type: String, example: add}

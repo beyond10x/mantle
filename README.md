@@ -179,3 +179,71 @@ handling at 250 milliseconds. Refused or unavailable observations never become a
 coverage gaps. `task spec` validates it; `task conformance` synthesizes and executes the local
 session-store and default-allowlist scenarios against production Rust code. `task check` includes
 that test through the workspace suite. Contributors need ESS 0.50.x and AEP on `PATH`.
+
+## Verified prebuilt bundles (development / unreleased)
+
+The new `mantle-release` tooling is **not included in release 0.1.4**. This section describes
+candidate artifacts produced from development source; this integration does not publish a new
+release. CI builds and retains candidates without publication credentials.
+
+Each candidate contains `manifest.json`, `SHA256SUMS`, a GNU Linux x86-64 archive with `mantle`
+and `mantle-release`, and a static musl x86-64 archive with `mantle-egress`, `mantle-launch` and
+`mantle-worker`. Archives contain the Apache license, complete third-party notices and the matching
+Rust runtime notice; workers also contain the musl 1.2.5 notice. The manifest records the exact Git
+commit, Substrate revision/version, Rust toolchain, targets, GNU libc build environment and every
+payload's digest, size and mode. GNU compatibility is limited to the recorded build/test runtime;
+we do not claim older libc, macOS or ARM support. Deterministic archive metadata does not promise
+bit-identical compilation across different toolchains or hosts.
+
+For a published bundle, obtain the manifest from the trusted release for the intended tag and
+check its source commit. Download both named archives and `SHA256SUMS` into one directory. Hashes
+provide integrity against that trusted manifest; an adjacent checksum file is not independent
+publisher authentication. With `jq`, `sha256sum` and `tar` installed, bootstrap the bundled Rust
+verifier without compiling it:
+
+```sh
+jq -r '.artifacts[] | "\(.sha256)  \(.name)"' manifest.json | sha256sum --check
+mkdir bootstrap
+# Replace VERSION with the manifest version. Extract only the checksum-verified installer.
+tar --extract --file mantle-VERSION-x86_64-unknown-linux-gnu.tar \
+  --directory bootstrap --no-same-owner bin/mantle-release
+./bootstrap/bin/mantle-release verify --manifest "$PWD/manifest.json"
+./bootstrap/bin/mantle-release install --manifest "$PWD/manifest.json" \
+  --prefix "$HOME/.local/mantle"
+export PATH="$HOME/.local/mantle/bin:$PATH"
+```
+
+The GNU installer refuses unmanaged destination collisions, links in the installation prefix,
+unsupported targets, and modified existing generations. It stages verified files under the prefix,
+serializes installers with a five-second bounded lock, and activates the whole generation with
+one symlink rename. It preserves previous generations and leaves configuration and credentials
+outside installation. Interruptions before activation retain the prior installation. The worker
+bundle is **not** activated by this command: existing workers require the explicit offline worker
+upgrade flow, and the real worker `bin` directory and agent installations must be preserved.
+
+Maintainers build only from a clean exact checkout, using a new work directory and output path:
+
+```sh
+cargo run --locked -p mantle-release -- notices --check
+cargo run --locked -p mantle-release -- build --source "$PWD" \
+  --revision "$(git rev-parse HEAD)" --work "$HOME/.cache/mantle-release-build-UNIQUE" \
+  --output "$HOME/.cache/mantle-release-bundle-UNIQUE"
+```
+
+Install `cargo-about 0.9.1`, the Rust musl target and a musl C toolchain first. Regenerate the committed
+notice with `mantle-release notices` when the locked dependency graph changes. Build uses an isolated
+Git export and fresh target, verifies both supported artifacts with actual version execution, and
+retains source and compiler logs in the supplied work directory. Pre-existing same-version binaries
+cannot be supplied or relabeled as the chosen commit.
+
+Publication is an explicit operator command after required repository checks and bot tag creation:
+
+```sh
+mantle-release publish --manifest /path/to/bundle/manifest.json --source "$PWD" \
+  --tag VERSION --policy /path/to/private/gates-policy.json
+```
+
+It uses the installed `b10x-gates gh` bot wrapper, checks local and fully dereferenced remote tags
+against the source, refuses an existing release, uploads only the verified assets, and verifies
+GitHub's resulting asset digests. Publication failures may leave a partial release for operator
+inspection; the command never clobbers it. No personal `gh` writes or publishing keys in CI.
