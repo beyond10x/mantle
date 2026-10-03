@@ -46,7 +46,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 33
+revision: 34
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 19}
 - {from: "proposed", to: "active", at: "2026-10-03T10:29:47Z", actor: "human:timo", revision: 30}
@@ -95,3 +95,9 @@ Read-only implementation preparation identified a concrete dependency cycle if t
 ## CLI installation and worker activation
 
 The release install command atomically installs the GNU CLI bundle. Worker bundles are verified and staged for fresh worker delivery or the following explicit offline upgrade transaction. Do not offer an unguarded command that replaces helpers on an existing worker outside that transaction, and do not replace /opt/mantle/bin with a generation symlink: the existing Codex installation requires a real bin directory. The shared verifier has no activation-layout assumptions. Fresh CLI prefixes may use their own immutable-generation/current-pointer scheme.
+
+## Adversary routing
+
+Pass 1 is retained unchanged as review-result:prebuilt-release-adversary-1. Both cases failed alone and then in the 12-case release suite: 10 original passed, 2 added failed, exit 101. The actual build CLI accepts a clean checkout affected by ordinary .git/info/attributes; the export source bytes then differ from the declared commit. The actual installer accepts an extra unmanaged file in an existing generation on reinstall. The reviewer classifies source provenance as blocker and extra inventory as warning, without claiming that the extra file is executed.
+
+Coordinator attribution: both are introduced by this unit. `git ls-tree -r 70033de298405e7a28eaad9eaa9b0bb5ea0d8c44 -- crates/mantle-release` returned no entries; the base-to-6f4303 diff adds the complete implicated build.rs and lib.rs implementations (260 and 224 lines). This source comparison resolves the report's conservative undecided origins; no executable base comparison is claimed. Both findings return to the same implementor with their unchanged failing tests. Their outcomes remain pending until corrections land. No merge or implemented move occurs while the blocker stands.
