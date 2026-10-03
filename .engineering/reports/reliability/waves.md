@@ -283,3 +283,17 @@ Adversary pass1 is assigned to attach_readiness_impl, owning the same tree/targe
 codex-retained-workspaces-adversary; scratch ends retained-workspaces/adversary/pass1.
 Root owns AEP, final baseline/treatment measurement and full integration gate. No source merge or
 completion move has happened. Agent token/tool counters are unavailable; no estimates are invented.
+
+Unit6 adversary pass1 is recorded unchanged as review-result:reliability-wave6-adversary-pass1:
+findings[], package67→69, CLI372 unchanged, direct package/isolated-case/Clippy exits0. The two
+new actual CLI cases cover persisted restart recovery with no second POST and a delayed stale stop
+response after another stop/restart. Only test files changed; desired additions are retained in bot
+fe0e72c after the reviewer ended its lease. No correction or second attack was needed.
+
+Root acquired codex-retained-workspaces-integration and independently measured the same original
+actual CLI/filesystem case against the retained baseline and reviewed candidate. The baseline
+SHA256 is unchanged; git diff confirmed source19c817f and the pre-merge integration source agree
+across crates, Cargo, generated and spec. Baseline exit101 asserts that Stop deleted workspace
+files; candidate exit0 preserves them, checks explicit confirmation/identity refusals and destroys
+only when requested. Both logs and direct exits are retained under integration/wave6-claim-base.*
+and wave6-claim-treatment.*. Claim VERIFIED before integration; full gate still pending.
