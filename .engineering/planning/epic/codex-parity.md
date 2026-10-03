@@ -7,7 +7,7 @@ title: Codex sessions with Claude-equivalent terminal behavior
 relations:
 - informed_by: epic:vertical-slice
 - informed_by: executable-system-specification:mantle-session
-revision: 22
+revision: 23
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 3, decided_on: {"recorded":{"review_outcome":1}}}
 - {from: "proposed", to: "active", at: "2026-10-02T08:54:04Z", actor: "human:timo", revision: 4, decided_on: {"recorded":{"review_outcome":1}}}
@@ -131,3 +131,9 @@ This proves production startup and confined supplementary execution, not authent
 ## Current acceptance audit
 
 At source66e20bdf8e7252eed7ac21df377e08ddc6f14b98, the current requirement-by-requirement audit is.engineering/reports/codex-acceptance-audit-2026-10-02/audit.md. It accounts for everyCQ/AW/LP/CS/DP requirement and distinguishes offline, unauthenticated live and missing authenticated evidence. The prepared login target is codex-ready; its current process has the compiler correction. Old Codex/Claude workspaces remain preserved. Two-Codex file isolation and cleanup, OpenAI-host CONNECT/TLS, unlisted-host refusal and direct-egress refusal are observed; no real login/model/refresh/rendered lifecycle pass is claimed. Metadata-only auth-cache presence check returns remote1. Operator device login remains the required next external action. No new Substrate blocker or end-to-end no-recording prerequisite applies. The parent/epic remains incomplete.
+
+## Post-release acceptance follow-up
+
+Source release0.1.3 and updated public docs are verified, with release evidence integrated by PR4 at1c225a824682574ffb9d451218da8c3b011ab388. Operator confirmed the corrected versioned CLI/profile attachment works. This is human attachment evidence, not an explicit statement that ChatGPT login and a repository/model turn completed; clarification is pending. The completed attach-startup-readiness story records real PTY detach/reconnect and published Substrate0.7.10 acceptance. Earlier codex-ready/wave9 is historical; current handoff is codex-read on the separate updated worker.
+
+At2026-10-03T07:13Z further live checks found an access failure: worker status and strict SSH return exit255, no route to host. Kubernetes reports VMI Ready and launcher pod Running; these do not prove guest SSH or agent liveness. No restart, credential read, conversation inspection or destructive lifecycle probe was attempted. Authenticated CS and DP cases remain incomplete; source release is complete. Preserving the user's session remains required while diagnosing access.

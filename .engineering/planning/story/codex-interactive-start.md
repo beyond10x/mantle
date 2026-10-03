@@ -72,7 +72,7 @@ scope:
   path: spec/domains/session.yaml
 - confidence: inferred
   path: spec/scenarios/cli/codex-start.yaml
-revision: 41
+revision: 42
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-02T18:17:04Z", actor: "human:timo", revision: 36}
 - {from: "proposed", to: "active", at: "2026-10-02T18:17:04Z", actor: "human:timo", revision: 37}
@@ -234,3 +234,11 @@ At source66e20bdf8e7252eed7ac21df377e08ddc6f14b98, the current requirement-by-re
 The operator attempted device login using mantle attach codex-ready and observed corrupted terminal rendering followed by session.output-backpressure: The raw-pipe live output queue was not drained within its declared bound. This is a new concrete live failure before authentication, not an operator-login-only blocker. The agent exec ex_01M3Z04Y9BXGP4VKA5FAA26RS8 still observes Running.
 
 Reproduction loop: reset the local terminal, attach the existing codex-ready session with the prepared runtime configuration, and observe whether the terminal remains usable or exits with the named protocol error. Ask the operator for terminal application/repeatability, never login codes. Immediate-drain and a three-second paused-drain probe each lasted fifteen seconds until their external bound without reproducing the error. A bounded Rust PTY probe now exercises cursor-position replies and real dimensions while discarding all screen bytes. No source fix or causal diagnosis is claimed yet; existing workspaces remain preserved. Scratch observations live outside the repository under the task-owned mantle-attach-diagnosis cache.
+
+## Post-release live acceptance access
+
+On2026-10-03 the operator confirmed that the corrected0.1.3 CLI/profile attachment works. The release, docs and startup-readiness correction are complete. Authentication/model-turn confirmation was requested without asking for credentials; no answer is yet recorded.
+
+At07:13–07:17UTC the current worker could not be reached: strict SSH and worker status fail with exit255/no route to host. The separate worker VMI reports Running/Ready since01:26:25UTC; launcher pod is Running2/2. A direct guest TCP22 probe from that pod timed out after3seconds, while the pod-address TCP22 probe was refused. Hypervisor qemu:///session independently reports the guest running, not paused. Its tap reports zero packets received from the guest and one110-byte packet sent toward it. No namespace NetworkPolicy or Warning event was present. These facts narrow the failure to guest/network readiness but do not establish its cause, guest OS health, Substrate service health or agent state. A failed privileged nft rules inspection was not bypassed.
+
+No restart, credential read, terminal capture, process injection or session destruction was attempted. The recorded RUNNING session state must not be treated as a live observation. Further authenticated CS/DP acceptance requires normal guest access and operator authentication evidence. No end-to-end non-recording prerequisite is reintroduced.

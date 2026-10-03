@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T07:14:53Z",
+  "actor": "human:timo",
+  "artifact": "story:codex-interactive-start",
+  "kind": "story",
+  "revision": 41,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "2026-10-03T07:13Z read-only worker status and strict SSH both fail exit255 with no route to host; VMI Ready remains indirect evidence only",
+    "reference": "operator-local:mantle-wave12/runtime/acceptance-followup-20261003T0713Z.txt"
+  }
+}
