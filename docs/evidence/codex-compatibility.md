@@ -1,5 +1,49 @@
 # Codex qualification under Substrate — 2026-10-02
 
+## Version 0.1.3 update — attachment transport, 2026-10-03
+
+The production Codex attachment later failed with `session.output-backpressure`, even with a
+continuously drained local PTY. The earlier small-screen and local-launcher observations below
+did not exercise this replay burst through Substrate's live queue. A readiness handshake alone
+also failed: the attached consumer could still encounter an immediate full-queue cancellation.
+
+Mantle 0.1.3 coordinates its client/launcher readiness handshake with Substrate 0.7.10's bounded
+queue wait. The host reserves existing queue capacity before copying each payload, with a fixed
+one-second stall deadline per frame. The correction does not enlarge queues, discard replay to
+keep a session alive, or weaken confinement. It does not select an unrecorded capture mode.
+
+The [combined transport proof](../../.engineering/reports/attach-startup-2026-10-02/combined-proof.log)
+used a fresh local delegated Substrate daemon, a synthetic confined agent and real 100×50 PTYs.
+Two attachments each delivered the exact 262,144-byte rolling replay and exact keyboard reply;
+both detached successfully, restored terminal state and preserved the same agent execution.
+Each deliberately delayed WebSocket attachment by 500 ms. The proof used the candidate
+Substrate wire 0.17 runtime and the production Mantle terminal implementation, with unchanged
+queue limits. It did not upgrade the existing worker or run an authenticated Codex turn.
+
+The proof's final workspace-destroy API call returned `operation.outcome-unknown`, so its
+overall command exited 1 despite passing transport observations. Separate cleanup checks
+confirmed the temporary workspaces, processes, socket and cgroup absent. That cleanup evidence
+does not relabel the refused API result as successful.
+
+The later [installed-runtime proof](../../.engineering/reports/attach-startup-2026-10-02/installed-runtime-proof.md)
+used an isolated KubeVirt worker with the published, signed Substrate 0.7.10 daemon, Mantle
+0.1.3 code at `fac3b79` and pinned Codex 0.153.4. A real 100×50 PTY attachment ran for 12
+seconds, received 329,157 bytes and answered three cursor-position queries, then detached with
+exit 0. A second 12-second attachment to the same agent received 346,630 bytes, answered two
+cursor-position queries and detached with exit 0. Both runs produced zero bytes on CLI stderr.
+The probe retained counts and outcomes, not authentication or terminal payloads. The original
+worker and sessions were preserved.
+
+This installed Codex transport observation supplements the synthetic byte-exact replay proof.
+It does not establish visually inspected screen correctness, device login, authenticated model
+or tool turns, token refresh, or complete lifecycle parity.
+
+Existing workers require a coordinated runtime and launcher upgrade during maintenance;
+`mantle worker up` does not restart an already active older Substrate daemon and may defer
+shared binary changes. Preserve workspace data before maintenance; `mantle stop` destroys it.
+Device login, authenticated model/tool turns, token refresh, visually inspected Codex usability
+and complete live lifecycle parity remain unverified.
+
 ## Release 0.1.2 update — live worker observations
 
 The later [acceptance audit](../../.engineering/reports/codex-acceptance-audit-2026-10-02/audit.md)

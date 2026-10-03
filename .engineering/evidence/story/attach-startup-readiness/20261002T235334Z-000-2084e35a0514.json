@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T23:53:34Z",
+  "actor": "human:timo",
+  "artifact": "story:attach-startup-readiness",
+  "kind": "story",
+  "revision": 8,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "VERIFIED installed Codex transport: baseline continuously-drained100x50PTY failed; published Substrate0.7.10 with Mantle0.1.3 drained329157/346630bytes, exit0 twice, detached/reconnected same Running agent, stderr0bytes",
+    "reference": ".engineering/reports/attach-startup-2026-10-02/installed-runtime-proof.md"
+  }
+}

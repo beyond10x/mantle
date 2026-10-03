@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T23:17:49Z",
+  "actor": "human:timo",
+  "artifact": "task:release-0-1-3",
+  "kind": "task",
+  "revision": 3,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "Runtime SDK65304edf adoption: 46 Rust tests and218 native CLI scenarios; Clippy and formatting exit0; explicit Unrecorded request mutation failed the default-recorded wire assertion",
+    "reference": "crates/mantle/src/app/session.rs"
+  }
+}

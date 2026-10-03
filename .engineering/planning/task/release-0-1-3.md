@@ -1,0 +1,34 @@
+---
+format: aep.planning-md/3
+id: task:release-0-1-3
+kind: task
+status: active
+title: Ship the compatible Codex attachment runtime and updated docs
+relations:
+- delivers: story:attach-startup-readiness
+revision: 7
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-02T22:52:53Z", actor: "human:timo", revision: 2}
+- {from: "proposed", to: "active", at: "2026-10-02T22:52:53Z", actor: "human:timo", revision: 3}
+---
+## Outcome
+Release Mantle0.1.3 with terminal readiness and compatible verified Substrate0.7.10 SDK/runtime pins. Continue the user's original request to ship usable Codex integration and updated docs, reinforced by the request to keep working after the prior release stop.
+
+## Scope
+
+Root owns Cargo workspace version/lock, release, public installed-runtime proof and AEP evidence. Runtime implementor owns crates/mantle/Cargo.toml, Cargo.lock dependency resolution, crates/mantle/src/app/worker.rs and the learned crates/mantle/src/app/session.rs wire-default assertion/status-version correction. Documentation unit owns README.md, website/index.html and docs/evidence/codex-compatibility.md. Root serialized shared lock/version changes after runtime unit return. No capture-policy change or original worker restart.
+
+## Acceptance
+Full Mantle gate, native336-scenario ESS inventory, static worker builds, exact tag required CI and artifacts. Public docs/source updated together; publication provenance only claimed after observed. Describe bounded queue fix and coordinated worker upgrade accurately. Do not claim authenticated model/tool turns, no-recording terminal mode or installed acceptance from synthetic transport tests. Verify installed attach separately; preserve existing sessions/workspaces during acceptance.
+
+## Review and build progress
+
+Independent reviewer Kuhn found no SDK-adoption defect in the original0118 pin; final65304 pin adds only generated release notice labels. Root reviewed and merged the SDK update f1395f73 as1d4de26; workspace version0.1.3 and its six lock entries are93b2085. Root reviewed README/site/evidence documentation f3220f74 and merged it as c631bd5. Native CLI and all three static musl worker binaries built successfully. Complete integration gate remains pending the verified published Substrate0.7.10 worker manifest/layer; no installed or authenticated acceptance claim yet. Existing worker remains untouched. A separate namespace/profile has been prepared for actual PTY attach/detach/reconnect acceptance.
+
+## Isolated runtime acceptance
+
+The release encountered a GitHub Actions OIDC timeout and is retrying through Substrate's protected-main recovery. To overlap VM setup with that external wait, root may bootstrap the separate mantle-codex-013 worker using the existing released0.7.8 bootstrap, then install the fully gated exact65304 Substrate0.7.10 source build while that new worker has no user sessions. Its GLIBC requirements were observed to end at2.39, matching Ubuntu24.04. This is provisional source-build acceptance, never published-image qualification. Before final handoff, use the signed0.7.10 image binary and final Mantle0.1.3 pins and repeat attach acceptance. Original namespace mantle and every original workspace remain untouched. Only newly created disposable acceptance sessions may be stopped/recreated before handoff; no user authentication is captured or replayed.
+
+## Provisional binary portability finding
+
+The new isolated worker completed its official0.7.8 bootstrap with no sessions. The exact65304 local source binary reports0.7.10 but could not start there because libgit2.so.1.9 is absent; matching the GLIBC ceiling alone was insufficient portability evidence. The native host also links libllhttp.so.9.3. No Codex session was created. Root restores the published0.7.8 baseline on that empty new worker and waits for the Ubuntu-compatible release image; no ad-hoc library copying or production-source change is introduced. Original worker remained untouched. The first provisional session attempt returned worker-not-ready while the service transition was pending and is not a transport regression result.

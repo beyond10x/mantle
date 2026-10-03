@@ -21,7 +21,7 @@ aws-config = { version = "1", features = ["behavior-version-latest"] }
 aws-sdk-cloudwatch = "1"
 aws-sdk-ec2 = "1"
 aws-sdk-iam = "1"
-b10x-substrate-sdk = { git = "https://github.com/beyond10x/substrate", rev = "05695970b069f79e6678f2f02cbd78bbe5fa2a56" }
+b10x-substrate-sdk = { git = "https://github.com/beyond10x/substrate", rev = "65304edf6ebdf4a95f9c2c6138b0c20ea47d157e" }
 base64 = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 crossterm = "0.29"
