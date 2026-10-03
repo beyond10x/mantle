@@ -40,7 +40,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 26
+revision: 27
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:34Z", actor: "human:timo", revision: 19}
 ---
@@ -76,3 +76,7 @@ Version equality alone cannot bind an artifact to a source commit: current devel
 ## Runtime license inputs
 
 The pinned Rust 1.97 installation includes share/doc/rust/COPYRIGHT-library.html (279302 bytes) under the sysroot reported by rustc --print sysroot. This is a concrete runtime notice input, separate from cargo-about's dependency graph; use the matching build toolchain's copy. Inspecting version.lo in the target's lib/self-contained/libc.a with ar and strings identifies the bundled musl as 1.2.5. The matching upstream notice was retrieved from https://git.musl-libc.org/cgit/musl/plain/COPYRIGHT?h=v1.2.5, 6204 bytes, SHA256 f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af. It includes the whole-library MIT grant and component-specific notices; retain the complete file. Local source input: $HOME/.cache/mantle-reliability/release-preflight/musl-1.2.5-COPYRIGHT. The host musl package notice is not a substitute for matching the built target's runtime. Keep runtime notice source/version metadata with produced artifacts, and refuse unrecognized build-runtime provenance rather than reuse this version's text silently.
+
+## Prebuilt installer bootstrap
+
+Include the Rust verifier/installer executable in the GNU CLI artifact alongside mantle. Document the initial trusted-manifest checksum verification and extraction before invoking that tool. The supported prebuilt installation path must not require compiling the installer from source. The manifest's payload inventory and fixed archive whitelist include that executable; worker archives retain the three existing worker filenames. Neither an archive checksum nor its adjacent manifest independently proves publisher authenticity.

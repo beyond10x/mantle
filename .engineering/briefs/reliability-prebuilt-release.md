@@ -14,6 +14,9 @@ unit passes its integrated gate; the execution record supplies the exact base co
 Build one coherent Rust library/CLI with build, verify, install and operator publication commands.
 Keep verification independent of Mantle application/worker dependencies so the next unit can
 reuse it. Supported artifacts are Linux x86_64 GNU CLI and static x86_64 musl worker binaries.
+Ship the Rust verifier/installer executable with the GNU CLI artifact and document the initial
+trusted-manifest checksum check, so using the prebuilt installation path does not require a
+source build of its installer.
 Update the existing ESS release types and named scenarios before runtime implementation.
 
 Bind artifacts to a verified exact source revision. Prefer building an isolated export of the
