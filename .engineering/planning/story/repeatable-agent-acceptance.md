@@ -33,6 +33,8 @@ scope:
 - confidence: inferred
   path: generated/worker-model
 - confidence: inferred
+  path: spec/README.md
+- confidence: inferred
   path: spec/components.yaml
 - confidence: cited
   path: spec/domains/operator.yaml
@@ -42,7 +44,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 21
+revision: 23
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
 ---
@@ -62,3 +64,9 @@ Read-only assessment found current human status fetches and prints terminal stde
 Reuse verified release manifest/install provenance where available; an unavailable source identity is unknown, never inferred from package version. Extend the existing AcceptanceResult ESS value with run/session/workspace identity, provenance and machine-versus-operator evidence origin before runtime implementation. The runner starts detached with a unique owned name, discards human startup output, records the resulting identity and uses the metadata path for subsequent checks.
 
 Login/model turns run through an exact printed attach command in the operator's own terminal, outside runner pipes. Resume takes explicit operator attestations for login, model/tool action and visual terminal behavior; label these distinctly from machine observations. Missing attestations remain incomplete. Existing codex_qualification example supplies useful bounded scratch/digest patterns but its direct SDK path does not qualify installed Mantle CLI behavior. No raw terminal payload is retained.
+
+## Final integration documentation coherence
+
+This last source unit also reconciles the public documentation with the completed roadmap. Update spec/README.md to the actual domain inventory, SDK pin, supported agents, lifecycle semantics and executed conformance counts; its current text still mixes old Substrate 0.7.8, five domains and historical 304/348-scenario evidence. README and website must clearly distinguish historical release 0.1.4 behavior from new unreleased behavior, especially stop/destroy, source-only historical installation, managed upgrades and the new operator commands. Preserve historical live-qualification limits rather than relabeling them as current successful acceptance.
+
+The coordinator refreshes .engineering/reports/native from the final exact complete run, including suites, reports, runs, results and the no-op audit, and identifies older evidence as historical. Update public metrics from that same run. Validate the site/source manifest and source docs, without claiming the public website is deployed: this task ends at one integration PR, with no main merge or release. Ordinary publication follows later source delivery.
