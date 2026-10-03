@@ -64,7 +64,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 31
+revision: 32
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
 - {from: "proposed", to: "active", at: "2026-10-03T16:18:01Z", actor: "human:timo", revision: 31}
@@ -137,3 +137,7 @@ refines the already accepted exact-owned-identity contract; it does not require 
 Read-only implementor preparation identifies a shared versioned DTO library in crates/mantle-acceptance, early read-only app/metadata.rs, actual-CLI tests/session_metadata.rs and support/metadata_ssh.rs, and a crates/mantle/Cargo.toml dependency. These additions remain inferred until implementation confirms them.
 
 Include mantle-acceptance in the existing GNU candidate bundle beside mantle and mantle-release. This does not add a target, tag, release protocol or publication. Inferred paths: mantle-artifact/src/lib.rs binary inventory; mantle-release/src/build.rs packages; mantle-release/src/lib.rs exposed binaries; mantle-release/tests/release.rs synthetic bundle fixtures; THIRD_PARTY_LICENSES.html when notice generation changes. Preserve checksum, atomic install and failure-preservation tests. Source implementor excludes README.md, website/index.html and spec/README.md; a separate documentation delegate owns those three, and its branch joins the unit before adversarial review.
+
+## Exact-owned attach and exec
+
+The acceptance runner performs PTY attach and marker writes through the installed CLI. Inference from those accepted ownership requirements: add optional expected-session-id guards to attach and exec in already scoped main.rs/app/session.rs, alongside unit6's existing stop/restart/destroy guards. Resolve once and carry that immutable selected record through remote work; reject a reused name before remote effects. A metadata preflight alone cannot close name reuse between observation and invocation. No new command family or agent protocol is introduced.
