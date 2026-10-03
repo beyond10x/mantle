@@ -23,6 +23,7 @@ const INIT_TIMEOUT: Duration = Duration::from_secs(30 * 60);
 const ATTACH_TIMEOUT: Duration = Duration::from_hours(24);
 
 struct Connected {
+    worker: WorkerRecord,
     ssh: Ssh,
     _tunnel: crate::adapters::ssh::Tunnel,
     client: Client,
@@ -56,6 +57,7 @@ async fn connect(config: &RuntimeContext, worker: &WorkerRecord) -> Result<Conne
     let tunnel = ssh.tunnel()?;
     let client = sub::connect(tunnel.socket()).await?;
     Ok(Connected {
+        worker: worker.clone(),
         ssh,
         _tunnel: tunnel,
         client,
@@ -106,6 +108,7 @@ pub async fn start(
 
     let id = format!("ses_{}", ulid::Ulid::new().to_string().to_lowercase());
     store.insert_session(&SessionRecord {
+        generation: 0,
         id: id.clone(),
         name: resolved.name.clone(),
         worker: WORKER.to_owned(),
@@ -128,10 +131,16 @@ pub async fn start(
 
 pub(crate) trait StartPort {
     type Workspace: InitPort;
+    fn worker_binding(&self) -> WorkerRecord;
     async fn create(&self, id: &str, resolved: &Resolved) -> Result<Self::Workspace>;
     fn workspace_id<'a>(&self, workspace: &'a Self::Workspace) -> &'a str;
-    async fn start_agent(&self, workspace: &Self::Workspace, resolved: &Resolved)
-    -> Result<String>;
+    async fn start_agent(
+        &self,
+        workspace: &Self::Workspace,
+        request: &RunRequest,
+        operation: &str,
+    ) -> Result<String>;
+    async fn ready(&self, workspace: &Self::Workspace, exec: &str) -> Result<()>;
     async fn attach(
         &self,
         workspace: &Self::Workspace,
@@ -141,6 +150,9 @@ pub(crate) trait StartPort {
 }
 impl StartPort for Connected {
     type Workspace = Workspace;
+    fn worker_binding(&self) -> WorkerRecord {
+        self.worker.clone()
+    }
     async fn create(&self, id: &str, resolved: &Resolved) -> Result<Workspace> {
         let machine = self.client.machine();
         let mut builder = self
@@ -171,8 +183,35 @@ impl StartPort for Connected {
     fn workspace_id<'a>(&self, workspace: &'a Workspace) -> &'a str {
         workspace.id()
     }
-    async fn start_agent(&self, workspace: &Workspace, resolved: &Resolved) -> Result<String> {
-        start_agent(workspace, resolved).await
+    async fn start_agent(
+        &self,
+        workspace: &Workspace,
+        request: &RunRequest,
+        operation: &str,
+    ) -> Result<String> {
+        let exec = request
+            .command(workspace)?
+            .operation_id(operation)
+            .start()
+            .await?;
+        anyhow::ensure!(
+            exec.observation().workspace == workspace.id(),
+            "admitted exec workspace binding mismatch"
+        );
+        Ok(exec.id().to_owned())
+    }
+    async fn ready(&self, workspace: &Workspace, id: &str) -> Result<()> {
+        let mut exec = self.client.get_exec(id).await?;
+        anyhow::ensure!(
+            exec.id() == id && exec.observation().workspace == workspace.id(),
+            "admitted exec binding mismatch"
+        );
+        tokio::time::sleep(Duration::from_secs(3)).await;
+        anyhow::ensure!(
+            exec.refresh().await?.state == ExecState::Running,
+            "agent readiness not observed; admission remains recorded"
+        );
+        Ok(())
     }
     async fn attach(&self, workspace: &Workspace, name: &str, agent: &AgentKind) -> Result<()> {
         attach_workspace(workspace, name, agent).await
@@ -187,33 +226,71 @@ pub(crate) async fn start_recorded(
     attach: bool,
 ) -> Result<()> {
     validate_identity(&resolved.agent_kind, &resolved.authentication)?;
+    let context = super::lifecycle::LaunchContext {
+        version: 1,
+        worker: port.worker_binding(),
+        request: agent_request(resolved),
+        cpu_time_secs: b10x_substrate_sdk::MAX_EXEC_DURATION.as_secs(),
+        output_bytes: b10x_substrate_sdk::MAX_IO_BYTES,
+    };
+    let attempt = store.initialize_session(id, &serde_json::to_string(&context)?)?;
     let workspace = port.create(id, resolved).await?;
-    store.set_workspace(id, port.workspace_id(&workspace))?;
+    store.lifecycle_write(
+        id,
+        &attempt,
+        SessionState::Materializing,
+        Some(port.workspace_id(&workspace)),
+        None,
+        false,
+    )?;
     println!("Workspace      {}", port.workspace_id(&workspace));
 
-    if let Err(error) = materialize(store, id, &workspace, resolved).await {
-        store.move_session(
+    let owned = OwnedInit {
+        store,
+        id,
+        attempt: &attempt,
+        workspace: &workspace,
+    };
+    if let Err(error) = materialize(store, id, &owned, resolved).await {
+        store.lifecycle_write(
             id,
+            &attempt,
             SessionState::FailedMaterialization,
-            Some(&format!("{error:#}")),
+            None,
+            None,
+            false,
         )?;
         return Err(error.context("FAILED_MATERIALIZATION"));
     }
-    store.move_session(id, SessionState::Starting, None)?;
-    match port.start_agent(&workspace, resolved).await {
+    let attempt = store.begin_initial_admission(id, &attempt)?;
+    match port
+        .start_agent(&workspace, &context.request, &attempt.operation_id)
+        .await
+    {
         Ok(exec) => {
-            store.set_agent_exec(id, &exec)?;
-            store.move_session(id, SessionState::Running, None)?;
+            store.lifecycle_write(
+                id,
+                &attempt,
+                SessionState::Starting,
+                None,
+                Some(&exec),
+                false,
+            )?;
+            port.ready(&workspace, &exec).await?;
+            store.lifecycle_write(id, &attempt, SessionState::Running, None, Some(&exec), true)?;
             println!(
                 "Agent          {exec} (running, ends after {}h at the latest)",
                 resolved.retain_for.as_secs() / 3600
             );
         }
         Err(error) => {
-            store.move_session(
+            store.lifecycle_write(
                 id,
+                &attempt,
                 SessionState::FailedAgentStart,
-                Some(&format!("{error:#}")),
+                None,
+                None,
+                false,
             )?;
             return Err(error.context("FAILED_AGENT_START"));
         }
@@ -292,6 +369,20 @@ async fn run_init(workspace: &Workspace, argv: &[&str], network: bool) -> Result
 
 pub(crate) trait InitPort {
     async fn run(&self, argv: &[&str], network: bool) -> Result<String>;
+}
+struct OwnedInit<'a, W> {
+    store: &'a Store,
+    id: &'a str,
+    attempt: &'a crate::adapters::state::lifecycle::Attempt,
+    workspace: &'a W,
+}
+impl<W: InitPort> InitPort for OwnedInit<'_, W> {
+    async fn run(&self, argv: &[&str], network: bool) -> Result<String> {
+        self.store.assert_attempt(self.id, self.attempt)?;
+        let value = self.workspace.run(argv, network).await?;
+        self.store.assert_attempt(self.id, self.attempt)?;
+        Ok(value)
+    }
 }
 impl InitPort for Workspace {
     async fn run(&self, argv: &[&str], network: bool) -> Result<String> {
@@ -390,28 +481,6 @@ pub(crate) async fn materialize(
     Ok(())
 }
 
-async fn start_agent(workspace: &Workspace, resolved: &Resolved) -> Result<String> {
-    let command = agent_request(resolved).command(workspace)?;
-    let mut exec = command.start().await.context("starting the agent")?;
-    // The launcher refuses quickly (bad secret, stale server); give it that long to do so.
-    tokio::time::sleep(Duration::from_secs(3)).await;
-    let observed = exec.refresh().await?.clone();
-    if observed.state != ExecState::Running {
-        let stderr = exec
-            .output_page(OutputStream::Stderr, 0, 16 * 1024)
-            .await
-            .map(|page| String::from_utf8_lossy(&page.bytes).into_owned())
-            .unwrap_or_default();
-        bail!(
-            "the agent exec is {:?} {:?}: {}",
-            observed.state,
-            observed.exit,
-            stderr.trim()
-        );
-    }
-    Ok(exec.id().to_owned())
-}
-
 async fn attach_workspace(workspace: &Workspace, name: &str, agent: &AgentKind) -> Result<()> {
     let session = attach_request(agent)
         .pty(workspace)?
@@ -437,6 +506,7 @@ async fn attach_workspace(workspace: &Workspace, name: &str, agent: &AgentKind) 
 
 pub async fn attach(config: &RuntimeContext, store: &Store, name: &str) -> Result<()> {
     let record = live(store, name)?;
+    super::lifecycle::attachable(&record)?;
     let connected = connect(config, &worker(store)?).await?;
     let workspace = connected
         .client
@@ -677,10 +747,30 @@ pub async fn status(config: &RuntimeContext, store: &Store, name: &str) -> Resul
     Ok(())
 }
 
-pub async fn stop(config: &RuntimeContext, store: &Store, name: &str) -> Result<()> {
-    let record = live(store, name)?;
-    let connected = connect(config, &worker(store)?).await?;
-    stop_recorded(&connected.client, store, &record, name).await
+pub async fn lifecycle(
+    config: &RuntimeContext,
+    store: &Store,
+    name: &str,
+    expected: Option<&str>,
+    intent: &str,
+) -> Result<()> {
+    let record = store.selected_session(name, expected)?;
+    if record.state == SessionState::Stopped {
+        anyhow::ensure!(
+            intent == "destroy",
+            "workspace was destroyed; no retained session to restart or stop"
+        );
+        println!("Session        {name} already destroyed");
+        return Ok(());
+    }
+    let selected = worker(store)?;
+    super::lifecycle::check_binding(store, &record, &selected)?;
+    let connected = connect(config, &selected).await?;
+    if intent == "admit" {
+        super::lifecycle::restart(&connected.client, store, &record).await
+    } else {
+        super::lifecycle::cleanup(&connected.client, store, &record, intent == "destroy").await
+    }
 }
 
 pub(crate) trait StopPort {
@@ -688,9 +778,10 @@ pub(crate) trait StopPort {
     type Workspace;
     async fn get_exec(&self, id: &str) -> Result<Self::Exec, b10x_substrate_sdk::SdkError>;
     fn terminal(&self, exec: &Self::Exec) -> bool;
+    fn binding<'a>(&self, exec: &'a Self::Exec) -> (&'a str, &'a str);
     async fn signal(&self, exec: &mut Self::Exec) -> Result<()>;
     async fn wait(&self, exec: &mut Self::Exec) -> Result<()>;
-    async fn retire(&self, exec: Self::Exec) -> Result<()>;
+    async fn retire(&self, exec: Self::Exec, operation: &str) -> Result<bool>;
     async fn get_workspace(
         &self,
         id: &str,
@@ -707,6 +798,9 @@ impl StopPort for Client {
     fn terminal(&self, exec: &Self::Exec) -> bool {
         exec.observation().state.terminal()
     }
+    fn binding<'a>(&self, exec: &'a Self::Exec) -> (&'a str, &'a str) {
+        (&exec.observation().id, &exec.observation().workspace)
+    }
     async fn signal(&self, exec: &mut Self::Exec) -> Result<()> {
         exec.signal(
             b10x_substrate_sdk::Signal::Terminate,
@@ -720,57 +814,37 @@ impl StopPort for Client {
         println!("Agent          {:?} {:?}", observed.state, observed.exit);
         Ok(())
     }
-    async fn retire(&self, exec: Self::Exec) -> Result<()> {
-        exec.retire().await?;
-        Ok(())
+    async fn retire(&self, exec: Self::Exec, operation: &str) -> Result<bool> {
+        Ok(exec
+            .retire_with_operation_id(Some(operation.to_owned()))
+            .await?)
     }
     async fn get_workspace(&self, id: &str) -> Result<Workspace, b10x_substrate_sdk::SdkError> {
         self.get_workspace(id).await
     }
     async fn destroy(&self, workspace: Workspace) -> Result<(), b10x_substrate_sdk::SdkError> {
-        workspace.destroy().await?;
+        if !workspace.destroy().await? {
+            return Err(b10x_substrate_sdk::SdkError::Protocol(
+                "workspace destruction was not confirmed absent".into(),
+            ));
+        }
         Ok(())
     }
 }
 
+#[cfg(test)]
 pub(crate) async fn stop_recorded(
     port: &impl StopPort,
     store: &Store,
     record: &SessionRecord,
-    name: &str,
+    _name: &str,
 ) -> Result<()> {
-    // A stop interrupted earlier resumes from STOPPING.
-    if record.state != SessionState::Stopping {
-        store.move_session(&record.id, SessionState::Stopping, None)?;
-    }
-    if let Some(exec_id) = &record.agent_exec {
-        let mut exec = match port.get_exec(exec_id).await {
-            Ok(exec) => exec,
-            Err(error) if not_found(&error) => {
-                println!("Agent          {exec_id} already retired");
-                return finish_stop(port, store, record, name).await;
-            }
-            Err(error) => return Err(error.into()),
-        };
-        if !port.terminal(&exec) {
-            port.signal(&mut exec)
-                .await
-                .context("signalling the agent")?;
-            port.wait(&mut exec).await?;
-        }
-        port.retire(exec).await.context("retiring the agent exec")?;
-    }
-    finish_stop(port, store, record, name).await
+    super::lifecycle::stop(port, store, record, false).await
 }
 
 /// Destroys the workspace and records the stop. A workspace Substrate no longer has is one an
 /// earlier, interrupted stop already destroyed.
-async fn finish_stop(
-    port: &impl StopPort,
-    store: &Store,
-    record: &SessionRecord,
-    name: &str,
-) -> Result<()> {
+pub(crate) async fn destroy_workspace(port: &impl StopPort, record: &SessionRecord) -> Result<()> {
     if let Some(id) = &record.workspace {
         match port.get_workspace(id).await {
             Ok(workspace) => match port.destroy(workspace).await {
@@ -789,9 +863,6 @@ async fn finish_stop(
             Err(error) => return Err(error.into()),
         }
     }
-    // The token file stays: substrate.service will not start without it.
-    store.move_session(&record.id, SessionState::Stopped, None)?;
-    println!("Session        {name} stopped");
     Ok(())
 }
 
@@ -820,12 +891,13 @@ async fn wait_until_destroyed(port: &impl StopPort, id: &str) -> Result<()> {
     }
 }
 
-fn not_found(error: &b10x_substrate_sdk::SdkError) -> bool {
+pub(crate) fn not_found(error: &b10x_substrate_sdk::SdkError) -> bool {
     matches!(error, b10x_substrate_sdk::SdkError::Refusal(refusal) if refusal.code == "resource.not-found")
 }
 
 /// The exact command request Mantle passes to the pinned SDK. No credential value belongs here.
-#[derive(serde::Serialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct RunRequest {
     argv: Vec<String>,
     environment: std::collections::BTreeMap<String, String>,
@@ -839,7 +911,10 @@ pub(crate) struct RunRequest {
     lease_secs: Option<u64>,
 }
 impl RunRequest {
-    fn command(&self, workspace: &Workspace) -> Result<b10x_substrate_sdk::CommandBuilder> {
+    pub(crate) fn command(
+        &self,
+        workspace: &Workspace,
+    ) -> Result<b10x_substrate_sdk::CommandBuilder> {
         let (program, args) = self.argv.split_first().context("empty argv")?;
         let mut command = workspace
             .command(program.as_str())
@@ -848,11 +923,17 @@ impl RunRequest {
                 host_path: self.root.clone(),
                 mount: self.root.clone(),
             })
-            .policy(sub::policy(
-                Duration::from_secs(self.timeout_secs),
-                self.memory_bytes,
-                self.processes,
-            )?);
+            // Version 1 launch policy is frozen; unrelated init/exec policy defaults cannot
+            // change a persisted agent launch. A future version must explicitly migrate/refuse.
+            .policy(
+                b10x_substrate_sdk::ExecutionPolicy::builder()
+                    .timeout(Duration::from_secs(self.timeout_secs))
+                    .cpu_time(Duration::from_secs(86_400))
+                    .memory_bytes(self.memory_bytes)
+                    .processes(self.processes)
+                    .output_bytes(1_048_576)
+                    .build()?,
+            );
         for (key, value) in &self.environment {
             command = command.env(key, value);
         }

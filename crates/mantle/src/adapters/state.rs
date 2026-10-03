@@ -7,6 +7,8 @@ use std::path::Path;
 use anyhow::{Context, Result, bail};
 use rusqlite::{Connection, OptionalExtension as _, params};
 
+pub(crate) mod lifecycle;
+
 use crate::domain::session::{
     AgentKind, AuthenticationMethod, SessionState, agent_name, auth_name, resolve_identity,
     validate_identity,
@@ -16,7 +18,7 @@ pub struct Store {
     connection: Connection,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct WorkerRecord {
     pub name: String,
     pub instance: String,
@@ -26,6 +28,7 @@ pub struct WorkerRecord {
 
 #[derive(Debug, Clone)]
 pub struct SessionRecord {
+    pub generation: i64,
     pub id: String,
     pub name: String,
     pub worker: String,
@@ -122,7 +125,8 @@ impl Store {
     }
 
     fn initialize(connection: &mut Connection) -> Result<()> {
-        let tx = connection.transaction()?;
+        connection.busy_timeout(std::time::Duration::from_secs(5))?;
+        let tx = connection.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
         tx.execute_batch(SCHEMA)
             .context("creating the state schema")?;
         let columns = tx
@@ -145,6 +149,7 @@ impl Store {
                     .context("invalid session identity in state database")?;
             }
         }
+        lifecycle::migrate(&tx)?;
         tx.commit()?;
         Ok(())
     }
@@ -226,18 +231,25 @@ impl Store {
     }
 
     /// Moves a session, refusing a transition the lifecycle does not allow.
+    #[cfg_attr(not(test), allow(dead_code))] // Retained ESS local-store command boundary.
     pub fn move_session(&self, id: &str, next: SessionState, failure: Option<&str>) -> Result<()> {
+        let tx = rusqlite::Transaction::new_unchecked(
+            &self.connection,
+            rusqlite::TransactionBehavior::Immediate,
+        )?;
         let current = self
             .session_by_id(id)?
             .context("the session record vanished")?;
         current.state.checked_move(next)?;
-        self.connection.execute(
-            "UPDATE sessions SET state = ?2, failure = COALESCE(?3, failure) WHERE id = ?1",
-            params![id, next.to_string(), failure],
-        )?;
+        anyhow::ensure!(tx.execute(
+            "UPDATE sessions SET state = ?2, failure = COALESCE(?3, failure) WHERE id = ?1 AND state=?4",
+            params![id, next.to_string(), failure,current.state.to_string()],
+        )?==1,"stale session transition");
+        tx.commit()?;
         Ok(())
     }
 
+    #[cfg_attr(not(test), allow(dead_code))] // Retained ESS legacy local-store command boundary.
     pub fn set_workspace(&self, id: &str, workspace: &str) -> Result<()> {
         self.connection.execute(
             "UPDATE sessions SET workspace = ?2 WHERE id = ?1",
@@ -246,6 +258,7 @@ impl Store {
         Ok(())
     }
 
+    #[cfg_attr(not(test), allow(dead_code))] // Runtime completions use lifecycle_write with a fence.
     pub fn set_agent_exec(&self, id: &str, exec: &str) -> Result<()> {
         self.connection.execute(
             "UPDATE sessions SET agent_exec = ?2 WHERE id = ?1",
@@ -292,7 +305,7 @@ impl Store {
         self.one_session("WHERE name = ?1 AND state <> 'STOPPED'", name)
     }
 
-    fn session_by_id(&self, id: &str) -> Result<Option<SessionRecord>> {
+    pub(crate) fn session_by_id(&self, id: &str) -> Result<Option<SessionRecord>> {
         self.one_session("WHERE id = ?1", id)
     }
 
@@ -315,7 +328,8 @@ impl Store {
 
 const SESSION_COLUMNS: &str =
     "SELECT id, name, worker, state, manifest_digest, workspace, agent_exec,
-        requested_json, created_at, failure, agent_kind, authentication FROM sessions";
+        requested_json, created_at, failure, agent_kind, authentication,
+        COALESCE((SELECT generation FROM session_lifecycle WHERE session_id=sessions.id),0) FROM sessions";
 
 type RawSession = (
     String,
@@ -330,6 +344,7 @@ type RawSession = (
     Option<String>,
     String,
     String,
+    i64,
 );
 
 fn read_session(row: &rusqlite::Row<'_>) -> rusqlite::Result<RawSession> {
@@ -346,6 +361,7 @@ fn read_session(row: &rusqlite::Row<'_>) -> rusqlite::Result<RawSession> {
         row.get(9)?,
         row.get(10)?,
         row.get(11)?,
+        row.get(12)?,
     ))
 }
 
@@ -363,10 +379,12 @@ fn finish_session(raw: RawSession) -> Result<SessionRecord> {
         failure,
         agent,
         auth,
+        generation,
     ) = raw;
     let (agent_kind, authentication) = resolve_identity(&agent, Some(&auth))
         .context("invalid session identity in state database")?;
     Ok(SessionRecord {
+        generation,
         id,
         name,
         worker,
@@ -424,6 +442,7 @@ mod tests {
 
     fn session(id: &str, name: &str) -> SessionRecord {
         SessionRecord {
+            generation: 0,
             id: id.to_owned(),
             name: name.to_owned(),
             worker: "default".to_owned(),

@@ -11,7 +11,7 @@ mantle worker up                 # one EC2 worker, reachable only through AWS SS
 mantle start examples/substrate.yaml
 mantle attach substrate-work     # Ctrl-] d detaches; the agent keeps running
 mantle status substrate-work
-mantle stop substrate-work
+mantle stop substrate-work       # development: retain workspace; 0.1.4: destructive
 mantle worker down
 ```
 
@@ -42,8 +42,43 @@ OAuth token or an API key. A manifest without an agent kind continues to select 
 Codex uses the same Substrate terminal transport and capture behavior as Claude. This is **not
 an end-to-end non-recording mode**. Its private auth and conversation files live under
 `/workspace/.mantle/home/.codex`; launcher replay is volatile and runtime SQLite/text diagnostics
-use launcher-verified tmpfs. `mantle stop codex-example` destroys the workspace, including those
-auth files: preserve wanted project work remotely first. Detach retains it for the running session.
+use launcher-verified tmpfs. In development source, `mantle stop codex-example` retains the workspace
+and login files; `mantle destroy codex-example --yes` deletes them. **Historical release 0.1.4 has
+destructive stop semantics:** its `stop` deletes the workspace and auth files. Preserve wanted
+project work remotely before using that release's stop command.
+
+## Retained workspaces (development / unreleased)
+
+**Compatibility change:** development `mantle stop NAME` terminates and retires the agent while
+retaining its workspace, edited files and private login home. Release 0.1.4 still destroys them.
+Use a development CLI for the following commands; this integration does not cut a release.
+
+```console
+mantle stop my-project
+mantle restart my-project
+mantle destroy my-project --yes
+```
+
+Restart creates a fresh agent execution in the same workspace, using the persisted agent, cwd,
+environment and resource policy. It does not clone repositories again or overwrite private homes.
+It does not promise same-conversation resume. Attach never starts an agent. A missing workspace
+is refused and is never recreated. Retained names remain reserved until explicit destruction.
+Ordinary `mantle exec` continues to use the existing workspace without injecting agent credentials.
+
+Stop, restart and destroy accept `--expected-session-id ID` for automation. The CLI checks that
+immutable identity before remote mutation; use the recorded ID, not merely a reusable name.
+Concurrent commands claim a durable generation and intent. Interrupted restart observes its
+original admission operation instead of launching another process. Retry the same command to
+reconcile it. Missing or unknown operation/process observations remain incomplete with a nonzero
+result. A confirmed running or terminal admission can be reconciled by stop/destroy even when
+readiness failed. An interrupted initial materialization stays incomplete when termination cannot
+be proven; it is not reported as a safely retained workspace.
+
+Historical `STOPPED` rows mean destroyed and cannot be restarted. Migration preserves historical
+`STOPPING` as destructive intent, so retrying that cleanup may still delete the workspace. Legacy
+rows without validated launch context cannot restart from today's configuration. Changed worker
+bindings or unsupported persisted policy versions are refused. Retention does not recover a lost
+worker or volume; retained cloud storage may still incur charges.
 
 Local launcher, confinement and integration checks are recorded in the
 [qualification evidence](docs/evidence/codex-compatibility.md). Real device login, authenticated
@@ -81,8 +116,8 @@ defers changed shared binaries while services are active. Rerunning it alone doe
 that an existing worker has the compatible runtime. Verify the installed and running versions
 after maintenance, or provision a separate compatible worker for new sessions.
 
-Do not use `mantle stop NAME` as an upgrade step for a workspace you need to retain: it destroys
-that workspace. Detach preserves the session only for the lifetime of its running agent and lease.
+For historical **release 0.1.4**, do not use `mantle stop NAME` as an upgrade step for a workspace
+you need to retain: it destroys that workspace. Development retention semantics are described above.
 
 ### Build behavior retained from 0.1.2
 

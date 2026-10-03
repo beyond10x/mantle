@@ -20,7 +20,12 @@ components:
         - mantle.orchestration.Observe
         - mantle.orchestration.Request
         - mantle.orchestration.Start
-        - mantle.orchestration.Stop
+        - mantle.orchestration.Destroy
+        - mantle.session.RetainedLifecycle
+        - mantle.session.BeginRetain
+        - mantle.session.FinishRetain
+        - mantle.session.BeginRestart
+        - mantle.session.BeginDestroy
         - mantle.orchestration.Worker
         - mantle.orchestration.WorkerRecords
         - mantle.manifest.Parse

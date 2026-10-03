@@ -135,7 +135,7 @@
       ]
     },
     {
-      "name": "mantle.orchestration.Stop",
+      "name": "mantle.orchestration.Destroy",
       "input": [
         {
           "name": "state",

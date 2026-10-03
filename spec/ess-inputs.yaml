@@ -10,6 +10,36 @@ specification:
   - domains/orchestration.yaml
   - domains/operator.yaml
 scenarios:
+  - scenarios/cli/retain-missing-terminal-proof.yaml
+  - scenarios/cli/retain-retirement-not-absent.yaml
+  - scenarios/cli/retain-failed-admission-cleanup.yaml
+  - scenarios/cli/retain-binding-refusal.yaml
+  - scenarios/cli/retain-fenced-completion-same-state.yaml
+  - scenarios/cli/retain-stop.yaml
+  - scenarios/cli/retain-repeat-stop.yaml
+  - scenarios/cli/retain-interrupted-stop.yaml
+  - scenarios/cli/retain-files-auth.yaml
+  - scenarios/cli/retain-restart.yaml
+  - scenarios/cli/retain-restart-failure.yaml
+  - scenarios/cli/retain-attach-refusal.yaml
+  - scenarios/cli/destroy-explicit-confirmation.yaml
+  - scenarios/cli/destroy-readback.yaml
+  - scenarios/cli/destroy-repeat.yaml
+  - scenarios/cli/retain-legacy-stopped.yaml
+  - scenarios/cli/retain-other-session-survives.yaml
+  - scenarios/cli/retain-migration-reopen.yaml
+  - scenarios/cli/retain-restart-before-dispatch.yaml
+  - scenarios/cli/retain-restart-accepted-before-persist.yaml
+  - scenarios/cli/retain-restart-readiness.yaml
+  - scenarios/cli/retain-unknown-no-duplicate.yaml
+  - scenarios/cli/retain-concurrent-restart.yaml
+  - scenarios/cli/retain-stop-versus-restart.yaml
+  - scenarios/cli/retain-destroy-versus-restart.yaml
+  - scenarios/cli/retain-retirement-crash.yaml
+  - scenarios/cli/retain-initial-materialization.yaml
+  - scenarios/cli/retain-stale-completion.yaml
+  - scenarios/cli/retain-unsupported-policy.yaml
+  - scenarios/cli/retain-expected-session-id.yaml
   - scenarios/cli/manifest-defaults.yaml
   - scenarios/cli/manifest-zero-cpu-clamped.yaml
   - scenarios/cli/manifest-lower-resource-bounds.yaml

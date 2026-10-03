@@ -1,0 +1,19 @@
+{
+  "type": "ess-scenario/4",
+  "domain": "mantle.session",
+  "scenario": "retain-restart-accepted-before-persist",
+  "summary": "Production retained-workspace lifecycle with controlled IO and durable SQLite ownership",
+  "timeline": [
+    {
+      "at": "2026-10-03T00:00:00Z",
+      "command": "mantle.session.RetainedLifecycle",
+      "input": {
+        "case": "retain-restart-accepted-before-persist"
+      },
+      "outcome": "returned",
+      "response": {
+        "verified": true
+      }
+    }
+  ]
+}

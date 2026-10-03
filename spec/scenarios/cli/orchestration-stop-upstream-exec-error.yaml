@@ -6,7 +6,7 @@
   "timeline": [
     {
       "at": "2026-10-02T00:00:00Z",
-      "command": "mantle.orchestration.Stop",
+      "command": "mantle.orchestration.Destroy",
       "input": {
         "state": "RUNNING",
         "exec": "error",
@@ -20,7 +20,7 @@
       "outcome": "returned",
       "response": {
         "succeeded": false,
-        "state": "STOPPING"
+        "state": "DESTROYING"
       }
     }
   ]
