@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-03T17:13:35Z",
+  "actor": "human:timo",
+  "artifact": "story:repeatable-agent-acceptance",
+  "kind": "story",
+  "revision": 36,
+  "change": {
+    "change": "evidence",
+    "kind": "verification",
+    "source": "VERIFIED: same metadata selection-failure test, old CLI exit101 versus candidate exit0; source3ce4d28 plus docs2b8b21a",
+    "reference": "$HOME/.cache/mantle-reliability/integration/wave7-claim-base.log and wave7-claim-treatment.log"
+  }
+}

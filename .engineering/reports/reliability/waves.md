@@ -330,3 +330,31 @@ outputs were archived under worktree/archives/mantle/mantle-retained-workspaces,
 removed the tree after finish and dry-run review. Removed only its reproducible target and TMPDIR;
 raw scratch, original baseline and adversary reports remain. Root storage increased13→16GiB free.
 The unchanged premerge VERIFIED claim, already recorded above, now also has typed AEP evidence.
+
+Final-unit handoff: bot runtime3ce4d28037a4c6d3120b5594f463cd8924bf43bc, docs
+211332ba6f6b4f6d80d3881f7ce238cad21196e1. Runtime report/status and docs report are retained as
+wave7-implementation.md, wave7-implementation-status.json and wave7-documentation.md. Raw runtime
+report remains private; its portable copy omits Running lines containing personal paths, retaining
+exact result lines and explicitly correcting unused scopes. No test assertion or raw log changed.
+Affected packages133→143, metadata4, runner6, release16, worker48; CLI372→381, authored307→315.
+Final package, Clippy, fmt, generated drift, notices and fixture checks exit0. Docs tests2/2 and
+exact-commit site build pass. Full aggregate run is still pending;499 is not yet claimed measured.
+
+Runtime and docs owners ended their leases and all commands. Root acquired a short integration
+lease, merged docs into the unit at2b8b21a0aeb1f85900ba12c2ed481f891452a7a5, independently reran
+the unchanged metadata selection-failure test against the retained baseline and current CLI,
+and released its lease. Baseline101 lacks bounded JSON; candidate0 emits versioned selection
+refusal without stderr. Claim VERIFIED; direct logs/exits are integration/wave7-claim-{base,treatment}.
+
+Adversary pass1 is assigned to attach_readiness_impl on the combined unit2b8b21a, base7930ab1,
+lease codex-agent-acceptance-adversary, existing unit target/TMPDIR and scratch
+agent-acceptance/adversary/pass1. Root owns the store and final integration gate. No source merge
+into integration or implementation-complete move is claimed yet. Agent token/tool counters are
+unavailable. The docs/source merge does not publish the website or qualify authenticated sessions.
+
+Planning checkpoint7567deae47c0e4905258439b0647933a4f4bf6d2 was signed/published after168 scanned
+commits; integration/wave7-planning-receipt.json and bot check
+https://github.com/beyond10x/mantle/runs/111247513909 retain evidence. Fresh main fetch still found
+df32e9cc4876776aa46fee8c91c5d351d53f6650 already an ancestor. Local branches for the six completed
+units were deleted only after exact ancestry to the published integration ref was verified;
+their commits and retained evidence remain recoverable there.

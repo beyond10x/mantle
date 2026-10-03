@@ -12,61 +12,55 @@ scope:
   path: Cargo.lock
 - confidence: cited
   path: Cargo.toml
-- confidence: inferred
+- confidence: cited
   path: README.md
-- confidence: inferred
+- confidence: cited
   path: THIRD_PARTY_LICENSES.html
-- confidence: inferred
+- confidence: cited
   path: crates/mantle-acceptance
-- confidence: inferred
+- confidence: cited
   path: crates/mantle-artifact/src/lib.rs
-- confidence: inferred
-  path: crates/mantle-conformance
-- confidence: inferred
+- confidence: cited
   path: crates/mantle-release/src/build.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle-release/src/lib.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle-release/tests/release.rs
 - confidence: cited
   path: crates/mantle-worker/src/lib.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/Cargo.toml
 - confidence: cited
   path: crates/mantle/src/adapters/orchestration.rs
 - confidence: cited
   path: crates/mantle/src/adapters/state.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/src/app/metadata.rs
 - confidence: cited
   path: crates/mantle/src/app/session.rs
 - confidence: cited
   path: crates/mantle/src/main.rs
 - confidence: cited
-  path: crates/mantle/tests/codex_preflight.rs
-- confidence: inferred
   path: crates/mantle/tests/session_metadata.rs
-- confidence: inferred
+- confidence: cited
   path: crates/mantle/tests/support/metadata_ssh.rs
-- confidence: inferred
-  path: docs/evidence
-- confidence: inferred
+- confidence: cited
   path: generated/worker-model
-- confidence: inferred
+- confidence: cited
   path: spec/README.md
-- confidence: inferred
+- confidence: cited
   path: spec/components.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/conformance-baseline.json
 - confidence: cited
   path: spec/domains/operator.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/ess-inputs.yaml
-- confidence: inferred
+- confidence: cited
   path: spec/scenarios/cli
-- confidence: inferred
+- confidence: cited
   path: website/index.html
-revision: 34
+revision: 36
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 19}
 - {from: "proposed", to: "active", at: "2026-10-03T16:18:01Z", actor: "human:timo", revision: 31}
@@ -147,3 +141,9 @@ The acceptance runner performs PTY attach and marker writes through the installe
 ## Owned PTY process seam
 
 Cited preparation: crates/mantle-worker/src/lib.rs:631 BoundedProcess::spawn currently replaces all stdio with null. Add a bounded variant accepting caller-owned PTY slave descriptors, while retaining the existing process registry, deadline and descendant cleanup and leaving spawn's current null-stream behavior unchanged. This reuses the existing process owner for accepted PTY controls rather than creating another process lifecycle. Cover descriptor ownership/timeout cleanup in the acceptance fixtures. No worker installation policy change.
+
+## Confirmed implementation scope
+
+Confirmed by source diff 7930ab1..3ce4d28037a4c6d3120b5594f463cd8924bf43bc (38 files) and documentation diff 7930ab1..211332ba6f6b4f6d80d3881f7ce238cad21196e1 (three files): retained typed paths are now cited. Earlier inferred crates/mantle-conformance and docs/evidence were not needed; previously cited codex_preflight.rs was inspected but unchanged. These three unused paths are removed from typed scope while the earlier preparation remains historical context. Existing aggregate conformance already includes the new CLI scenarios without coordinator-crate changes.
+
+Source package aggregate133→143, new metadata4 and runner6, native CLI372→381 (221 authored +160 generated), validated authored307→315. Complete aggregate execution remains with root. Source final package, Clippy, formatting, model drift, notices and fixture formatting all exit0. Documentation commit has tests2/2, links and exact-commit site build exit0. Implementor reports distinguish its semantic lost-receipt refusal correction from fixture setup/compilation and generated-provenance failures. Root still owes reviewed integration and full gate; no live qualification is claimed.
