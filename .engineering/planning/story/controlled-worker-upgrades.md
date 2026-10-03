@@ -34,6 +34,10 @@ scope:
   path: crates/mantle/src/app/worker_upgrade.rs
 - confidence: inferred
   path: crates/mantle/src/main.rs
+- confidence: inferred
+  path: crates/mantle/tests/support/upgrade_ssh.rs
+- confidence: inferred
+  path: crates/mantle/tests/worker_upgrade.rs
 - confidence: cited
   path: deploy/mantle-egress.service
 - confidence: cited
@@ -50,7 +54,7 @@ scope:
   path: spec/scenarios/cli
 - confidence: inferred
   path: website/index.html
-revision: 37
+revision: 39
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-03T08:57:35Z", actor: "human:timo", revision: 22, decided_on: {"recorded":{"review_outcome":2}}}
 - {from: "proposed", to: "active", at: "2026-10-03T12:22:48Z", actor: "human:timo", revision: 29, decided_on: {"recorded":{"review_outcome":2}}}
