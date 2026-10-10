@@ -3,6 +3,13 @@
 Mantle places whole development sessions (agent, workspace, toolchain) on a remote Linux worker
 confined by Substrate. Design: `docs/design/00-mantle-on-substrate.md`.
 
+## Serves
+
+This repository advances these objectives from `atlas/ROADMAP.md`:
+
+- O1: every agent session runs inside a Substrate sandbox with a fixed egress allowlist and its credential delivered only through a Substrate secret slot.
+- O3: Claude Code and Codex run under the same worker, confinement and terminal transport, so one harness can be swapped for another on the same work.
+
 ## Rules
 
 - **Rust only** for anything that runs. Command lines use clap derive. No shell or Python programs
