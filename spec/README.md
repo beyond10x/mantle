@@ -1,7 +1,7 @@
 # Mantle executable contract
 
 Six ESS domains describe Mantle's implemented behavior: sessions, manifest resolution, egress,
-launcher OS behavior, application orchestration and operator workflows. The specification uses ESS 0.50.x, `ess/17`
+launcher OS behavior, application orchestration and operator workflows. The specification uses ESS 0.67.x, `ess/17`
 and authored `ess-scenario/4` documents. `ess-inputs.yaml` explicitly selects every model and
 scenario input. Design proposals for scheduling, snapshots, peer buses and shared caches remain
 future scope.
@@ -106,7 +106,7 @@ DNS or dialing. These are local handler observations with controlled upstream IO
 authentication or traffic evidence. Deployment and authenticated Codex acceptance remain separate.
 
 `crates/mantle-conformance` adapts native observations to ESS's own Rust runner, pinned to
-`8700d0808e8f3b19711629d8a17afc5281680f58` (0.50.0). It does not evaluate guards or copy an ESS
+`4579d8049bb5b83749b46059dfc0982de7633485` (0.67.0). It does not evaluate guards or copy an ESS
 state machine. Integer observations preserve full unsigned widths; OS arguments and tunnel data
 use Bytes. Read-your-writes tokens follow completed operations on the same native boundary.
 

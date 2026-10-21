@@ -325,7 +325,7 @@ live Claude or Codex qualification. Historical qualification limits remain in th
 coverage gaps. `task spec` validates all six domains. `task conformance` exercises the production
 SQLite store, manifest parser, egress proxy, launcher PTYs, application orchestration and operator
 workflows over controlled external IO. `task check` includes the complete native suite and repository
-checks. Contributors need ESS 0.50.x and AEP 0.68.0 on `PATH`. Green local tests do not establish
+checks. Contributors need ESS 0.67.x and AEP 0.68.0 on `PATH`. Green local tests do not establish
 authenticated Claude or Codex qualification; see the separate historical evidence above.
 
 ## Verified prebuilt bundles

@@ -23,7 +23,7 @@ scope:
   path: crates/mantle/src/domain
 - confidence: cited
   path: examples/substrate.yaml
-revision: 4
+revision: 5
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-01T22:38:40Z", actor: "human:timo", revision: 2}
 - {from: "proposed", to: "active", at: "2026-10-01T22:38:40Z", actor: "human:timo", revision: 3}
@@ -35,10 +35,15 @@ transitions:
 With a READY worker, `mantle start examples/substrate.yaml` creates a workspace, clones the declared
 repository at an exact commit that `mantle status` prints, and attaches the local terminal to Claude
 Code running in `/workspace/<mount>`. Resizing the local terminal changes `tput cols` inside.
-`Ctrl-b d` returns to the laptop while `mantle status` still reports the agent exec `running`;
-`mantle attach` returns to the same Claude conversation. `mantle stop` ends the agent exec, destroys
-the workspace and leaves `mantle list` without the session. An exec that Substrate reports `unknown`
-is shown as unknown, never as stopped.
+`Ctrl-] d` returns to the laptop while `mantle status` still reports the agent exec `running`;
+`mantle attach` returns to the same Claude conversation. `mantle stop` ends the agent exec and leaves
+the session `RETAINED` with its workspace; `mantle destroy <name> --yes` then destroys the workspace
+and leaves `mantle list` without the session. An exec that Substrate reports `unknown` is shown as
+unknown, never as stopped, and `stop` records neither `RETAINED` nor `STOPPED` for it.
+
+Amended 2026-10-21 to the shipped semantics: story:retained-workspace-lifecycle made `stop` retain
+the workspace and added `destroy --yes`; the detach key is `Ctrl-]` (`crates/mantle/src/app/terminal.rs:39`,
+`crates/mantle/src/main.rs:79`). The original text named `Ctrl-b d` and destroy-on-stop.
 
 ## Scope
 
