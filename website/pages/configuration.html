@@ -1,0 +1,87 @@
+<section class="section page-head prose"><p class="eyebrow">Configuration</p><h1>Configuration and manifests.</h1><p class="lede">Two files. The configuration file on your laptop says which worker to use and where the Claude token comes from; it holds your cloud identifiers and stays out of every repository. The manifest says what session to run.</p>
+<nav class="toc" aria-label="On this page"><a href="#config">Configuration file</a><a href="#manifest">Manifest</a><a href="#agent">Agent</a><a href="#resources">Resources</a><a href="#network">Network</a><a href="#lifecycle">Lifecycle</a><a href="#environment">Session environment</a></nav></section>
+
+<section id="config" class="section prose"><div class="section-heading"><p class="eyebrow">01 / Configuration file</p><h2><code>~/.config/mantle/config.toml</code></h2><p>Start from <a href="https://github.com/beyond10x/mantle/blob/main/examples/config.toml">examples/config.toml</a>. Unknown fields are refused. Another file or a named profile can be selected; see <a href="/mantle/operations/#profiles">profiles</a>.</p></div>
+<div class="table-wrap"><table><caption class="sr-only">Configuration fields</caption><thead><tr><th>Field</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>provider</code></td><td><code>"aws"</code> or <code>"kubevirt"</code>. The matching table below is required.</td></tr>
+<tr><td><code>ubuntu_serial</code></td><td>Eight-digit Ubuntu 24.04 cloud-image build serial, such as <code>20260926</code>. Every provider boots the same build.</td></tr>
+<tr><td><code>[aws]</code> <code>profile</code>, <code>region</code>, <code>vpc</code>, <code>subnet</code></td><td>Your AWS profile and network placement. Required for <code>provider = "aws"</code>.</td></tr>
+<tr><td><code>[aws]</code> <code>instance_type</code>, <code>root_volume_gib</code>, <code>data_volume_gib</code></td><td>Defaults <code>m7i.4xlarge</code>, 50 and 200.</td></tr>
+<tr><td><code>[kubevirt]</code> <code>context</code>, <code>namespace</code>, <code>cpu</code>, <code>memory_gib</code>, <code>root_disk_gib</code>, <code>data_disk_gib</code></td><td>The Kubernetes context and namespace, and the VM’s size. All required for <code>provider = "kubevirt"</code>. <code>task k3d-up</code> creates the context <code>k3d-mantle</code>.</td></tr>
+<tr><td><code>[claude]</code> <code>token_command</code></td><td>An argv list that prints the token from <code>claude setup-token</code>, such as a keyring lookup. Preferred.</td></tr>
+<tr><td><code>[claude]</code> <code>token_file</code></td><td>A file holding the token, for hosts without a keyring. <code>~/</code> is expanded.</td></tr>
+</tbody></table></div>
+<p>Omit the whole <code>[claude]</code> table to provision a worker without a Claude token, for example for Codex only. A worker reported <code>READY</code> has its confinement and toolchain in place; agent authentication is separate.</p>
+</section>
+
+<section id="manifest" class="section prose"><div class="section-heading"><p class="eyebrow">02 / Manifest</p><h2>The session manifest.</h2><p><code>mantle start</code> reads <code>mantle.yaml</code> unless you name another file. Unknown fields are refused, and fields the design declares but 0.2.0 does not serve are refused by name, so a manifest never asks for something it silently does not get. Examples: <a href="https://github.com/beyond10x/mantle/blob/main/examples/substrate.yaml">Claude Code</a>, <a href="https://github.com/beyond10x/mantle/blob/main/examples/codex.yaml">Codex</a>.</p></div>
+<figure class="code-example"><figcaption><span>mantle.yaml</span><span>YAML</span></figcaption><pre tabindex="0" aria-label="Session manifest, YAML"><code class="language-yaml"><span class="yaml-key">apiVersion</span><span class="yaml-punctuation">:</span> <span class="yaml-string">mantle.beyond10x.dev/v1alpha1</span>
+<span class="yaml-key">kind</span><span class="yaml-punctuation">:</span> <span class="yaml-string">Session</span>
+<span class="yaml-key">metadata</span><span class="yaml-punctuation">:</span>
+  <span class="yaml-key">name</span><span class="yaml-punctuation">:</span> <span class="yaml-string">my-project</span>
+<span class="yaml-key">runtime</span><span class="yaml-punctuation">:</span>
+  <span class="yaml-key">profile</span><span class="yaml-punctuation">:</span> <span class="yaml-string">rust-dev</span>
+<span class="yaml-key">workspace</span><span class="yaml-punctuation">:</span>
+  <span class="yaml-key">repositories</span><span class="yaml-punctuation">:</span>
+    <span class="yaml-punctuation">-</span> <span class="yaml-key">name</span><span class="yaml-punctuation">:</span> <span class="yaml-string">mantle</span>
+      <span class="yaml-key">repository</span><span class="yaml-punctuation">:</span> <span class="yaml-string">https://github.com/beyond10x/mantle.git</span>
+      <span class="yaml-key">ref</span><span class="yaml-punctuation">:</span> <span class="yaml-string">main</span>
+      <span class="yaml-key">mount</span><span class="yaml-punctuation">:</span> <span class="yaml-string">mantle</span>
+<span class="yaml-key">agent</span><span class="yaml-punctuation">:</span>
+  <span class="yaml-key">kind</span><span class="yaml-punctuation">:</span> <span class="yaml-string">claude-code</span>
+  <span class="yaml-key">cwd</span><span class="yaml-punctuation">:</span> <span class="yaml-string">/workspace/mantle</span>
+<span class="yaml-key">resources</span><span class="yaml-punctuation">:</span>
+  <span class="yaml-key">cpu</span><span class="yaml-punctuation">:</span> <span class="yaml-number">4</span>
+  <span class="yaml-key">memory</span><span class="yaml-punctuation">:</span> <span class="yaml-string">16GiB</span>
+  <span class="yaml-key">pids</span><span class="yaml-punctuation">:</span> <span class="yaml-number">4096</span>
+<span class="yaml-key">lifecycle</span><span class="yaml-punctuation">:</span>
+  <span class="yaml-key">detachKeepsRunning</span><span class="yaml-punctuation">:</span> <span class="yaml-boolean">true</span>
+  <span class="yaml-key">retainFor</span><span class="yaml-punctuation">:</span> <span class="yaml-string">8h</span></code></pre></figure>
+<div class="table-wrap"><table><caption class="sr-only">Manifest fields</caption><thead><tr><th>Field</th><th>Rule</th></tr></thead><tbody>
+<tr><td><code>apiVersion</code>, <code>kind</code></td><td>Exactly <code>mantle.beyond10x.dev/v1alpha1</code> and <code>Session</code>.</td></tr>
+<tr><td><code>metadata.name</code></td><td>1–48 characters of <code>a-z</code>, <code>0-9</code> and <code>-</code>, not starting with <code>-</code>. Unique among your sessions until destroyed.</td></tr>
+<tr><td><code>runtime.profile</code></td><td>Optional; only <code>rust-dev</code> is served.</td></tr>
+<tr><td><code>workspace.root</code></td><td>Optional; must be <code>/workspace</code>.</td></tr>
+<tr><td><code>workspace.repositories[]</code></td><td>At least one. <code>repository</code> must be an <code>https://</code> URL reachable through the <a href="#network">gateway</a>. <code>ref</code> is a branch, a tag (lightweight or annotated) or a full commit id. <code>mount</code> is one path component, unique in the manifest. There is no Git credential broker: use public repositories.</td></tr>
+<tr><td><code>agent</code></td><td>Required. See <a href="#agent">agent</a>.</td></tr>
+<tr><td><code>placement</code></td><td>Accepted and ignored: 0.2.0 has one worker.</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="agent" class="section prose"><div class="section-heading"><p class="eyebrow">03 / Agent</p><h2>Agent kinds.</h2><p><code>agent.kind</code> is required; a manifest without it is refused with <code>missing field `kind`</code>. <code>agent.cwd</code> is <code>/workspace</code> or a path inside a declared mount. <code>agent.auth</code> may be omitted; if given, it must match the kind.</p></div>
+<!-- Agent kinds: one row per kind served by the manifest parser. -->
+<div class="table-wrap"><table><caption class="sr-only">Agent kinds</caption><thead><tr><th>Kind</th><th>Authentication and behaviour</th></tr></thead><tbody>
+<tr id="agent-claude-code"><td><code>kind: claude-code</code><br><code>auth: claude-oauth</code></td><td>Claude Code 2.1.287, installed by checksum when the worker is provisioned. The token from <code>[claude]</code> reaches the agent through the <code>claude</code> secret slot; see <a href="/mantle/security/#credentials">credentials</a>. Example: <a href="https://github.com/beyond10x/mantle/blob/main/examples/substrate.yaml">examples/substrate.yaml</a>.</td></tr>
+<tr id="agent-codex"><td><code>kind: codex</code><br><code>auth: chatgpt-device</code></td><td>Codex 0.153.4, installed and verified by SHA-256 on every <code>worker up</code>. Complete ChatGPT device login in the agent terminal when prompted; no Claude token or API key is needed. Auth and conversation files stay in <code>/workspace/.mantle/home/.codex</code>; launcher replay is volatile; Codex’s SQLite and text diagnostics go to a launcher-verified tmpfs. Use <code>start --detached</code> to log in after attaching. Example: <a href="https://github.com/beyond10x/mantle/blob/main/examples/codex.yaml">examples/codex.yaml</a>.</td></tr>
+</tbody></table></div>
+<p>Both kinds use the same Substrate terminal transport, which may record terminal output. This is not a non-recording mode. Device login, authenticated model and tool turns and token refresh are not verified end to end; see the <a href="https://github.com/beyond10x/mantle/blob/main/docs/evidence/codex-compatibility.md">qualification evidence</a>.</p>
+</section>
+
+<section id="resources" class="section prose"><div class="section-heading"><p class="eyebrow">04 / Resources</p><h2>Requested, then reported as applied.</h2></div>
+<div class="table-wrap"><table><caption class="sr-only">Resource fields</caption><thead><tr><th>Field</th><th>Default and bound</th><th>Enforcement</th></tr></thead><tbody>
+<tr><td><code>cpu</code></td><td>4; values below 1 become 1</td><td>Sets <code>CARGO_BUILD_JOBS</code>. Not a CPU bandwidth limit: Substrate 0.7.10 bounds cumulative CPU time only.</td></tr>
+<tr><td><code>memory</code></td><td>16GiB; at least 512MiB</td><td>cgroup memory limit. A worker that does not report the memory and pids limit facts is refused at <code>start</code> with <code>FAILED_CAPABILITY</code>.</td></tr>
+<tr><td><code>pids</code></td><td>4096; 1–4096</td><td>cgroup pids limit, same requirement.</td></tr>
+<tr><td><code>storage</code></td><td>No request</td><td>A workspace quota, capped at the worker’s maximum, when the worker serves workspace quotas. Otherwise <code>start</code> prints <code>requested, NOT enforced</code>.</td></tr>
+</tbody></table></div>
+<p>Sizes take <code>KiB</code>, <code>MiB</code>, <code>GiB</code> or <code>TiB</code>. <code>mantle status</code> prints what was requested and what Substrate applied on separate lines.</p>
+</section>
+
+<section id="network" class="section prose"><div class="section-heading"><p class="eyebrow">05 / Network</p><h2>A fixed allowlist.</h2></div>
+<p><code>network.default</code> must be <code>deny</code>. <code>network.capabilities</code> may name <code>model.anthropic</code>, <code>git.github</code> and <code>rust.crates</code>; any other name is refused. Naming a subset does <strong>not</strong> narrow the gateway: every session on a worker reaches the same ten destinations, listed under <a href="/mantle/security/#network">network</a>. <code>network.profile</code> is accepted and ignored.</p>
+</section>
+
+<section id="lifecycle" class="section prose"><div class="section-heading"><p class="eyebrow">06 / Lifecycle</p><h2>How long the agent runs.</h2></div>
+<p><code>lifecycle.retainFor</code> is the agent execution’s timeout and lease: <code>s</code>, <code>m</code> or <code>h</code>, more than 0 and at most <code>24h</code> (Substrate’s execution bound), default <code>8h</code>. The agent ends at the latest when it expires; the workspace stays. <code>detachKeepsRunning: false</code> is refused. <code>idleAfter</code> is accepted and ignored; on AWS the worker’s own idle alarm applies instead (<a href="/mantle/operations/#worker">worker</a>).</p>
+</section>
+
+<section id="environment" class="section prose"><div class="section-heading"><p class="eyebrow">07 / Session environment</p><h2>What a process inside sees.</h2></div>
+<ul>
+<li><code>/workspace</code> is writable; the repositories are mounted under it. <code>/opt/mantle</code> (agents, launcher, Rust toolchain) is read-only. Host <code>/usr</code>, <code>/bin</code>, <code>/lib</code> and <code>/lib64</code> are bound read-only by Substrate, so the worker’s packages (<code>build-essential</code>, <code>cmake</code>, <code>ninja-build</code>, <code>pkg-config</code>, <code>libssl-dev</code>, <code>git</code>, <code>ripgrep</code> and others) are available.</li>
+<li><code>HOME=/workspace/.mantle/home</code>, <code>CARGO_HOME=/workspace/.mantle/cargo</code>, <code>CARGO_BUILD_JOBS</code> from <code>cpu</code>.</li>
+<li>The Rust linker and C compiler are <code>gcc</code>; the C++ compiler is <code>g++</code>. Ubuntu’s <code>cc</code> resolves outside the confined root.</li>
+<li>The agent is started with the gateway as its proxy. A command run with <code>mantle exec</code> is not; give networked Cargo builds the proxy explicitly:</li>
+</ul>
+<pre><code>mantle exec SESSION -- cargo --config 'http.proxy="http://127.0.0.1:3128"' \
+  check --locked --manifest-path /workspace/PROJECT/Cargo.toml</code></pre>
+</section>

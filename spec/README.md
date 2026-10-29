@@ -65,7 +65,7 @@ filesystem durability after worker loss or recovery of a deleted volume.
 
 ## Manifest and confinement
 
-The API is `mantle.beyond10x.dev/v1alpha1`, kind Session, agent `claude-code` (default) or `codex`, runtime `rust-dev`,
+The API is `mantle.beyond10x.dev/v1alpha1`, kind Session, a required agent kind `claude-code` or `codex`, runtime `rust-dev`,
 root `/workspace`, and network default deny. Unknown fields are refused. Sources use HTTPS URLs,
 unique simple mounts and safe refs; cwd stays within `/workspace` or a listed mount. Defaults are
 CPU 4 (clamped to at least 1), memory 16 GiB, pids 4096, no storage quota request and retention

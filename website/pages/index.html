@@ -1,0 +1,93 @@
+<section class="hero" aria-labelledby="title">
+  <div class="hero-copy"><p class="eyebrow"><span class="dot"></span> Remote development sessions · release 0.2.0 · early</p><h1 id="title">Run a coding agent’s session on a remote Linux worker.</h1><p class="lede">Mantle starts Claude Code or Codex, its repositories and its toolchain inside a Substrate sandbox on a Linux worker on AWS or KubeVirt. Your laptop renders the terminal; builds use the worker’s CPU. Detach, and the agent keeps running.</p><div class="actions"><a class="button" href="#install">Install 0.2.0 <span aria-hidden="true">→</span></a><a class="text-button" href="/mantle/architecture/">How it fits together</a></div><p class="quiet">Linux x86-64 laptop · AWS EC2 or KubeVirt worker · Apache-2.0</p></div>
+  <div class="terminal" aria-label="Example session commands"><div class="terminal-bar"><span aria-hidden="true">● ● ●</span><span>laptop / mantle</span></div><pre><code><span class="prompt">$</span> mantle worker up
+<span class="prompt">$</span> mantle start mantle.yaml
+
+<span class="comment"># Ctrl-] then d: detach; the agent keeps running.</span>
+<span class="prompt">$</span> mantle attach my-project
+<span class="prompt">$</span> mantle status my-project
+
+<span class="comment"># Stop the agent, keep the workspace.</span>
+<span class="prompt">$</span> mantle stop my-project</code></pre><div class="terminal-foot"><span class="dot"></span> The terminal is a view; the session lives on the worker.</div></div>
+</section>
+
+<section id="what" class="section prose"><div class="section-heading"><p class="eyebrow">What Mantle is</p><h2>One session, placed on a worker.</h2></div>
+<p>A Mantle session is one agent, one workspace with its Git repositories, and one toolchain. Mantle runs the whole session on a remote Linux worker, not single build commands. The source of truth during the session is the remote workspace; publish work with Git from inside the session.</p>
+<ul>
+<li><strong>Laptop.</strong> The <code>mantle</code> CLI reads your manifest, provisions the worker, keeps local records and renders the terminal.</li>
+<li><strong>Worker.</strong> A Linux VM on AWS EC2 or KubeVirt. It runs the Substrate daemon and Mantle’s egress gateway.</li>
+<li><strong>Substrate.</strong> Creates the confined workspace, runs the agent in a sandbox, holds the Claude credential in a secret slot and reports what it observed.</li>
+</ul>
+<p>The <a href="/mantle/architecture/">architecture page</a> shows which layer owns what. The <a href="/mantle/security/">security model</a> lists what the sandbox does and does not protect against.</p>
+<div class="notice"><strong>Early release.</strong><p>Release 0.2.0 is verified by 499 native conformance scenarios with controlled external IO. Codex attachment, confined builds and gateway refusals were observed on a live KubeVirt worker for 0.1.2 to 0.1.4. Device login, authenticated model and tool turns, token refresh and a 0.2.0 run on a live worker are <strong>not verified end to end</strong>. See <a href="/mantle/releases/#what-is-verified">what is verified</a>.</p></div>
+</section>
+
+<section id="requirements" class="section prose"><div class="section-heading"><p class="eyebrow">Requirements</p><h2>What you need.</h2></div>
+<ul>
+<li>A Linux x86-64 laptop with <code>ssh</code>. The 0.2.0 CLI is built against glibc 2.39, as recorded in its release manifest; older glibc, macOS and ARM are not qualified.</li>
+<li>For an <strong>AWS</strong> worker: the AWS CLI, <code>session-manager-plugin</code>, and an authenticated profile that may create the EC2, IAM and CloudWatch resources worker provisioning uses.</li>
+<li>For a <strong>KubeVirt</strong> worker: <code>kubectl</code> and <code>virtctl</code> with access to the cluster. The local test bed (<code>task k3d-up</code>) also needs Docker, k3d and nested virtualization.</li>
+<li>For <strong>Claude Code</strong>: an OAuth token from <code>claude setup-token</code>. For <strong>Codex</strong>: a ChatGPT account for device login; no API key.</li>
+<li>To install a release: <code>curl</code>, <code>jq</code>, <code>sha256sum</code> and <code>tar</code>. No Rust compiler.</li>
+</ul>
+</section>
+
+<section id="install" class="section prose"><div class="section-heading"><p class="eyebrow">Install</p><h2>Install a verified release.</h2><p>Download all four 0.2.0 assets into one empty directory, check them against the manifest, then let the bundled verifier install the laptop tools.</p></div>
+<pre><code>mkdir mantle-0.2.0 &amp;&amp; cd mantle-0.2.0
+for f in manifest.json SHA256SUMS \
+    mantle-0.2.0-x86_64-unknown-linux-gnu.tar \
+    mantle-0.2.0-x86_64-unknown-linux-musl.tar; do
+  curl -fLO "https://github.com/beyond10x/mantle/releases/download/0.2.0/$f"
+done
+jq -r .source_commit manifest.json   # 54710558ebe096a8e5faf98bbb430ff7f9eaa17e
+jq -r '.artifacts[] | "\(.sha256)  \(.name)"' manifest.json | sha256sum --check
+mkdir bootstrap
+tar --extract --file mantle-0.2.0-x86_64-unknown-linux-gnu.tar \
+  --directory bootstrap --no-same-owner bin/mantle-release
+./bootstrap/bin/mantle-release verify --manifest "$PWD/manifest.json"
+./bootstrap/bin/mantle-release install --manifest "$PWD/manifest.json" \
+  --prefix "$HOME/.local/mantle"
+export PATH="$HOME/.local/mantle/bin:$PATH"</code></pre>
+<p>This installs <code>mantle</code>, <code>mantle-release</code> and <code>mantle-acceptance</code>. The worker helpers stay in the musl archive; extract them for the first <code>worker up</code>:</p>
+<pre><code>mkdir -m 0700 worker-stage
+tar --extract --file mantle-0.2.0-x86_64-unknown-linux-musl.tar \
+  --directory worker-stage --no-same-owner \
+  bin/mantle-egress bin/mantle-launch bin/mantle-worker</code></pre>
+<p class="aside">These commands were run against the published 0.2.0 assets on 2026-10-29: checksums OK, <code>verify</code> and <code>install</code> exit 0, <code>mantle --version</code> printed <code>mantle 0.2.0</code>. What each step proves, and the source build, are on <a href="/mantle/releases/">Releases and verification</a>.</p>
+</section>
+
+<section id="first-session" class="section prose"><div class="section-heading"><p class="eyebrow">First session</p><h2>From a manifest to a terminal.</h2></div>
+<ol class="steps">
+<li><div><h3>Configure the worker</h3><p>Copy <a href="https://github.com/beyond10x/mantle/blob/main/examples/config.toml">examples/config.toml</a> to <code>~/.config/mantle/config.toml</code>, choose <code>provider = "aws"</code> or <code>"kubevirt"</code> and replace every placeholder. For Claude Code, set <code>claude.token_command</code> to a command that prints your token. Field reference: <a href="/mantle/configuration/#config">configuration</a>.</p></div></li>
+<li><div><h3>Describe the session</h3><p>Save as <code>mantle.yaml</code>. For Codex, set <code>kind: codex</code> and <code>auth: chatgpt-device</code> (<a href="/mantle/configuration/#agent">agent kinds</a>).</p><pre><code>apiVersion: mantle.beyond10x.dev/v1alpha1
+kind: Session
+metadata:
+  name: my-project
+workspace:
+  repositories:
+    - name: mantle
+      repository: https://github.com/beyond10x/mantle.git
+      ref: main
+      mount: mantle
+agent:
+  kind: claude-code
+  cwd: /workspace/mantle</code></pre></div></li>
+<li><div><h3>Bring up the worker and start</h3><pre><code>mantle worker up --binaries "$PWD/worker-stage/bin"
+mantle start mantle.yaml</code></pre><p>The first <code>worker up</code> creates the VM, installs Substrate 0.7.10, the Rust 1.97 toolchain, Claude Code 2.1.287, Codex 0.153.4 and the Mantle helpers, and checks Substrate’s facts. <code>start</code> clones the repositories into the workspace, starts the agent and attaches. Press <kbd>Ctrl</kbd>+<kbd>]</kbd>, then <kbd>d</kbd>, to detach.</p></div></li>
+<li><div><h3>Come back, stop, clean up</h3><pre><code>mantle attach my-project
+mantle stop my-project            # agent ends; workspace kept
+mantle destroy my-project --yes   # workspace deleted
+mantle worker down                # VM stopped; data volume kept</code></pre><p>All commands: <a href="/mantle/operations/#commands">operations</a>. An AWS worker stops itself after two hours below 2% average CPU unless brought up with <code>--no-idle-stop</code>.</p></div></li>
+</ol>
+<p class="aside">The worker steps are not re-run for each documentation change. The last recorded live runs are listed under <a href="/mantle/releases/#what-is-verified">what is verified</a>.</p>
+</section>
+
+<section id="next" class="section"><div class="section-heading"><p class="eyebrow">Documentation</p><h2>Where to read next.</h2></div>
+<div class="cards">
+<article><h3><a href="/mantle/architecture/">Architecture</a></h3><p>Laptop, Mantle, Substrate and worker, and what each owns.</p></article>
+<article><h3><a href="/mantle/configuration/">Configuration</a></h3><p>The configuration file and every manifest field, with defaults and bounds.</p></article>
+<article><h3><a href="/mantle/operations/">Operations</a></h3><p>Commands, retained workspaces, profiles, doctor, automation, acceptance and offline upgrades.</p></article>
+<article><h3><a href="/mantle/releases/">Releases and verification</a></h3><p>Release bundles, the conformance suite, and the maintainer procedure.</p></article>
+<article><h3><a href="/mantle/security/">Security model</a></h3><p>Network allowlist, credentials, recording, and what the sandbox does not cover.</p></article>
+<article><h3><a href="/mantle/history/">Release history</a></h3><p>0.1.0 to 0.2.0, compatibility changes and recorded evidence.</p></article>
+</div></section>

@@ -48,3 +48,15 @@
 @media(max-width:650px){.substrate-intro{grid-template-columns:1fr;gap:17px;padding:20px}.architecture-heading{padding:20px;align-items:flex-start;flex-direction:column;gap:12px}.architecture-map{display:block;padding:16px}.laptop-node{margin-top:0}.control-path{padding-bottom:20px;margin:18px 0 27px;border-bottom:0;border-left:1px solid #638679;padding-left:16px}.control-arrow{left:-7px;right:auto;bottom:-18px;transform:rotate(90deg);width:14px}.operator-zone .operator-note{display:none}.worker-zone,.sandbox-zone{padding:14px}.host-services,.mounts{grid-template-columns:1fr}.credential-path p,.egress-path p{margin-left:0}.architecture .node-kicker{font-size:.58rem}.external-zone{padding:16px}.architecture figcaption{padding:15px 16px;gap:12px 18px}.legend-note{flex-basis:100%}.architecture-notes{grid-template-columns:1fr;gap:18px}.code-example figcaption{padding-inline:15px}}
 /* Grid children must allow their code blocks to scroll within narrow viewports. */
 .hero>*,.contract>*{min-width:0}
+
+/* Documentation pages: one h1 per page, an on-page index, readable prose. */
+nav a[aria-current="page"]{color:var(--text);text-decoration:underline;text-decoration-color:var(--accent)}
+.page-head{border-top:0;padding-block:70px 40px}.page-head h1{font-size:clamp(2.2rem,4vw,3.2rem);max-width:820px}.page-head .lede{max-width:760px}
+.toc{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}.toc a{font-size:.82rem;text-decoration:none}
+.prose>p,.prose>ul,.prose>ol,.prose>dl,.prose>h3,.prose>.notice,.prose>.steps{max-width:860px}
+.prose>p,.prose li,.prose dd{color:#c3d0cb;font-size:.95rem}.prose li{margin-bottom:8px}.prose h3{margin-top:34px}
+.prose li code,.prose dd code,.boundary-grid li code{color:var(--text);font-size:.85em;background:#213132;padding:2px 5px;border-radius:3px}
+.facts dt{font-weight:620;margin-top:20px}.facts dd{margin:6px 0 0}
+.boundary-grid ul{padding-left:18px;margin:0}.boundary-grid li{color:var(--muted);font-size:.9rem;margin-bottom:8px}
+.cards h3 a{text-decoration:none}
+.hero h1{font-size:clamp(2.3rem,4vw,3.4rem)}

@@ -1,0 +1,83 @@
+<section class="section page-head prose"><p class="eyebrow">Architecture</p><h1>Laptop, Mantle, Substrate, worker.</h1><p class="lede">Mantle decides what development session you want and where it runs. Substrate decides nothing about products: it runs processes in confined workspaces on one host and reports what it observed. Mantle depends on Substrate through its SDK; Substrate has no Mantle code in it.</p>
+<nav class="toc" aria-label="On this page"><a href="#layers">Layers</a><a href="#diagram">Diagram</a><a href="#ownership">Who owns what</a><a href="#paths">Paths across boundaries</a><a href="#not-built">Designed, not built</a></nav></section>
+
+<section id="layers" class="section prose"><div class="section-heading"><p class="eyebrow">01 / Layers</p><h2>Four layers, two machines.</h2></div>
+<div class="table-wrap"><table><caption class="sr-only">The four layers of a Mantle session</caption><thead><tr><th>Layer</th><th>Runs on</th><th>Owns in 0.2.0</th></tr></thead><tbody>
+<tr><td><strong>Laptop</strong>: the <code>mantle</code> CLI</td><td>Your Linux laptop</td><td>Manifest parsing and validation; worker provisioning through the AWS SDK or <code>kubectl</code>; local session and worker records in SQLite (<code>state.db</code>); the SSH key and pinned host key; the SSH tunnel to the Substrate socket; terminal rendering; lifecycle, profile and doctor commands.</td></tr>
+<tr><td><strong>Mantle on the worker</strong>: three static helpers</td><td>Worker host and sandbox</td><td><code>mantle-egress</code>: the CONNECT gateway on <code>127.0.0.1:3128</code> with a fixed allowlist, on the host outside every sandbox. <code>mantle-launch</code>: inside the sandbox, holds the agent on a pseudo-terminal and relays attachments through FIFOs. <code>mantle-worker</code>: installs pinned Codex and checks or applies offline helper upgrades under a host lock.</td></tr>
+<tr><td><strong>Substrate</strong>: <code>substrate-daemon</code> 0.7.10</td><td>Worker host</td><td>Confined workspaces, guarded file operations, process execution with timeouts and leases, PTY sessions, secret slots, the named egress aperture, cgroup and quota facts, durable operation identity and observed state.</td></tr>
+<tr><td><strong>Worker</strong>: one VM</td><td>AWS EC2 or KubeVirt</td><td>Ubuntu 24.04, build pinned by <code>ubuntu_serial</code>. Cloud-init installs build packages, Rust 1.97 under <code>/opt/mantle</code>, Claude Code 2.1.287 by checksum, and the Substrate daemon from a digest-pinned signed image. Workspaces live on an XFS data volume with project quotas at <code>/var/lib/substrate</code>.</td></tr>
+</tbody></table></div>
+<p>Mantle never reports an isolation guarantee Substrate did not report. When the worker lacks a fact the session needs, the start is refused by name; Mantle does not fall back to an unconfined shell. Requested and applied resources are printed separately, and an execution whose outcome Substrate does not know is shown as unknown.</p>
+</section>
+
+<section id="diagram" class="section"><div class="section-heading"><p class="eyebrow">02 / Diagram</p><h2>Where the boundaries are.</h2><p><a href="https://beyond10x.github.io/substrate/">Substrate</a> turns a Linux host into a service for confined workspaces and processes. Mantle uses that service to place the session, start the agent and connect your terminal.</p></div>
+<figure class="architecture" aria-labelledby="architecture-title" aria-describedby="architecture-caption">
+  <div class="architecture-heading"><div><span class="flow-label">Inside a Mantle session</span><h3 id="architecture-title">Laptop, worker host, sandbox, external services.</h3></div><span class="diagram-badge">Release 0.2.0</span></div>
+  <div class="architecture-map">
+    <div class="operator-zone">
+      <div class="diagram-node laptop-node"><span class="node-kicker">01 / Developer laptop</span><h4>Mantle CLI</h4><p>Session intent &amp; placement<br>Local records &amp; terminal</p></div>
+      <div class="control-path"><span class="path-name"><span class="path-marker">A</span> Control + terminal</span><p>SSH forwards the Substrate Unix socket through AWS SSM or the KubeVirt <code>virtctl</code> tunnel.</p><span class="control-arrow" aria-hidden="true">→</span></div>
+      <p class="operator-note">The laptop is the control surface. The agent and its tools run on the worker.</p>
+    </div>
+    <div class="worker-zone">
+      <div class="zone-heading"><span class="node-kicker">02 / Trusted Linux worker</span><span class="zone-tag">Host boundary</span></div>
+      <div class="host-services">
+        <div class="diagram-node"><h4>Substrate daemon</h4><p>Admits execution, applies confinement, reports observed state.</p></div>
+        <div class="diagram-node secret-node"><h4>Claude credential source</h4><p>Worker token file → <code>claude</code> secret slot</p></div>
+      </div>
+      <div class="credential-path"><span class="path-name"><span class="path-marker">B</span> Credential delivery</span><p>Claude: secret slot → inherited descriptor → launcher → agent environment. Codex: device login in the terminal → private workspace auth file.</p></div>
+      <div class="sandbox-zone">
+        <div class="zone-heading"><span class="node-kicker">03 / Confined session</span><span class="zone-tag">Substrate enforcement</span></div>
+        <div class="agent-node"><h4><code>mantle-launch</code> → Claude Code or Codex + tools</h4><p>The launcher holds the agent’s PTY. Attachments relay through workspace FIFOs.</p></div>
+        <div class="mounts"><div><span class="mount-mode">Read / write</span><code>/workspace</code><p>Repositories &amp; session state</p></div><div><span class="mount-mode">Read only</span><code>/opt/mantle</code><p>Agent, launcher &amp; toolchain</p></div></div>
+        <p class="sandbox-rule"><span aria-hidden="true">↳</span> Direct network egress denied; the named aperture is the way out.</p>
+      </div>
+      <div class="egress-path"><span class="path-name"><span class="path-marker">C</span> Network access</span><p>Sandbox → <code>egress</code> aperture → host gateway</p><span class="path-down" aria-hidden="true">↓</span></div>
+      <div class="diagram-node gateway-node"><div><h4>Mantle CONNECT gateway</h4><p>Outside the session sandbox · worker loopback</p></div><span class="gateway-rule">Fixed destination allowlist</span></div>
+    </div>
+    <div class="external-zone"><span class="external-arrow" aria-hidden="true">↓</span><div class="zone-heading"><span class="node-kicker">04 / External services</span><span class="zone-tag">HTTPS · port 443</span></div><div class="destinations"><span>Anthropic</span><span>ChatGPT / OpenAI auth</span><span>GitHub</span><span>crates.io</span></div><p>Ten exact host/port pairs. IP-literal targets are refused; non-public resolved addresses are never dialled.</p></div>
+  </div>
+  <figcaption id="architecture-caption"><span class="legend-item"><span class="legend-line" aria-hidden="true"></span>Trusted host</span><span class="legend-item"><span class="legend-line confined" aria-hidden="true"></span>Confined execution</span><span class="legend-note">Labels A–C identify the paths across boundaries.</span></figcaption>
+</figure>
+</section>
+
+<section id="ownership" class="section prose"><div class="section-heading"><p class="eyebrow">03 / Who owns what</p><h2>Policy in Mantle, mechanism in Substrate.</h2><p>From the <a href="https://github.com/beyond10x/mantle/blob/main/docs/design/00-mantle-on-substrate.md">design</a>, §4, §7 and §8, reduced to what 0.2.0 implements.</p></div>
+<div class="boundary-grid">
+<article><h3>Mantle owns</h3><ul>
+<li><strong>Session intent</strong>: the manifest, the agent, the runtime profile, the repositories, requested resources.</li>
+<li><strong>Placement and provisioning</strong>: one worker per configuration, on AWS or KubeVirt; bootstrap and helper installation.</li>
+<li><strong>Environment</strong>: the <code>rust-dev</code> toolchain under <code>/opt/mantle</code>, the agent adapters for Claude Code and Codex, the compiler and proxy environment.</li>
+<li><strong>Sources</strong>: HTTPS repositories at a branch, tag or commit; the checked-out commit is recorded.</li>
+<li><strong>Lifecycle</strong>: start, attach, detach, stop, restart, destroy, and the local record of each.</li>
+<li><strong>The egress allowlist</strong>, enforced by its gateway outside the sandbox.</li>
+</ul></article>
+<article><h3>Substrate owns</h3><ul>
+<li>Creating the confined workspace and guarded file operations in it.</li>
+<li>Running processes and PTYs, with output observation, cancellation, timeouts, leases and whole-tree cleanup.</li>
+<li>Durable operation identity: an interrupted request can be observed again instead of repeated.</li>
+<li>cgroup, quota and egress facts, and the facts each run actually applied.</li>
+<li>The secret-slot mechanism and the authenticated host API on a Unix socket.</li>
+</ul></article>
+</div>
+<p>A session is the unit of placement: Mantle never places single <code>cargo</code> commands remotely. The terminal is not the session: closing an attachment leaves the agent running until its execution ends. Once a session starts, the remote workspace is the source of truth for it; edits do not mirror back to the laptop.</p>
+</section>
+
+<section id="paths" class="section prose"><div class="section-heading"><p class="eyebrow">04 / Paths across boundaries</p><h2>Control, credentials, network.</h2></div>
+<dl class="facts">
+<dt>A. Control and terminal</dt><dd>The CLI opens SSH to the worker through a provider <code>ProxyCommand</code>: <code>aws ssm start-session</code> with <code>AWS-StartSSHSession</code> on EC2, <code>virtctl port-forward --stdio</code> on KubeVirt. The worker has no inbound port either way; the AWS security group has no ingress rule. SSH forwards the daemon’s Unix socket to a private local socket, and the CLI speaks the Substrate SDK over it. <code>mantle attach</code> opens a PTY session running <code>mantle-launch attach</code>, which relays to the agent through FIFOs in <code>/workspace/.mantle/agent</code>; the sandbox refuses Unix sockets, so <code>tmux</code> and <code>screen</code> do not run inside it.</dd>
+<dt>B. Credentials</dt><dd>Claude: <code>worker up</code> writes the token from your laptop to <code>/var/lib/mantle/secrets/claude</code> on the worker; Substrate hands it to the agent execution through the <code>claude</code> secret slot on descriptor 3; the launcher moves it into the agent’s environment. Codex: device login in the agent terminal; the auth file lives in <code>/workspace/.mantle/home/.codex</code>. Details and limits: <a href="/mantle/security/#credentials">security model</a>.</dd>
+<dt>C. Network</dt><dd>The sandbox has no network of its own. Substrate declares one aperture, <code>egress</code>, to the host gateway at <code>127.0.0.1:3128</code>. The gateway admits ten exact <code>host:443</code> pairs: <a href="/mantle/security/#network">the list</a>.</dd>
+</dl>
+</section>
+
+<section id="not-built" class="section prose"><div class="section-heading"><p class="eyebrow">05 / Designed, not built</p><h2>What the design describes and 0.2.0 does not do.</h2></div>
+<p>The design document is a proposal; its correction block lists where the first slice differs. These parts are <strong>not implemented</strong>:</p>
+<ul>
+<li>A coordinator service, worker fleets, scheduling, Spot capacity and scale-out. Mantle 0.2.0 manages one worker named <code>default</code>; <code>placement</code> in a manifest is accepted and ignored.</li>
+<li>Remote TLS with an identity provider. The CLI reaches Substrate over SSH, not HTTPS.</li>
+<li>A Git credential broker, publishing back from Mantle, and starting from a dirty local checkout.</li>
+<li>Session-to-session communication, shared build caches, workspace snapshots and recovery of a lost worker or volume.</li>
+<li>Per-session network policy. The allowlist is fixed per worker.</li>
+</ul>
+</section>
