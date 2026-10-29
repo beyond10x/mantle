@@ -82,6 +82,90 @@ pub struct Agent {
     pub kind: String,
     pub cwd: String,
     pub auth: Option<String>,
+    /// The `command` kind's process, run by the launcher without a shell.
+    #[serde(default)]
+    pub argv: Option<Vec<String>>,
+}
+
+/// Why a manifest's agent mapping pairs kind, argv and auth illegally. Each is an ESS error of
+/// `mantle.manifest.ValidateAgent`; the message is the manifest diagnostic.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AgentRefusal {
+    CommandRequiresArgv,
+    CommandRefusesAuth,
+    InvalidArgv,
+    ArgvOutOfBounds,
+    ArgvRequiresCommand,
+}
+
+/// Substrate's exec admission bounds on an argv at the pinned revision `f2fd606b` (0.16.1). The
+/// `b10x-substrate-wire` crate does not export them: they are literals in
+/// `crates/substrate-daemon/src/app/operations.rs` (`validate_exec_input`) and
+/// `crates/substrate-host/src/process.rs` (`exec.argv-invalid`). Both also refuse an empty
+/// element and an element containing NUL.
+pub const SUBSTRATE_MAX_ARGV_ELEMENTS: usize = 256;
+pub const SUBSTRATE_MAX_ARGV_ELEMENT_BYTES: usize = 4096;
+/// The elements `command_argv` in `app/session.rs` places before the declared argv.
+pub const COMMAND_LAUNCHER_PREFIX_ELEMENTS: usize = 13;
+/// The most elements a declared `agent.argv` may have so the exec argv stays within Substrate's.
+pub const MAX_COMMAND_ARGV_ELEMENTS: usize =
+    SUBSTRATE_MAX_ARGV_ELEMENTS - COMMAND_LAUNCHER_PREFIX_ELEMENTS;
+
+impl std::fmt::Display for AgentRefusal {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let text = match self {
+            Self::CommandRequiresArgv => "agent.kind command requires agent.argv",
+            Self::CommandRefusesAuth => {
+                "agent.auth is refused with agent.kind command: a command session receives no agent credential"
+            }
+            Self::InvalidArgv => {
+                "agent.argv must be a non-empty list whose first element is an absolute path"
+            }
+            Self::ArgvOutOfBounds => {
+                return write!(
+                    formatter,
+                    "agent.argv must have at most {MAX_COMMAND_ARGV_ELEMENTS} elements, each non-empty, at most {SUBSTRATE_MAX_ARGV_ELEMENT_BYTES} bytes and without NUL"
+                );
+            }
+            Self::ArgvRequiresCommand => "agent.argv is served only with agent.kind command",
+        };
+        formatter.write_str(text)
+    }
+}
+
+impl std::error::Error for AgentRefusal {}
+
+/// The command kind names its program by absolute path and carries no credential; no other kind
+/// takes an argv. Refusals apply in the order the specification lists them.
+pub fn validate_agent(
+    kind: &str,
+    auth: Option<&str>,
+    argv: Option<&[String]>,
+) -> std::result::Result<(), AgentRefusal> {
+    if kind != super::session::COMMAND {
+        return match argv {
+            Some(_) => Err(AgentRefusal::ArgvRequiresCommand),
+            None => Ok(()),
+        };
+    }
+    let argv = argv.ok_or(AgentRefusal::CommandRequiresArgv)?;
+    if auth.is_some() {
+        return Err(AgentRefusal::CommandRefusesAuth);
+    }
+    match argv.first() {
+        Some(program) if program.starts_with('/') => {}
+        _ => return Err(AgentRefusal::InvalidArgv),
+    }
+    if argv.len() > MAX_COMMAND_ARGV_ELEMENTS
+        || argv.iter().any(|element| {
+            element.is_empty()
+                || element.contains('\0')
+                || element.len() > SUBSTRATE_MAX_ARGV_ELEMENT_BYTES
+        })
+    {
+        return Err(AgentRefusal::ArgvOutOfBounds);
+    }
+    Ok(())
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -132,6 +216,8 @@ pub struct Resolved {
     pub agent_cwd: String,
     pub agent_kind: super::session::AgentKind,
     pub authentication: super::session::AuthenticationMethod,
+    /// Present only for the `command` kind.
+    pub agent_argv: Option<Vec<String>>,
     pub cpu: u32,
     pub memory_bytes: u64,
     pub pids: u32,
@@ -173,8 +259,14 @@ fn resolve(manifest: Manifest, text: &str) -> Result<Resolved> {
     if !valid_name(&name) {
         bail!("metadata.name {name:?} must be 1-48 characters of a-z, 0-9 and '-'");
     }
+    validate_agent(
+        &manifest.agent.kind,
+        manifest.agent.auth.as_deref(),
+        manifest.agent.argv.as_deref(),
+    )?;
     let (agent_kind, authentication) =
         super::session::resolve_identity(&manifest.agent.kind, manifest.agent.auth.as_deref())?;
+    let agent_argv = manifest.agent.argv;
     if let Some(runtime) = &manifest.runtime
         && runtime.profile != "rust-dev"
     {
@@ -276,6 +368,7 @@ fn resolve(manifest: Manifest, text: &str) -> Result<Resolved> {
         agent_cwd: cwd,
         agent_kind,
         authentication,
+        agent_argv,
         cpu,
         memory_bytes,
         pids,
@@ -461,6 +554,122 @@ mod tests {
             let error = parse(&text).expect_err(cwd);
             assert!(format!("{error:#}").contains("agent.cwd"), "{error:#}");
         }
+    }
+
+    const SHELL: &str = include_str!("../../../../examples/shell.yaml");
+
+    fn command(agent: &str) -> String {
+        minimal("").replace("  kind: claude-code\n", agent)
+    }
+
+    #[test]
+    fn the_shell_example_resolves_to_a_command_session_without_credential() {
+        let resolved = parse(SHELL).expect("shell example resolves");
+        assert_eq!(
+            super::super::session::agent_name(&resolved.agent_kind),
+            "command"
+        );
+        assert_eq!(
+            super::super::session::auth_name(&resolved.authentication),
+            "none"
+        );
+        assert_eq!(resolved.agent_cwd, "/workspace/substrate");
+    }
+
+    #[test]
+    fn argv_without_command_kind_is_refused_by_name() {
+        for kind in ["claude-code", "codex"] {
+            let text = command(&format!("  kind: {kind}\n  argv: [/bin/bash]\n"));
+            let error = parse(&text).expect_err(kind);
+            assert_eq!(
+                format!("{error:#}"),
+                "agent.argv is served only with agent.kind command"
+            );
+        }
+    }
+
+    #[test]
+    fn command_kind_without_argv_is_refused_by_name() {
+        let error = parse(&command("  kind: command\n")).expect_err("argv required");
+        assert_eq!(
+            format!("{error:#}"),
+            "agent.kind command requires agent.argv"
+        );
+    }
+
+    #[test]
+    fn command_argv_must_name_an_absolute_program() {
+        for argv in ["[]", "[bash, -l]", "['']", "[./bash]"] {
+            let error =
+                parse(&command(&format!("  kind: command\n  argv: {argv}\n"))).expect_err(argv);
+            assert_eq!(
+                format!("{error:#}"),
+                "agent.argv must be a non-empty list whose first element is an absolute path",
+                "{argv}"
+            );
+        }
+    }
+
+    #[test]
+    fn command_argv_stays_within_substrate_exec_bounds_at_the_boundary() {
+        let refused = "agent.argv must have at most 243 elements, each non-empty, at most 4096 bytes and without NUL";
+        let declared = |argv: Vec<String>| validate_agent("command", None, Some(&argv));
+        let elements = |n: usize| {
+            std::iter::once("/bin/echo".to_owned())
+                .chain(std::iter::repeat_n("x".to_owned(), n - 1))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(declared(elements(243)), Ok(()));
+        assert_eq!(declared(elements(244)).unwrap_err().to_string(), refused);
+        let element = |bytes: usize| vec!["/bin/echo".to_owned(), "a".repeat(bytes)];
+        assert_eq!(declared(element(4096)), Ok(()));
+        assert_eq!(declared(element(4097)).unwrap_err().to_string(), refused);
+        for argv in [
+            vec!["/bin/bash".to_owned(), "-c".to_owned(), String::new()],
+            vec!["/bin/bash".to_owned(), "a\0b".to_owned()],
+            vec![format!("/{}", "a".repeat(4096))],
+        ] {
+            assert_eq!(
+                declared(argv.clone()),
+                Err(AgentRefusal::ArgvOutOfBounds),
+                "{argv:?}"
+            );
+        }
+        let error = parse(&command(
+            "  kind: command\n  argv: [/bin/bash, \"a\\0b\"]\n",
+        ))
+        .expect_err("NUL refused");
+        assert_eq!(format!("{error:#}"), refused);
+    }
+
+    #[test]
+    fn command_kind_refuses_any_agent_auth() {
+        for auth in ["claude-oauth", "chatgpt-device", "none"] {
+            let text = command(&format!(
+                "  kind: command\n  argv: [/bin/bash]\n  auth: {auth}\n"
+            ));
+            let error = parse(&text).expect_err(auth);
+            assert_eq!(
+                format!("{error:#}"),
+                "agent.auth is refused with agent.kind command: a command session receives no agent credential",
+                "{auth}"
+            );
+        }
+    }
+
+    #[test]
+    fn existing_agent_kinds_resolve_unchanged() {
+        let claude = parse(&minimal("")).expect("claude resolves");
+        assert_eq!(
+            super::super::session::agent_name(&claude.agent_kind),
+            "claude-code"
+        );
+        let codex = parse(&command("  kind: codex\n")).expect("codex resolves");
+        assert_eq!(
+            super::super::session::agent_name(&codex.agent_kind),
+            "codex"
+        );
+        assert!(parse(&command("  kind: shell\n")).is_err());
     }
 
     #[test]

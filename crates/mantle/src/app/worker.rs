@@ -18,15 +18,17 @@ use crate::adapters::substrate;
 use crate::config::{Provider, RuntimeContext};
 
 pub const WORKER: &str = "default";
-/// The signed Substrate release a worker runs: image `ghcr.io/{repository}@sha256:{manifest}`, of
-/// which only the layer holding `substrate-daemon` is fetched and checked by its digest. The SDK in
-/// `Cargo.toml` is pinned to the same release (commit `65304edf`).
-pub const SUBSTRATE_VERSION: &str = "0.7.10";
-pub const SUBSTRATE_IMAGE_REPOSITORY: &str = "beyond10x/b10x-substrate-daemon";
-pub const SUBSTRATE_IMAGE_MANIFEST: &str =
-    "90469e101c828c7e88fbf1e98c63ec82b9b010e022cbe8432bfc0619c38d1511";
-pub const SUBSTRATE_DAEMON_LAYER: &str =
-    "4812b85baaf0bdc80f08673e21f5daf1e141eaf0646b20f040b1965de99bf281";
+/// The signed Substrate release a worker runs, installed from the release's prebuilt
+/// `substrate-daemon-{version}-x86_64-unknown-linux-gnu.tar.gz` (glibc 2.35 or newer, OpenSSL 3
+/// and zlib; the worker image is Ubuntu 24.04). The release signs `SHA256SUMS` keylessly
+/// (`SHA256SUMS.sigstore.json`, identity `release.yml@refs/tags/{version}`); the worker accepts
+/// only that document's pinned digest and an archive whose pinned digest that document lists. The
+/// SDK in `Cargo.toml` is pinned to the same release (commit `f2fd606b`).
+pub const SUBSTRATE_VERSION: &str = "0.16.1";
+pub const SUBSTRATE_RELEASE_SUMS: &str =
+    "a5b3170fad432678b1da5f451145dc834d09e64b8c4d59ff6a16c3ba27aa49fc";
+pub const SUBSTRATE_DAEMON_ARCHIVE_SHA256: &str =
+    "ae8b9a3b945f7bf68b7fe7ee4b65be30d70c2638db36f56abdc9f7934d122f65";
 pub const RUST_CHANNEL: &str = "1.97";
 pub const CLAUDE_CODE_VERSION: &str = "2.1.287";
 
@@ -489,10 +491,12 @@ fn render_user_data_for(public_key: &str, claude: bool) -> Result<String> {
     ];
     let values = [
         ("{{SSH_PUBLIC_KEY}}", public_key),
-        ("{{SUBSTRATE_IMAGE_REPOSITORY}}", SUBSTRATE_IMAGE_REPOSITORY),
-        ("{{SUBSTRATE_DAEMON_LAYER}}", SUBSTRATE_DAEMON_LAYER),
+        ("{{SUBSTRATE_RELEASE_SUMS}}", SUBSTRATE_RELEASE_SUMS),
+        (
+            "{{SUBSTRATE_DAEMON_ARCHIVE_SHA256}}",
+            SUBSTRATE_DAEMON_ARCHIVE_SHA256,
+        ),
         ("{{SUBSTRATE_VERSION}}", SUBSTRATE_VERSION),
-        ("{{SUBSTRATE_IMAGE_MANIFEST}}", SUBSTRATE_IMAGE_MANIFEST),
         ("{{RUST_CHANNEL}}", RUST_CHANNEL),
         ("{{CLAUDE_CODE_VERSION}}", CLAUDE_CODE_VERSION),
     ];
@@ -673,7 +677,7 @@ mod tests {
             "first line must be #cloud-config"
         );
         assert!(rendered.contains("ssh-ed25519 AAAAtest mantle"));
-        assert!(rendered.contains(SUBSTRATE_DAEMON_LAYER));
+        assert!(rendered.contains(SUBSTRATE_DAEMON_ARCHIVE_SHA256));
         assert!(
             !rendered.contains("cargo build"),
             "a worker must not compile Substrate"
@@ -729,5 +733,48 @@ mod tests {
                 "daemon lost CA bundle after optional slot line"
             );
         }
+    }
+
+    /// The CLI, the worker helpers and the worker's daemon move together (story
+    /// `substrate-0-16-0-pin`, retargeted to 0.16.1): one version, one revision, one wire bundle,
+    /// and a daemon installed from that release's signed archive.
+    #[test]
+    fn the_worker_installs_the_pinned_signed_substrate_release() {
+        const REVISION: &str = "f2fd606b88a0b778970e8babe9a96eb600cd57b2";
+        assert_eq!(SUBSTRATE_VERSION, "0.16.1");
+        assert_eq!(
+            SUBSTRATE_VERSION,
+            mantle_worker::maintenance::SUBSTRATE_VERSION
+        );
+        assert_eq!(mantle_worker::maintenance::SUBSTRATE_REVISION, REVISION);
+        assert!(
+            include_str!("../../Cargo.toml").contains(&format!(
+                "b10x-substrate-sdk = {{ git = \"https://github.com/beyond10x/substrate\", rev = \"{REVISION}\" }}"
+            )),
+            "the SDK is pinned to the release's revision"
+        );
+        assert_eq!(b10x_substrate_sdk::CONTRACT, "substrate-wire/0.25.0");
+
+        let rendered = render_user_data_for("ssh-ed25519 AAAAtest mantle", false).unwrap();
+        let release = "https://github.com/beyond10x/substrate/releases/download/0.16.1";
+        let archive = "substrate-daemon-0.16.1-x86_64-unknown-linux-gnu.tar.gz";
+        assert!(rendered.contains(&format!("{release}/SHA256SUMS")));
+        assert!(rendered.contains(&format!("{release}/{archive}")));
+        // `SHA256SUMS` is the document the release signed; the archive is checked against both
+        // its own pinned digest and that document's line for it.
+        assert!(rendered.contains(
+            "a5b3170fad432678b1da5f451145dc834d09e64b8c4d59ff6a16c3ba27aa49fc  /var/tmp/mantle-substrate-daemon/SHA256SUMS"
+        ));
+        assert!(rendered.contains(&format!(
+            "ae8b9a3b945f7bf68b7fe7ee4b65be30d70c2638db36f56abdc9f7934d122f65  /var/tmp/mantle-substrate-daemon/{archive}"
+        )));
+        assert!(rendered.contains(&format!(
+            "grep -qxF 'ae8b9a3b945f7bf68b7fe7ee4b65be30d70c2638db36f56abdc9f7934d122f65  {archive}' /var/tmp/mantle-substrate-daemon/SHA256SUMS"
+        )));
+        assert!(rendered.contains("[ \"$daemon_version\" = \"substrate-daemon 0.16.1\" ]"));
+        assert!(
+            !rendered.contains("ghcr.io"),
+            "the daemon no longer comes from an image layer"
+        );
     }
 }

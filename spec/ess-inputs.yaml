@@ -1,5 +1,5 @@
 format: ess-inputs/2
-requires: ess 0.50
+requires: ess 0.77.0
 specification:
   - system.yaml
   - components.yaml
@@ -285,6 +285,7 @@ scenarios:
   - scenarios/launch/private-path-initialization.yaml
   - scenarios/cli/codex-start.yaml
   - scenarios/cli/codex-private-runtime.yaml
+  - scenarios/cli/command-start.yaml
   - scenarios/launch/attach-backpressure-cancellation.yaml
   - scenarios/egress/codex-default-destinations.yaml
   - scenarios/egress/codex-connect-destinations.yaml

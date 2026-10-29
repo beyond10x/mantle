@@ -1,0 +1,63 @@
+<section class="section page-head prose"><p class="eyebrow">Security model</p><h1>What a session can reach.</h1><p class="lede">The agent and its tools run inside a Substrate sandbox on the worker. This page lists what that sandbox enforces in 0.3.0, where credentials go, what is recorded, and what is outside the model.</p>
+<nav class="toc" aria-label="On this page"><a href="#trust">Trust</a><a href="#sandbox">Sandbox</a><a href="#network">Network</a><a href="#credentials">Credentials</a><a href="#recording">Recording</a><a href="#laptop">Laptop state</a><a href="#outside">Outside the model</a></nav></section>
+
+<section id="trust" class="section prose"><div class="section-heading"><p class="eyebrow">01 / Trust</p><h2>Trust the worker’s administrator.</h2></div>
+<p>The worker host is trusted. Host administration, including <code>mantle worker ssh</code>, runs outside every sandbox and can read every workspace and the Claude token file. The sandbox protects the host and other sessions from the agent; it is not a boundary against whoever administers the worker.</p>
+</section>
+
+<section id="sandbox" class="section prose"><div class="section-heading"><p class="eyebrow">02 / Sandbox</p><h2>Required before an agent starts.</h2><p>Substrate reports facts about what it can enforce. <code>mantle start</code> refuses with <code>FAILED_CAPABILITY</code> and the missing names unless the worker reports all of these:</p></div>
+<ul>
+<li><code>exec.argv_only</code>: programs run from an argument vector, not a shell string.</li>
+<li><code>exec.no_egress</code>: the sandbox has no network route of its own.</li>
+<li><code>exec.cgroup_limits</code> for memory and processes, and <code>exec.cgroup_kill</code> for whole-tree termination.</li>
+<li><code>sessions.pty</code>, and the egress aperture named <code>egress</code>.</li>
+<li>For Claude Code, also the <code>claude</code> secret slot and the installed <code>claude</code> executable; for Codex, the installed <code>codex</code> executable.</li>
+</ul>
+<p>Inside, <code>/workspace</code> is writable; <code>/opt/mantle</code> and the host’s <code>/usr</code>, <code>/bin</code>, <code>/lib</code> and <code>/lib64</code> are read-only. The sandbox refuses Unix-domain sockets. CPU is not bandwidth-limited: Substrate 0.16.1 bounds cumulative CPU time only, and <code>resources.cpu</code> only sets <code>CARGO_BUILD_JOBS</code>. A storage quota applies only when the worker serves workspace quotas. Substrate’s full isolation floor is documented in the <a href="https://beyond10x.github.io/substrate/">Substrate documentation</a>.</p>
+</section>
+
+<section id="network" class="section prose"><div class="section-heading"><p class="eyebrow">03 / Network</p><h2>Ten destinations, all port 443.</h2></div>
+<p>The only way out of the sandbox is the <code>egress</code> aperture to <code>mantle-egress</code>, a CONNECT proxy on the worker’s loopback at <code>127.0.0.1:3128</code>, outside the sandbox. The service runs it with its built-in allowlist, shared by every session on the worker:</p>
+<div class="table-wrap"><table><caption class="sr-only">Gateway allowlist</caption><thead><tr><th>For</th><th>Destinations</th></tr></thead><tbody>
+<tr><td>Claude Code</td><td><code>api.anthropic.com:443</code>, <code>platform.claude.com:443</code></td></tr>
+<tr><td>Codex</td><td><code>auth.openai.com:443</code>, <code>chatgpt.com:443</code></td></tr>
+<tr><td>GitHub</td><td><code>github.com:443</code>, <code>codeload.github.com:443</code>, <code>objects.githubusercontent.com:443</code></td></tr>
+<tr><td>crates.io</td><td><code>crates.io:443</code>, <code>index.crates.io:443</code>, <code>static.crates.io:443</code></td></tr>
+</tbody></table></div>
+<ul>
+<li>Hosts match exactly after normalization: no wildcards, subdomains, lookalikes or other ports. <code>api.openai.com</code> is refused.</li>
+<li>IP-literal targets are refused. Resolved addresses that are not public are discarded, and the dial is pinned to an admitted public address; a mixed DNS answer can connect only to its public member.</li>
+<li>Names are resolved fully qualified, so a resolver search list cannot turn an allowed name into another.</li>
+<li><code>network.capabilities</code> in a manifest does not narrow the list.</li>
+<li>The gateway tunnels TLS without inspecting it: the list limits where data can go, not what is sent to an allowed destination.</li>
+</ul>
+<p>The gateway’s refusals and address filtering are covered by native scenarios with controlled DNS, and were observed on a live worker for 0.1.2 (an unlisted host and direct egress refused).</p>
+</section>
+
+<section id="credentials" class="section prose"><div class="section-heading"><p class="eyebrow">04 / Credentials</p><h2>Where the agent’s credential lives.</h2></div>
+<dl class="facts">
+<dt>Claude Code</dt><dd>On the laptop, <code>claude.token_command</code> or <code>claude.token_file</code> supplies the token; error messages name the source, never the value. <code>worker up</code> and <code>start</code> write it to <code>/var/lib/mantle/secrets/claude</code> on the worker. Substrate passes it to the agent execution through the <code>claude</code> secret slot on an inherited descriptor; the launcher puts it in the agent’s environment. Tools the agent starts can inherit it. The worker token file remains after <code>stop</code>.</dd>
+<dt>Codex</dt><dd>Device login in the agent terminal. The auth file and conversation files live in <code>/workspace/.mantle/home/.codex</code>, readable by the agent’s tools. <code>stop</code> keeps them; <code>destroy</code> deletes them.</dd>
+<dt>Command sessions</dt><dd>No agent credential: no <code>claude</code> secret slot, no <code>CLAUDE_CODE_OAUTH_TOKEN</code>, no Codex home and no Claude or Codex variables. A manifest with <code>agent.auth</code> and <code>kind: command</code> is refused.</dd>
+<dt><code>mantle exec</code></dt><dd>Gets no agent credential, but shares the workspace, including the Codex home.</dd>
+<dt>Git</dt><dd>No Git credential broker. Repositories are cloned over HTTPS without credentials.</dd>
+</dl>
+</section>
+
+<section id="recording" class="section prose"><div class="section-heading"><p class="eyebrow">05 / Recording</p><h2>Terminal output may be recorded.</h2></div>
+<p>Claude Code, Codex and command sessions use the same Substrate terminal transport, which may record terminal output. There is no end-to-end non-recording mode. Mantle’s own launcher keeps its replay buffer in memory, and Codex’s SQLite and text diagnostics are written to a tmpfs the launcher verifies. <code>mantle status --json</code> and the acceptance runner never fetch terminal output.</p>
+</section>
+
+<section id="laptop" class="section prose"><div class="section-heading"><p class="eyebrow">06 / Laptop state</p><h2>Private by default.</h2></div>
+<p>Each state directory (default <code>~/.local/state/mantle</code>, mode 0700) holds the SQLite records, the worker’s SSH key and its pinned host key. Ordinary commands accept the worker’s host key on first use and refuse a changed key afterwards (<code>StrictHostKeyChecking=accept-new</code>). <code>doctor</code>, JSON <code>status</code> and <code>worker upgrade --check</code> accept only an already pinned key. Your configuration file holds cloud identifiers and stays outside every repository.</p>
+</section>
+
+<section id="outside" class="section prose"><div class="section-heading"><p class="eyebrow">07 / Outside the model</p><h2>Not protected, not provided.</h2></div>
+<ul>
+<li>A malicious or compromised worker administrator.</li>
+<li>Data an agent sends to an allowed destination, such as a push to GitHub with credentials it was given in the session.</li>
+<li>Recovery of a lost worker or data volume; snapshots.</li>
+<li>Network policy per session.</li>
+<li>Authenticated end-to-end qualification of either agent; see <a href="/mantle/releases/#what-is-verified">what is verified</a>.</li>
+</ul>
+</section>

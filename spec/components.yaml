@@ -15,6 +15,7 @@ components:
         - mantle.operator.ProfileStateIsolation
         - mantle.session.IdentityMigration
         - mantle.orchestration.CodexPreflight
+        - mantle.orchestration.CommandPreflight
         - mantle.session.AssessSharedBinaryUpgrade
         - mantle.session.AssessWorkerReadiness
         - mantle.session.AssessAgentInstallation
@@ -35,6 +36,7 @@ components:
         - mantle.manifest.ValidateMemory
         - mantle.manifest.ValidatePids
         - mantle.manifest.ValidateRetention
+        - mantle.manifest.ValidateAgent
         - mantle.session.InsertSession
         - mantle.session.Materialized
         - mantle.session.MaterializationFailed

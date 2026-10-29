@@ -1,9 +1,9 @@
 # Mantle executable contract
 
 Six ESS domains describe Mantle's implemented behavior: sessions, manifest resolution, egress,
-launcher OS behavior, application orchestration and operator workflows. The specification uses ESS 0.50.x, `ess/17`
-and authored `ess-scenario/4` documents. `ess-inputs.yaml` explicitly selects every model and
-scenario input. Design proposals for scheduling, snapshots, peer buses and shared caches remain
+launcher OS behavior, application orchestration and operator workflows. The specification uses ESS 0.77.0, `ess/22`
+and authored `ess-scenario/4` documents. `ess-inputs.yaml` pins `requires: ess 0.77.0` and
+explicitly selects every model and scenario input. Design proposals for scheduling, snapshots, peer buses and shared caches remain
 future scope.
 
 ## Executable boundaries
@@ -24,7 +24,7 @@ an unknown outcome must read back absence before recording Stopped. The five-min
 under Tokio's virtual clock. These tests do not provision AWS or KubeVirt, run a Substrate daemon,
 or attest to a live deployment's capabilities. Those upstream systems retain their own contracts.
 
-The SDK is pinned to Substrate `65304edf6ebdf4a95f9c2c6138b0c20ea47d157e` (0.7.10).
+The SDK is pinned to Substrate `f2fd606b88a0b778970e8babe9a96eb600cd57b2` (0.16.1).
 Its producer declarations in `crates/substrate-wire/src/lib.rs` define `CapabilityFacts`,
 `ExecUsage`, `ResourceUsage` and `ErrorDetail`; `crates/substrate-daemon/src/app/responses.rs`
 defines unknown-outcome refusals. Observation fixtures retain metadata and metrics that Mantle
@@ -44,7 +44,10 @@ ignores. They use the owner's JSON vocabulary instead of declaring a competing l
   original row survives. Source rows require an existing session. Stop deletes neither sources
   nor session records; there is no invented source identifier or ownership cascade.
 - A session name is unique across records in every state except Stopped. Retained and all in-flight
-  lifecycle states still own the name. The worker relation identifies a local record; SQLite does
+  lifecycle states still own the name. `InsertSession` declares this as its `conflict` refusal, a
+  `when_related:` guard over live rows with the same name, so synthesis arranges the colliding row
+  and its Stopped and differently named decoys; it is no longer an `external:` outcome a fixture
+  arranges. The worker relation identifies a local record; SQLite does
   not enforce that relation.
 - Worker records are upserted by name and contain instance, region/location and optional data
   volume. Recorded is a structural ESS state, not provider liveness. Worker down retains storage.
@@ -65,7 +68,7 @@ filesystem durability after worker loss or recovery of a deleted volume.
 
 ## Manifest and confinement
 
-The API is `mantle.beyond10x.dev/v1alpha1`, kind Session, agent `claude-code` (default) or `codex`, runtime `rust-dev`,
+The API is `mantle.beyond10x.dev/v1alpha1`, kind Session, a required agent kind `claude-code`, `codex` or `command`, runtime `rust-dev`,
 root `/workspace`, and network default deny. Unknown fields are refused. Sources use HTTPS URLs,
 unique simple mounts and safe refs; cwd stays within `/workspace` or a listed mount. Defaults are
 CPU 4 (clamped to at least 1), memory 16 GiB, pids 4096, no storage quota request and retention
@@ -76,7 +79,13 @@ Network capabilities can name `model.anthropic`, `git.github` and `rust.crates`;
 narrow the gateway's fixed allowlist. `placement`, `network.profile` and `lifecycle.idleAfter` are
 accepted values that do not drive per-session scheduling or policy. `detachKeepsRunning: false`
 is refused. Claude agent requests carry the `claude` secret slot on descriptor 3. Codex uses
-`chatgpt-device` authentication and its private workspace home, without that slot. Attach and exec
+`chatgpt-device` authentication and its private workspace home, without that slot. A `command`
+session runs its required `agent.argv` (non-empty, first element an absolute path) directly, with
+no shell; it records authentication `none` and its request carries no secret slot, no Claude or
+Codex variable and no Codex home. `agent.argv` with another kind, a command kind without it and
+`agent.auth` with it are refused by the parser, and so is an argv Substrate's exec admission
+would refuse once the launcher's 13 leading elements are added: more than 243 elements, or an
+element that is empty, contains NUL or exceeds 4096 bytes (`ArgvOutOfBounds`). Attach and exec
 requests inject no agent credential; they share the workspace and use the intended toolchain root
 and their explicit resource bounds.
 
@@ -89,8 +98,8 @@ Shutdown owns and joins its connection tasks, aborting remaining tunnels after t
 
 ## Gate and evidence
 
-The measured complete native inventory executes **499 scenarios: 184 generated and 315 authored**,
-with zero failures, skips, unsupported, outside or refused cases. Its CLI component executes 381,
+The measured complete native inventory executes **508 scenarios: 192 generated and 316 authored**,
+with zero failures, skips, unsupported, outside or refused cases. Its CLI component executes 390,
 egress 69 and launcher 49 scenarios at the same specification digest. `task conformance` executes
 these components and reconciles their complete inventory. The complete inventory requires zero
 failed, skipped, unsupported, outside or refused scenarios. `task check` also runs the
@@ -106,7 +115,7 @@ DNS or dialing. These are local handler observations with controlled upstream IO
 authentication or traffic evidence. Deployment and authenticated Codex acceptance remain separate.
 
 `crates/mantle-conformance` adapts native observations to ESS's own Rust runner, pinned to
-`8700d0808e8f3b19711629d8a17afc5281680f58` (0.50.0). It does not evaluate guards or copy an ESS
+`f692aabbb0fcd321eca0a9eef86e12b25a7601f4` (0.77.0). It does not evaluate guards or copy an ESS
 state machine. Integer observations preserve full unsigned widths; OS arguments and tunnel data
 use Bytes. Read-your-writes tokens follow completed operations on the same native boundary.
 
@@ -157,7 +166,8 @@ Fixture assertions about this machinery are not authenticated agent qualificatio
 
 `mantle.operator.AcceptanceResult` carries identity, provenance and evidence origin. The metadata
 path in `app/metadata.rs` uses read-only SQLite snapshots before bounded remote observations;
-it never requests terminal output pages. Recorded and observed states remain separate. Exact-id
+it never requests terminal output pages. `SessionMetadata.argv` is the recorded argv of a
+`command` session and is absent for Claude Code and Codex. Recorded and observed states remain separate. Exact-id
 lookup includes terminal records. Creation receipts bind ownership to successful detached creation;
 discovery by name never authorizes cleanup after a lost receipt.
 
@@ -215,8 +225,9 @@ Codex diagnostic files or the terminal client, and it does not enable confidenti
 CW01–CW09 extend those retained assertions with `codex-start`, `codex-private-runtime` and
 `private-path-initialization`. The first runs actual legacy SQLite migration, identity validation,
 the production preflight and manifest parser; the second observes the complete production request.
-InsertSession's guarded InvalidIdentity refusal precedes accepting/external outcomes in ESS and
-production, preventing the invalid agent/auth cross-product. Every persisted view includes the
+InsertSession's guarded InvalidIdentity refusal precedes its live-name conflict and accepting
+outcome in ESS and production, preventing the invalid agent/auth cross-product. Every persisted
+view includes the
 generated identities. The third runs the launcher over real path/symlink/hardlink/mode fixtures,
 including refusal on ordinary disk, and checks child dispatch/readiness and preserved auth bytes.
 Existing default Claude and launcher snapshots gain only their new explicit fields.

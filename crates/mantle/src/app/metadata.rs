@@ -62,6 +62,15 @@ pub(crate) fn record(store: &Store, row: &SessionRecord) -> Result<Session> {
                     && s.bytes().all(|b| b.is_ascii_hexdigit())),
         "invalid source identity"
     );
+    let argv = if matches!(row.agent_kind, crate::domain::session::AgentKind::Command) {
+        let requested: serde_json::Value = serde_json::from_str(&row.requested_json)?;
+        match requested.get("agent_argv") {
+            Some(argv) => Some(serde_json::from_value::<Vec<String>>(argv.clone())?),
+            None => None,
+        }
+    } else {
+        None
+    };
     Ok(Session {
         id: row.id.clone(),
         name: row.name.clone(),
@@ -73,6 +82,7 @@ pub(crate) fn record(store: &Store, row: &SessionRecord) -> Result<Session> {
         exec_id: row.agent_exec.clone(),
         source_commits,
         observed: None,
+        argv,
     })
 }
 pub(crate) async fn report(

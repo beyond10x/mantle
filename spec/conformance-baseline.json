@@ -2,8 +2,8 @@
   "format": "mantle-conformance-baseline/1",
   "components": {
     "mantle-cli": {
-      "answered_floor": 381,
-      "total_floor": 381,
+      "answered_floor": 390,
+      "total_floor": 390,
       "skipped_ceiling": 0
     },
     "mantle-egress": {
@@ -137,6 +137,13 @@
     "mantle.launch/authored/window-fragmentation",
     "mantle.launch/authored/window-oversize-discard",
     "mantle.manifest.Parse/outcome/returned",
+    "mantle.manifest.ValidateAgent/outcome/agent",
+    "mantle.manifest.ValidateAgent/outcome/argv-out-of-bounds",
+    "mantle.manifest.ValidateAgent/outcome/argv-without-command",
+    "mantle.manifest.ValidateAgent/outcome/command",
+    "mantle.manifest.ValidateAgent/outcome/command-with-auth",
+    "mantle.manifest.ValidateAgent/outcome/command-without-argv",
+    "mantle.manifest.ValidateAgent/outcome/invalid-argv",
     "mantle.manifest.ValidateMemory/outcome/accepted",
     "mantle.manifest.ValidateMemory/outcome/refused",
     "mantle.manifest.ValidatePids/outcome/accepted",
@@ -246,6 +253,7 @@
     "mantle.operator/authored/upgrade-tampered",
     "mantle.operator/authored/upgrade-unknown-refusal",
     "mantle.orchestration.CodexPreflight/outcome/returned",
+    "mantle.orchestration.CommandPreflight/outcome/returned",
     "mantle.orchestration.Destroy/outcome/returned",
     "mantle.orchestration.ExecOutcome/outcome/returned",
     "mantle.orchestration.Observe/outcome/returned",
@@ -275,6 +283,7 @@
     "mantle.orchestration/authored/aws-up-stopping",
     "mantle.orchestration/authored/codex-private-runtime",
     "mantle.orchestration/authored/codex-start",
+    "mantle.orchestration/authored/command-start",
     "mantle.orchestration/authored/exec-exit-nonzero",
     "mantle.orchestration/authored/exec-exit-zero",
     "mantle.orchestration/authored/exec-indeterminate",

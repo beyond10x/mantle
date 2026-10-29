@@ -464,8 +464,8 @@ mod tests {
             requested_json: "{}".to_owned(),
             created_at: "2026-10-02T00:00:00Z".to_owned(),
             failure: None,
-            agent_kind: AgentKind::V0,
-            authentication: AuthenticationMethod::V1,
+            agent_kind: AgentKind::ClaudeCode,
+            authentication: AuthenticationMethod::ClaudeOauth,
         }
     }
 

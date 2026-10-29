@@ -141,9 +141,11 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
             flag("binary_verified")?,
             flag("version_verified")?,
         ) {
-            mantle_worker::InstallationOutcome::V0 => reply.outcome = "already-current".into(),
-            mantle_worker::InstallationOutcome::V1 => reply.outcome = "installed".into(),
-            mantle_worker::InstallationOutcome::V2 => {
+            mantle_worker::InstallationOutcome::AlreadyCurrent => {
+                reply.outcome = "already-current".into()
+            }
+            mantle_worker::InstallationOutcome::Installed => reply.outcome = "installed".into(),
+            mantle_worker::InstallationOutcome::Refused => {
                 reply.outcome = "refused".into();
                 reply.error = Some("mantle.session.InstallationRefused".into());
             }
@@ -271,16 +273,89 @@ fn manifest(command: &str, input: &Value) -> Result<Reply> {
     use crate::domain::manifest as m;
     if command == "mantle.manifest.Parse" {
         return Ok(Reply::returned(match m::parse(text(&input["text"])?) {
-            Ok(r) => json!({"diagnostic": null, "resolved": {
-                "name": r.name, "repositories": r.repositories.iter().map(|r| json!({
-                    "name": r.name, "repository": r.repository, "reference": r.reference, "mount": r.mount
-                })).collect::<Vec<_>>(), "agent_cwd": r.agent_cwd, "cpu": r.cpu,
-                "memory_bytes": r.memory_bytes, "pids": r.pids, "storage_bytes": r.storage_bytes,
-                "retain_for_secs": r.retain_for.as_secs(), "digest": r.digest,
-                "agent_kind": r.agent_kind, "authentication": r.authentication
-            }}),
+            Ok(r) => {
+                let mut resolved = json!({
+                    "name": r.name, "repositories": r.repositories.iter().map(|r| json!({
+                        "name": r.name, "repository": r.repository, "reference": r.reference, "mount": r.mount
+                    })).collect::<Vec<_>>(), "agent_cwd": r.agent_cwd, "cpu": r.cpu,
+                    "memory_bytes": r.memory_bytes, "pids": r.pids, "storage_bytes": r.storage_bytes,
+                    "retain_for_secs": r.retain_for.as_secs(), "digest": r.digest,
+                    "agent_kind": r.agent_kind, "authentication": r.authentication
+                });
+                // Optional: absent, not null, for the kinds that take no argv.
+                if let Some(argv) = r.agent_argv {
+                    resolved["agent_argv"] = json!(argv);
+                }
+                json!({"diagnostic": null, "resolved": resolved})
+            }
             Err(e) => json!({"resolved": null, "diagnostic": format!("{e:#}")}),
         }));
+    }
+    if command == "mantle.manifest.ValidateAgent" {
+        let flag = |name: &str| input[name].as_bool().context("boolean fact");
+        // The facts select a concrete mapping; the production validator decides it.
+        let kind = if flag("command_kind")? {
+            crate::domain::session::COMMAND
+        } else {
+            "claude-code"
+        };
+        let auth = flag("auth_present")?.then_some("claude-oauth");
+        let program = if flag("program_absolute")? {
+            "/bin/bash"
+        } else {
+            "bash"
+        };
+        let mut declared = vec![program.to_owned(), "-l".to_owned()];
+        if flag("argv_element_empty")? {
+            declared.push(String::new());
+        }
+        if flag("argv_element_nul")? {
+            declared.push("a\0b".into());
+        }
+        if flag("argv_element_over_4096_bytes")? {
+            declared.push("a".repeat(m::SUBSTRATE_MAX_ARGV_ELEMENT_BYTES + 1));
+        }
+        if flag("argv_over_243_elements")? {
+            declared.resize(m::MAX_COMMAND_ARGV_ELEMENTS + 1, "x".into());
+        }
+        let argv: Option<Vec<String>> = flag("argv_present")?.then(|| {
+            if flag("argv_empty").unwrap_or(false) {
+                vec![]
+            } else {
+                declared
+            }
+        });
+        return Ok(match m::validate_agent(kind, auth, argv.as_deref()) {
+            Ok(()) => Reply {
+                outcome: if kind == crate::domain::session::COMMAND {
+                    "command"
+                } else {
+                    "agent"
+                }
+                .into(),
+                ..Reply::default()
+            },
+            Err(refusal) => {
+                let (outcome, error) = match refusal {
+                    m::AgentRefusal::CommandRequiresArgv => {
+                        ("command-without-argv", "CommandRequiresArgv")
+                    }
+                    m::AgentRefusal::CommandRefusesAuth => {
+                        ("command-with-auth", "CommandRefusesAuth")
+                    }
+                    m::AgentRefusal::InvalidArgv => ("invalid-argv", "InvalidArgv"),
+                    m::AgentRefusal::ArgvOutOfBounds => ("argv-out-of-bounds", "ArgvOutOfBounds"),
+                    m::AgentRefusal::ArgvRequiresCommand => {
+                        ("argv-without-command", "ArgvRequiresCommand")
+                    }
+                };
+                Reply {
+                    outcome: outcome.into(),
+                    error: Some(format!("mantle.manifest.{error}")),
+                    ..Reply::default()
+                }
+            }
+        });
     }
     let answer = match command {
         "mantle.manifest.ValidateMemory" => integer(&input["bytes"])
@@ -315,27 +390,6 @@ impl Default for CliBoundary {
     }
 }
 impl Boundary for CliBoundary {
-    fn external(&mut self, outcome: &str) -> Result<()> {
-        ensure!(
-            outcome == "mantle.session.InsertSession/conflict",
-            "unsupported arrangement {outcome}"
-        );
-        self.0.insert_session(&SessionRecord {
-            generation: 0,
-            id: "pre-existing-session".into(),
-            name: "conformance-session".into(),
-            worker: "w".into(),
-            state: SessionState::Materializing,
-            manifest_digest: "existing".into(),
-            workspace: None,
-            agent_exec: None,
-            requested_json: "{}".into(),
-            created_at: "2026-10-02T00:00:00Z".into(),
-            failure: None,
-            agent_kind: AgentKind::V0,
-            authentication: AuthenticationMethod::V1,
-        })
-    }
     fn execute(&mut self, command: &str, input: &Value) -> Result<Reply> {
         execute(&self.0, command, input)
     }
@@ -382,8 +436,8 @@ fn identity_migration() -> Result<Value> {
     let before = store.session_by_id("live")?.context("migrated row")?;
     let old = store.session_by_id("stopped")?.context("stopped row")?;
     let legacy_preserved = original == legacy_payload(&store.connection)?
-        && before.agent_kind == AgentKind::V0
-        && before.authentication == AuthenticationMethod::V1
+        && before.agent_kind == AgentKind::ClaudeCode
+        && before.authentication == AuthenticationMethod::ClaudeOauth
         && before.state == SessionState::Running
         && before.workspace.as_deref() == Some("ws")
         && before.agent_exec.as_deref() == Some("exec")
@@ -394,13 +448,13 @@ fn identity_migration() -> Result<Value> {
     let mut codex = before.clone();
     codex.id = "codex".into();
     codex.name = "codex".into();
-    codex.agent_kind = AgentKind::V1;
-    codex.authentication = AuthenticationMethod::V0;
+    codex.agent_kind = AgentKind::Codex;
+    codex.authentication = AuthenticationMethod::ChatgptDevice;
     store.insert_session(&codex)?;
     let mut invalid = codex.clone();
     invalid.id = "invalid".into();
     invalid.name = "invalid".into();
-    invalid.authentication = AuthenticationMethod::V1;
+    invalid.authentication = AuthenticationMethod::ClaudeOauth;
     let bad_pair_refused = store.insert_session(&invalid).is_err();
     drop(store);
     let store = Store::open(&path)?;

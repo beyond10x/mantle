@@ -14,12 +14,14 @@ types:
       - {name: terminal_exec, type: 'Optional<String>'}
       - {name: retirement_operation, type: 'Optional<String>'}
   # Persisted identities. The SQLite migration resolves legacy rows to Claude values.
+  # Command runs the manifest's declared agent.argv and pairs only with NoCredential:
+  # no secret slot, no credential variable and no agent home reach its process.
   - name: mantle.session.AgentKind
     kind: enum
-    variants: [ClaudeCode, Codex]
+    variants: [ClaudeCode, Codex, Command]
   - name: mantle.session.AuthenticationMethod
     kind: enum
-    variants: [ClaudeOauth, ChatgptDevice]
+    variants: [ClaudeOauth, ChatgptDevice, NoCredential]
   # Proposed observed installation values for story:agent-ready-worker. These are
   # not persisted WorkerRecord fields or proof that an agent is authenticated.
   - name: mantle.session.AgentInstallationFacts
@@ -277,15 +279,23 @@ commands:
         emits: [mantle.session.SessionRecorded]
         payload:
           mantle.session.SessionRecorded: {session_id: input.session_id}
-      - name: conflict
-        external: SQLite rejects an existing id or an existing name whose state is not Stopped.
-        error: mantle.session.RecordConflict
       - name: invalid-identity
         when:
           any:
             - {all: [agent_kind == ClaudeCode, authentication == ChatgptDevice]}
+            - {all: [agent_kind == ClaudeCode, authentication == NoCredential]}
             - {all: [agent_kind == Codex, authentication == ClaudeOauth]}
+            - {all: [agent_kind == Codex, authentication == NoCredential]}
+            - {all: [agent_kind == Command, authentication == ClaudeOauth]}
+            - {all: [agent_kind == Command, authentication == ChatgptDevice]}
         error: mantle.session.InvalidIdentity
+      # The SQLite partial unique index on name, which excludes Stopped rows.
+      - name: conflict
+        when_related:
+          entity: mantle.session.Session
+          where: {all: [name == input.name, state != Stopped]}
+          exists: true
+        error: mantle.session.RecordConflict
     # Authored live-name scenarios exercise the partial index in all seven states,
     # including reuse after Stopped and refusal while each other record remains live.
     # Input id is minted by app/session.rs:85; Store receives it, so it is not generated here.

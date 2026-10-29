@@ -11,8 +11,8 @@ clap.workspace = true
 anyhow.workspace = true
 serde_json.workspace = true
 base64 = "0.22"
-ess-conformance = { git = "https://github.com/beyond10x/ess", rev = "8700d0808e8f3b19711629d8a17afc5281680f58" }
-ess-primitives = { git = "https://github.com/beyond10x/ess", rev = "8700d0808e8f3b19711629d8a17afc5281680f58" }
+ess-conformance = { git = "https://github.com/beyond10x/ess", rev = "f692aabbb0fcd321eca0a9eef86e12b25a7601f4" }
+ess-primitives = { git = "https://github.com/beyond10x/ess", rev = "f692aabbb0fcd321eca0a9eef86e12b25a7601f4" }
 
 [lints]
 workspace = true

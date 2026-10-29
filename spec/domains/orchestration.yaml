@@ -75,6 +75,22 @@
       "outcomes":[{"name":"returned","returns":true}]
     },
     {
+      "name": "mantle.orchestration.CommandPreflight",
+      "response": [
+        {"name":"started","type":"Boolean"},
+        {"name":"credential_reads","type":"Integer"},
+        {"name":"calls","type":"List<String>"},
+        {"name":"state","type":"String"},
+        {"name":"agent_exec","type":"Optional<String>"},
+        {"name":"attach_argv","type":"List<String>"},
+        {"name":"attach_has_secret","type":"Boolean"},
+        {"name":"request_has_secret","type":"Boolean"},
+        {"name":"request_credential_variables","type":"List<String>"},
+        {"name":"persisted_argv","type":"List<String>"}
+      ],
+      "outcomes":[{"name":"returned","returns":true}]
+    },
+    {
       "name": "mantle.orchestration.Start",
       "input": [
         {

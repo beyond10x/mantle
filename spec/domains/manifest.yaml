@@ -39,12 +39,15 @@ types:
       - {name: repository, type: String}
       - {name: reference, type: String, naming: {wire: ref}}
       - {name: mount, type: String}
+  # kind claude-code, codex or command. argv is the command kind's process, run by the
+  # launcher without a shell; ValidateAgent states the rules that pair kind, argv and auth.
   - name: mantle.manifest.Agent
     kind: struct
     fields:
       - {name: kind, type: String}
       - {name: cwd, type: String}
       - {name: auth, type: 'Optional<String>'}
+      - {name: argv, type: 'Optional<List<String>>'}
   - name: mantle.manifest.Resources
     kind: struct
     fields:
@@ -72,6 +75,8 @@ types:
       - {name: agent_cwd, type: String}
       - {name: agent_kind, type: mantle.session.AgentKind}
       - {name: authentication, type: mantle.session.AuthenticationMethod}
+      # Present only for agent_kind Command; restart reruns it from the persisted launch context.
+      - {name: agent_argv, type: 'Optional<List<String>>'}
       - {name: cpu, type: Integer}
       - {name: memory_bytes, type: Integer}
       - {name: pids, type: Integer}
@@ -107,6 +112,52 @@ commands:
         accepts: nothing
       - name: refused
         error: mantle.manifest.InvalidResource
+  # crates/mantle/src/domain/manifest.rs validate_agent, which Parse runs before it resolves the
+  # identity. The inputs are facts about the manifest's agent mapping; refusals apply in order.
+  - name: mantle.manifest.ValidateAgent
+    input:
+      - {name: command_kind, type: Boolean}
+      - {name: auth_present, type: Boolean}
+      - {name: argv_present, type: Boolean}
+      - {name: argv_empty, type: Boolean}
+      - {name: program_absolute, type: Boolean}
+      # Substrate's exec admission refuses these; the launcher's 13 leading elements count
+      # towards its 256-element limit, so a declared argv holds at most 243.
+      - {name: argv_element_empty, type: Boolean}
+      - {name: argv_element_nul, type: Boolean}
+      - {name: argv_element_over_4096_bytes, type: Boolean}
+      - {name: argv_over_243_elements, type: Boolean}
+    outcomes:
+      - name: command-without-argv
+        when: {all: [command_kind == true, argv_present == false]}
+        error: mantle.manifest.CommandRequiresArgv
+      - name: command-with-auth
+        when: {all: [command_kind == true, auth_present == true]}
+        error: mantle.manifest.CommandRefusesAuth
+      - name: invalid-argv
+        when:
+          all:
+            - command_kind == true
+            - any: [argv_empty == true, program_absolute == false]
+        error: mantle.manifest.InvalidArgv
+      - name: argv-out-of-bounds
+        when:
+          all:
+            - command_kind == true
+            - any:
+                - argv_element_empty == true
+                - argv_element_nul == true
+                - argv_element_over_4096_bytes == true
+                - argv_over_243_elements == true
+        error: mantle.manifest.ArgvOutOfBounds
+      - name: command
+        when: command_kind == true
+        accepts: nothing
+      - name: argv-without-command
+        when: {all: [command_kind == false, argv_present == true]}
+        error: mantle.manifest.ArgvRequiresCommand
+      - name: agent
+        accepts: nothing
   - name: mantle.manifest.Parse
     # Decode original UTF-8 YAML, validate the served subset, return resolved values or a diagnostic.
     # The digest hashes original bytes, before defaults or normalization.
@@ -122,4 +173,14 @@ commands:
         returns: true
 errors:
   - name: mantle.manifest.InvalidResource
+    fields: []
+  - name: mantle.manifest.CommandRequiresArgv
+    fields: []
+  - name: mantle.manifest.CommandRefusesAuth
+    fields: []
+  - name: mantle.manifest.InvalidArgv
+    fields: []
+  - name: mantle.manifest.ArgvOutOfBounds
+    fields: []
+  - name: mantle.manifest.ArgvRequiresCommand
     fields: []

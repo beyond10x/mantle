@@ -96,6 +96,7 @@ types:
       - {name: exec_id, type: 'Optional<String>'}
       - {name: source_commits, type: 'List<String>'}
       - {name: observed, type: 'Optional<mantle.operator.SessionObservation>'}
+      - {name: argv, type: 'Optional<List<String>>'}
   - name: mantle.operator.SessionObservation
     kind: struct
     fields:

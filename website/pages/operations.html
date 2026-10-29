@@ -1,0 +1,147 @@
+<section class="section page-head prose"><p class="eyebrow">Operations</p><h1>Running sessions and workers.</h1><p class="lede">Everything here describes release 0.3.0. Behaviour of earlier releases, including the destructive <code>stop</code> of 0.1.4 and the Substrate 0.7.10 workers of 0.2.0, is on <a href="/mantle/history/">release history</a>.</p>
+<nav class="toc" aria-label="On this page"><a href="#commands">Commands</a><a href="#worker">Worker</a><a href="#sessions">Sessions</a><a href="#exec">Exec results</a><a href="#profiles">Profiles</a><a href="#doctor">Doctor</a><a href="#automation">Automation</a><a href="#acceptance">Acceptance runs</a><a href="#offline-upgrades">Offline upgrades</a><a href="#troubleshooting">Troubleshooting</a></nav></section>
+
+<section id="commands" class="section"><div class="section-heading"><p class="eyebrow">01 / Commands</p><h2>The CLI.</h2><p><code>--profile NAME</code> works with every command; see <a href="#profiles">profiles</a>.</p></div>
+<div class="table-wrap"><table><caption class="sr-only">Mantle commands and their behaviour</caption><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody>
+<tr><td><code>mantle worker up [--binaries DIR] [--no-idle-stop]</code></td><td>Create or start the worker, install the Mantle helpers from <code>DIR</code>, and check Substrate’s facts.</td></tr>
+<tr><td><code>mantle worker status</code></td><td>Show provider state and the worker’s observed capabilities.</td></tr>
+<tr><td><code>mantle worker ssh</code></td><td>Open a shell on the worker host through the provider tunnel, outside every sandbox.</td></tr>
+<tr><td><code>mantle worker down</code></td><td>Stop the worker; its data volume and workspaces are kept.</td></tr>
+<tr><td><code>mantle worker upgrade --check|--apply --manifest PATH</code></td><td>Check or apply a verified helper bundle during offline maintenance. See <a href="#offline-upgrades">offline upgrades</a>.</td></tr>
+<tr><td><code>mantle start [MANIFEST] [--detached [--receipt PATH]]</code></td><td>Resolve the manifest (default <code>mantle.yaml</code>), clone the repositories, start the agent, and attach unless <code>--detached</code>.</td></tr>
+<tr><td><code>mantle attach NAME</code></td><td>Attach to the agent’s terminal. One attachment at a time. <kbd>Ctrl</kbd>+<kbd>]</kbd> <kbd>d</kbd> detaches.</td></tr>
+<tr><td><code>mantle list [--json]</code></td><td>List sessions recorded locally, including retained ones.</td></tr>
+<tr><td><code>mantle status NAME [--json] [--timeout-secs N]</code></td><td>Recorded intent, then what Substrate observes now. <code>--session-id ID</code> replaces the name with <code>--json</code>.</td></tr>
+<tr><td><code>mantle exec NAME -- PROGRAM ARGS</code></td><td>Run one command in the workspace under the agent’s confinement, without the agent’s credential.</td></tr>
+<tr><td><code>mantle stop NAME</code></td><td>End the agent; keep the workspace and its private home.</td></tr>
+<tr><td><code>mantle restart NAME</code></td><td>Start a fresh agent in the retained workspace.</td></tr>
+<tr><td><code>mantle destroy NAME --yes</code></td><td>Delete the workspace and its private home.</td></tr>
+<tr><td><code>mantle profile add|list|show</code></td><td>Manage named configuration and state paths.</td></tr>
+<tr><td><code>mantle doctor [--json] [--timeout-secs N]</code></td><td>Diagnose an existing worker with read-only probes.</td></tr>
+<tr><td><code>mantle-acceptance run|resume|report|cleanup</code></td><td>Qualify disposable sessions through the installed CLI.</td></tr>
+</tbody></table></div>
+<p>Attach, exec, stop, restart and destroy accept <code>--expected-session-id ID</code>.</p>
+</section>
+
+<section id="worker" class="section prose"><div class="section-heading"><p class="eyebrow">02 / Worker</p><h2>One worker per configuration.</h2></div>
+<p>The first <code>worker up</code> boots the VM with cloud-init, waits for bootstrap, installs the three static helpers from <code>--binaries</code> (default: <code>x86_64-unknown-linux-musl/release</code> under <code>$CARGO_TARGET_DIR</code>, or under <code>~/.cache/b10x-target/mantle</code> when that is unset, which is where <code>task build-worker</code> puts them), installs the Claude token when <code>[claude]</code> is configured, starts Substrate, installs pinned Codex and prints the worker’s identity and facts.</p>
+<p>On AWS, <code>worker up</code> also creates a CloudWatch alarm that stops the instance after 24 five-minute periods (two hours) below 2% average CPU. <code>--no-idle-stop</code> leaves it out. <code>worker down</code> stops the VM; the data volume stays, and retained cloud storage may still incur charges.</p>
+<p>On a worker that already runs, <code>worker up</code> starts services but does not restart a running older Substrate daemon, defers changed shared binaries while services are active, and refuses to replace helpers installed from a release bundle. Use <a href="#offline-upgrades">offline upgrades</a> for those.</p>
+<p>A worker created by 0.2.0 runs Substrate 0.7.10. The 0.3.0 CLI and helpers cannot use it, and neither <code>worker up</code> nor an offline upgrade moves it to Substrate 0.16.1: sessions on 0.3.0 need a new worker. See <a href="/mantle/history/#v0-3-0-upgrade">upgrading from 0.2.0</a>.</p>
+</section>
+
+<section id="sessions" class="section prose"><div class="section-heading"><p class="eyebrow">03 / Sessions</p><h2>Stop keeps the workspace.</h2></div>
+<pre><code>mantle stop my-project
+mantle restart my-project
+mantle destroy my-project --yes</code></pre>
+<ul>
+<li><code>stop</code> ends and retires the agent and keeps the workspace, the edited files and the private login home. <code>destroy NAME --yes</code> deletes them.</li>
+<li><code>restart</code> starts a fresh agent execution in the same workspace with the persisted agent, cwd, environment and resource policy; a command session runs its stored argv again. It does not clone the repositories again or overwrite the private home. It does not resume the conversation.</li>
+<li><code>attach</code> never starts an agent. A missing workspace is refused, never recreated. A retained name stays reserved until <code>destroy</code>.</li>
+<li><code>exec</code> uses the existing workspace and injects no agent credential.</li>
+</ul>
+<h3 id="concurrency">Interruptions and concurrent commands</h3>
+<p>For automation, pass <code>--expected-session-id ID</code> with the recorded id, not just the reusable name: the CLI compares it before any remote change. Concurrent commands claim a durable generation and intent before acting. An interrupted restart observes its original admission operation instead of starting another process; run the same command again to reconcile. A missing or unknown observation leaves the command incomplete with a nonzero exit. A confirmed running or ended admission can be stopped or destroyed even when readiness failed. An interrupted first materialization stays incomplete when its termination cannot be proven; it is not reported as a retained workspace.</p>
+<h3 id="legacy-records">Records from 0.1.x</h3>
+<p>A historical <code>STOPPED</code> record means destroyed and cannot be restarted. Migration keeps a historical <code>STOPPING</code> record as a destroy intent, so retrying it may still delete the workspace. Records without a validated launch context cannot be restarted from today’s configuration. Changed worker bindings and unsupported persisted policy versions are refused. Retention does not recover a lost worker or volume.</p>
+</section>
+
+<section id="exec" class="section prose"><div class="section-heading"><p class="eyebrow">04 / Exec results</p><h2>The remote exit code is yours.</h2></div>
+<p><code>mantle exec</code> exits with the remote exit code (0–255) and maps the INT, TERM and KILL signals to 130, 143 and 137. A refused, missing, contradictory or indeterminate result exits nonzero. After a valid Substrate response is decoded, stdout and stderr keep their bytes and the status line follows on stderr. A malformed response fails without printing raw output. Networked Cargo builds through <code>exec</code> need the proxy set explicitly; see <a href="/mantle/configuration/#environment">session environment</a>.</p>
+</section>
+
+<section id="profiles" class="section prose"><div class="section-heading"><p class="eyebrow">05 / Profiles</p><h2>Separate named environments.</h2></div>
+<pre><code>mantle profile add personal --config "$HOME/.config/mantle/personal.toml" \
+  --state-dir "$HOME/.local/state/mantle-personal"
+mantle profile list
+mantle profile show personal
+mantle --profile personal list
+MANTLE_PROFILE=personal mantle worker status</code></pre>
+<ul>
+<li>A profile stores two absolute paths in a private file under <code>~/.config/mantle/profiles/</code>. Registering one does not copy credentials, read the configuration, create the state directory or contact a worker. Existing names cannot be overwritten.</li>
+<li>Names: lowercase letters, digits, <code>_</code> and <code>-</code>, starting with a letter or digit, at most 63 characters.</li>
+<li><code>--profile</code> overrides <code>MANTLE_PROFILE</code>. A named selection refuses <code>MANTLE_CONFIG</code> and <code>MANTLE_STATE_DIR</code>; unset them first. Without a profile, those two variables (absolute paths) and the defaults <code>~/.config/mantle/config.toml</code> and <code>~/.local/state/mantle</code> apply.</li>
+<li>Each state directory holds its own SQLite database, SSH key and known hosts. Use one state directory per profile. Attachments use separate short private socket directories, also with long or Unicode state paths.</li>
+<li>Profile entries and selected paths refuse symlinks and unsafe file types. Configuration and state ancestors must be owned by you or root and not writable by others; root-owned sticky directories are allowed.</li>
+<li>State paths may contain spaces, <code>#</code>, colons and Unicode. Quotes, backslashes, <code>%</code> tokens and <code>${...}</code> are refused because OpenSSH would interpret them.</li>
+</ul>
+</section>
+
+<section id="doctor" class="section prose"><div class="section-heading"><p class="eyebrow">06 / Doctor</p><h2>Diagnose an existing worker.</h2></div>
+<pre><code>mantle --profile personal doctor
+mantle --profile personal doctor --json --timeout-secs 5</code></pre>
+<p>Checks, in order: selection, configuration, local state, the recorded worker and placement, the provider, strict SSH, the Substrate service and socket, installed Mantle binary versions with live Substrate version and wire compatibility, and the common confinement facts. Each reports <code>healthy</code>, <code>failed</code> or <code>skipped</code>. A failure skips the checks that depend on it and exits nonzero. JSON stays structured even when selection or configuration fails. Reports give fixed advice and omit raw provider, SSH and configuration contents. A healthy worker does not prove agent authentication.</p>
+<p>Doctor needs an existing SSH key and pinned known host. It never creates keys, accepts new hosts, runs an agent credential command, initializes or migrates the database, changes records or restarts services. SQLite opens read-only and query-only and sees committed WAL data. Your provider’s normal authentication plugins may run. Bounds: each external probe 10 seconds by default (1–120), with timed-out process groups and tunnel descendants killed; configuration input 1 MiB; database and sidecar files 64 MiB; SQLite busy and query handling 250 ms.</p>
+</section>
+
+<section id="automation" class="section prose"><div class="section-heading"><p class="eyebrow">07 / Automation</p><h2>Metadata and receipts.</h2></div>
+<pre><code>mantle --profile personal list --json
+mantle --profile personal status my-project --json --timeout-secs 10
+mantle --profile personal status --session-id SESSION_ID --json</code></pre>
+<p>Use the JSON forms in scripts; human <code>status</code> may print launcher diagnostics and is not a stable format. <code>list --json</code> includes ended records and does not contact the worker. <code>status --json</code> separates the recorded identity and state from bounded Substrate observations, including unavailable or refused ones; a lookup by session id also finds destroyed records. In both, a command session’s record carries <code>argv</code>, its declared argv; Claude Code and Codex records have no <code>argv</code> key. Neither fetches terminal output. The recorded authentication method is metadata, not proof of login.</p>
+<p>To own what you create, start with <code>mantle start MANIFEST --detached --receipt PATH</code>. The receipt is written only after a successful start and holds the immutable session id and the profile binding. <code>PATH</code> must not exist; put it in a private directory (Mantle does not check the directory). Persist it before acting on the session: a name lookup cannot replace a lost receipt. An interrupted start may have created resources without writing a receipt; treat that as unresolved rather than claiming or destroying the name.</p>
+</section>
+
+<section id="acceptance" class="section prose"><div class="section-heading"><p class="eyebrow">08 / Acceptance runs</p><h2>Repeatable qualification through the installed CLI.</h2></div>
+<p><code>mantle-acceptance</code> ships in the GNU bundle. It runs the same cases for Claude Code and Codex against a disposable session it creates, on a worker and profile you already configured. It does not provision workers or adopt existing sessions.</p>
+<pre><code>mkdir -m 0700 "$HOME/.cache/mantle-acceptance-run"
+mantle-acceptance run --real --mantle "$HOME/.local/mantle/bin/mantle" \
+  --profile personal --agent codex --manifest examples/codex.yaml \
+  --checkpoint "$HOME/.cache/mantle-acceptance-run/run.json"</code></pre>
+<p>For Claude Code use <code>--agent claude-code</code> with a Claude manifest and a profile whose <code>[claude]</code> source is configured. Add <code>--release-manifest /absolute/path/manifest.json</code> to bind the run to a verified bundle: the manifest, both sibling archives and the CLI’s digest must match, otherwise the run is refused. Without it, the source identity is recorded as unknown; a version string or install directory name is not proof of source.</p>
+<p>Login, a model and tool turn and the visual check happen in your terminal through the attach command the runner prints. Use it unchanged: it runs the run’s private copy of the CLI with the resolved configuration and state paths pinned. Then submit only what you observed:</p>
+<pre><code>mantle-acceptance resume --real \
+  --checkpoint "$HOME/.cache/mantle-acceptance-run/run.json" \
+  --expected-run-id RUN_ID --expected-exec-id EXEC_ID \
+  --attest login --attest model-tool --attest visual
+mantle-acceptance report --checkpoint "$HOME/.cache/mantle-acceptance-run/run.json"
+mantle-acceptance cleanup --real --checkpoint "$HOME/.cache/mantle-acceptance-run/run.json"</code></pre>
+<ul>
+<li>Exit 0: every required case complete. Exit 1: a case failed. Exit 2: incomplete or waiting for you; <code>resume</code> with missing attestations returns 2 with the same ids.</li>
+<li><code>report</code> reads the checkpoint without contacting the worker. <code>cleanup</code> removes only the owned disposable workspace and its login state and returns the aggregate status: cleanup after an aborted run can still return 2, and a failed case stays failed.</li>
+<li>The checkpoint binds the CLI’s digest, the resolved profile and the exact session identities. Cleanup needs the creation receipt; a matching name or prefix is not enough. <code>resume</code> checks the bindings again.</li>
+<li>The runner does not read authentication caches, store terminal transcripts or infer login from a running process. Attestations are your statements, kept apart from machine observations. The retained-workspace case shows that the workspace and a marker file survive a fresh agent execution, not that a conversation resumes.</li>
+<li>The runner’s own tests use controlled CLI and PTY fixtures. They do not make a live, authenticated qualification.</li>
+</ul>
+</section>
+
+<section id="offline-upgrades" class="section prose"><div class="section-heading"><p class="eyebrow">09 / Offline upgrades</p><h2>Replace worker helpers during maintenance.</h2><p>For administrators. Use a matching 0.3.0 CLI and a <a href="/mantle/releases/#verify">verified 0.3.0 bundle</a>. The worker must already run the Substrate the CLI pins (0.16.1 for release 0.3.0, 0.7.10 for 0.2.0); this command does not migrate Substrate, so it cannot take a 0.2.0 worker to 0.3.0.</p></div>
+<p><code>mantle worker upgrade</code> replaces the three Mantle helpers and keeps worker data, configuration, Claude, Codex’s generation link and the Substrate daemon. A different Substrate version or revision is refused. It does not drain sessions and never stops, masks, unmasks, restarts or signals a service. <code>--check</code> also works against an older installed helper: it uses bounded read-only SSH observations and uploads nothing.</p>
+<h3 id="upgrade-prepare">1. Prepare the worker</h3>
+<p>Take an exclusive maintenance window. Save wanted work and retire every execution. Keep other administrators and older Mantle clients away for the whole window: they do not take the new installation lock. Through <code>mantle worker ssh</code>:</p>
+<pre><code>sudo systemctl stop substrate.service mantle-egress.service
+sudo install -d -m 0700 /var/lib/mantle/maintenance/units
+sudo mv --no-clobber /etc/systemd/system/substrate.service /var/lib/mantle/maintenance/units/substrate.service
+sudo mv --no-clobber /etc/systemd/system/mantle-egress.service /var/lib/mantle/maintenance/units/mantle-egress.service
+sudo systemctl mask substrate.service mantle-egress.service
+sudo systemctl daemon-reload</code></pre>
+<p>Run these only on first entry: inspect saved originals that already exist and never overwrite them. The originals must keep the rendered unit bytes, <code>root:root</code>, mode 0644 and one hard link. A plain mask cannot replace the regular unit files Mantle installs in <code>/etc/systemd/system</code>, and a runtime mask alone does not override them; that is why they are moved. The checker refuses missing originals, unsupported overrides, ineffective masks, queued jobs, nonzero service PIDs, populated cgroups and unknown observations; it inspects the cgroup subtree even when <code>ControlGroup</code> is empty.</p>
+<h3 id="upgrade-apply">2. Check and apply from the laptop</h3>
+<pre><code>mantle worker upgrade --check --manifest /absolute/path/to/manifest.json
+mantle worker upgrade --apply --manifest /absolute/path/to/manifest.json</code></pre>
+<p>The check report separates installed versions, the selected source and digests, Substrate compatibility and the maintenance prerequisites. Equal version strings alone never count as current. Apply repeats the observations under <code>/opt/mantle/install.lock</code>, stages a complete sibling of <code>/opt/mantle/bin</code> and swaps the two directories in one atomic exchange; a filesystem without exchange support is refused, and there is no file-by-file fallback. Each transferred file is at most 64 MiB and keeps its verified digest. Codex installation and helper reconciliation take the same host lock first.</p>
+<h3 id="upgrade-results">3. Read the result</h3>
+<ul>
+<li><code>applied-restart-required</code>: success. Services stay masked and inactive. The previous directory and a synced journal remain under <code>/opt/mantle</code>.</li>
+<li><code>recovery-required</code>: keep <code>/opt/mantle/upgrade-pending.json</code> and the <code>.upgrade-*</code> directories; do not remove or rename them to force a retry. Running the same apply again inspects the directory identities and completes the transaction or verifies the restoration. Rollback is reported only after the exact previous directory is seen restored.</li>
+<li><code>recovered-other-bundle</code>: an interrupted earlier journal took precedence; the result names its source and exits nonzero. Review it, then apply the intended bundle again.</li>
+<li>A disconnected transfer can leave a private <code>/var/tmp/mantle-delivery.*</code> stage for inspection; it is not an installed generation. Codex installation is refused while a helper transaction is unfinished. A completed journal is checked without replaying rollback.</li>
+</ul>
+<h3 id="upgrade-leave">4. Leave maintenance</h3>
+<pre><code>sudo systemctl unmask substrate.service mantle-egress.service
+sudo systemctl unmask --runtime substrate.service mantle-egress.service
+sudo mv --no-clobber /var/lib/mantle/maintenance/units/substrate.service /etc/systemd/system/substrate.service
+sudo mv --no-clobber /var/lib/mantle/maintenance/units/mantle-egress.service /etc/systemd/system/mantle-egress.service
+sudo systemctl daemon-reload
+sudo systemctl start mantle-egress.service substrate.service</code></pre>
+<p>Check the restored unit files before starting, then run <code>mantle doctor</code> from the laptop. Installed versions do not prove the running daemon’s identity or that an agent can authenticate.</p>
+<p class="aside">The upgrade transaction is verified by package tests and native scenarios on controlled filesystems. No release record shows it applied to a live worker.</p>
+</section>
+
+<section id="troubleshooting" class="section"><div class="section-heading"><p class="eyebrow">10 / Troubleshooting</p><h2>Start with the observation.</h2></div>
+<details><summary>The worker is not ready</summary><p>Run <code>mantle worker status</code> or <code>mantle doctor</code>. For a new worker, <code>mantle worker up</code> finishes bootstrap. For a worker with sessions, read <a href="#worker">worker</a> before changing services. The CLI checks that bootstrap completed and Substrate is active before connecting.</p></details>
+<details><summary><code>FAILED_CAPABILITY: the worker lacks …</code></summary><p>Substrate on the worker does not report a fact the session needs. The message names it. Mantle does not start the agent without it.</p></details>
+<details><summary>A session exists, but attach fails</summary><p><code>mantle list</code> shows recorded intent; <code>mantle status NAME</code> shows what Substrate observes. If the agent has ended, attach does not restart it: use <code>mantle restart NAME</code>.</p></details>
+<details><summary>A repository cannot be fetched</summary><p>Check that the URL is HTTPS, the ref exists, and the host is on the <a href="/mantle/security/#network">allowlist</a>. There is no Git credential broker.</p></details>
+<details><summary>A resource says <code>NOT enforced</code></summary><p>The CLI reports the worker’s actual facts and does not turn a request into a claim. CPU is never a bandwidth limit; storage needs the worker’s quota fact.</p></details>
+</section>

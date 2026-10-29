@@ -41,7 +41,8 @@
     "mantle.session.AgentKind": {
       "enum": [
         "ClaudeCode",
-        "Codex"
+        "Codex",
+        "Command"
       ],
       "title": "AgentKind",
       "type": "string",
@@ -51,7 +52,8 @@
     "mantle.session.AuthenticationMethod": {
       "enum": [
         "ClaudeOauth",
-        "ChatgptDevice"
+        "ChatgptDevice",
+        "NoCredential"
       ],
       "title": "AuthenticationMethod",
       "type": "string",
@@ -61,8 +63,8 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "x-ess-provenance": {
-    "contract_digest": "slice-sha256/2:90c481a4a5c07c2013a5f1cb8fbf2226d9328e65857bc9a8af48d72a57145160",
-    "source_digest": "40dc7bfa7a332091e37575b2bb7fe04934452aa6054539b46dae37a4ae141f5d",
+    "contract_digest": "slice-sha256/2:f626811805572598fb0ae8bd518bca3523b5d0861f64baad3e4e5d6df48361da",
+    "source_digest": "268918077db6868f9e6e7063bb3a0286e43f802512910fa799450040b33f84ce",
     "specification_version": "v1",
     "system": "mantle"
   }

@@ -116,7 +116,7 @@ fn main() {
         return;
     }
     if args[0] == "/usr/local/bin/substrate-daemon" {
-        println!("substrate-daemon 0.7.10");
+        println!("substrate-daemon 0.16.1");
         return;
     }
     if args[0].starts_with("/opt/mantle/bin/") {
