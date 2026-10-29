@@ -7,6 +7,22 @@ Evidence and compatibility notes for each release are on the
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-29
+
+### Upgrading from 0.2.0
+
+- A 0.2.0 worker runs Substrate 0.7.10, and the 0.3.0 CLI and helpers cannot use it. The 0.3.0
+  Substrate SDK refuses a daemon that does not advertise `substrate-wire/0.25.0` (0.7.10 advertises
+  `substrate-wire/0.17.0`), `mantle doctor` fails its live Substrate version check, and
+  `mantle worker upgrade --check` reports `incompatible`; `--apply` reports the same and changes
+  nothing.
+- No Mantle command moves an existing worker to Substrate 0.16.1. The daemon is installed by
+  cloud-init when `mantle worker up` creates the VM; on an existing VM, `worker up` starts it and
+  does not replace the running daemon. Sessions on 0.3.0 need a new worker created by the 0.3.0
+  `mantle worker up`; keep the 0.2.0 CLI for sessions on a 0.2.0 worker. See
+  [upgrading from 0.2.0](https://beyond10x.github.io/mantle/history/#v0-3-0-upgrade). Not run on a
+  live worker.
+
 ### Added
 
 - `agent.kind: command` with `agent.argv`: the session's process is the declared argv, run
@@ -107,7 +123,8 @@ Evidence and compatibility notes for each release are on the
 
 - Codex 0.153.4 sessions with ChatGPT device login beside Claude Code.
 
-[Unreleased]: https://github.com/beyond10x/mantle/compare/0.2.0...HEAD
+[Unreleased]: https://github.com/beyond10x/mantle/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/beyond10x/mantle/releases/tag/0.3.0
 [0.2.0]: https://github.com/beyond10x/mantle/releases/tag/0.2.0
 [0.1.4]: https://github.com/beyond10x/mantle/releases/tag/0.1.4
 [0.1.3]: https://github.com/beyond10x/mantle/releases/tag/0.1.3

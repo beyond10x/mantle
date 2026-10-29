@@ -2,14 +2,17 @@
 format: aep.planning-md/3
 id: task:release-0-3-0
 kind: task
-status: draft
+status: active
 title: Release Mantle 0.3.0
 relations:
 - decomposes: epic:substrate-0-16
 - depends_on: story:substrate-0-16-0-pin
 - depends_on: story:command-agent-kind
 - depends_on: story:public-docs-sweep
-revision: 1
+revision: 3
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-29T22:54:43Z", actor: "human:timo", revision: 2}
+- {from: "proposed", to: "active", at: "2026-10-29T22:54:43Z", actor: "human:timo", revision: 3}
 ---
 # Task: Release Mantle 0.3.0
 

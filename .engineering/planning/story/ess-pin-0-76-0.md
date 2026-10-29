@@ -2,11 +2,14 @@
 format: aep.planning-md/3
 id: story:ess-pin-0-76-0
 kind: story
-status: draft
+status: active
 title: Move Mantle's ESS pin to 0.76.0 in this wave
 relations:
 - decomposes: epic:substrate-0-16
-revision: 1
+revision: 4
+transitions:
+- {from: "draft", to: "proposed", at: "2026-10-29T22:54:42Z", actor: "human:timo", revision: 3}
+- {from: "proposed", to: "active", at: "2026-10-29T22:54:42Z", actor: "human:timo", revision: 4}
 ---
 ## Outcome
 
@@ -28,3 +31,10 @@ Observed before the move: under ESS 0.76.0 the drift test `generated_model_has_n
 ## Scope
 
 `spec/`, `generated/`, `crates/mantle-conformance`, `crates/mantle/src/adapters/conformance.rs`, `.github/workflows/ci.yml`, `Taskfile.yml`, docs that cite the ESS version or scenario counts.
+
+## Moved on to ESS 0.77.0
+
+ESS 0.77.0 was released during the wave, so the wave moved the pin on from 0.76.0 to 0.77.0
+(commit `fa17f7c`): `requires: ess 0.77.0`, format `ess/22`, CI installs 0.77.0 after checking its
+SHA-256, and the conformance runner uses ESS's 0.77.0 crates. The complete native inventory is 508
+scenarios, all passing.

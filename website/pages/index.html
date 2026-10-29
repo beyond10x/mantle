@@ -1,5 +1,5 @@
 <section class="hero" aria-labelledby="title">
-  <div class="hero-copy"><p class="eyebrow"><span class="dot"></span> Remote development sessions · release 0.2.0 · early</p><h1 id="title">Run a coding agent’s session on a remote Linux worker.</h1><p class="lede">Mantle starts Claude Code, Codex or a command you declare, its repositories and its toolchain inside a Substrate sandbox on a Linux worker on AWS or KubeVirt. Your laptop renders the terminal; builds use the worker’s CPU. Detach, and the agent keeps running.</p><div class="actions"><a class="button" href="#install">Install 0.2.0 <span aria-hidden="true">→</span></a><a class="text-button" href="/mantle/architecture/">How it fits together</a></div><p class="quiet">Linux x86-64 laptop · AWS EC2 or KubeVirt worker · Apache-2.0</p></div>
+  <div class="hero-copy"><p class="eyebrow"><span class="dot"></span> Remote development sessions · release 0.3.0 · early</p><h1 id="title">Run a coding agent’s session on a remote Linux worker.</h1><p class="lede">Mantle starts Claude Code, Codex or a command you declare, its repositories and its toolchain inside a Substrate sandbox on a Linux worker on AWS or KubeVirt. Your laptop renders the terminal; builds use the worker’s CPU. Detach, and the agent keeps running.</p><div class="actions"><a class="button" href="#install">Install 0.3.0 <span aria-hidden="true">→</span></a><a class="text-button" href="/mantle/architecture/">How it fits together</a></div><p class="quiet">Linux x86-64 laptop · AWS EC2 or KubeVirt worker · Apache-2.0</p></div>
   <div class="terminal" aria-label="Example session commands"><div class="terminal-bar"><span aria-hidden="true">● ● ●</span><span>laptop / mantle</span></div><pre><code><span class="prompt">$</span> mantle worker up
 <span class="prompt">$</span> mantle start mantle.yaml
 
@@ -19,12 +19,12 @@
 <li><strong>Substrate.</strong> Creates the confined workspace, runs the agent in a sandbox, holds the Claude credential in a secret slot and reports what it observed.</li>
 </ul>
 <p>The <a href="/mantle/architecture/">architecture page</a> shows which layer owns what. The <a href="/mantle/security/">security model</a> lists what the sandbox does and does not protect against.</p>
-<div class="notice"><strong>Early release.</strong><p>Release 0.2.0 is verified by 499 native conformance scenarios with controlled external IO. Codex attachment, confined builds and gateway refusals were observed on a live KubeVirt worker for 0.1.2 to 0.1.4. Device login, authenticated model and tool turns, token refresh and a 0.2.0 run on a live worker are <strong>not verified end to end</strong>. See <a href="/mantle/releases/#what-is-verified">what is verified</a>.</p></div>
+<div class="notice"><strong>Early release.</strong><p>Release 0.3.0 runs on Substrate 0.16.1 and is checked by 508 native conformance scenarios with controlled external IO. Codex attachment, confined builds and gateway refusals were observed on a live KubeVirt worker for 0.1.2 to 0.1.4, on Substrate 0.7.10. Installation from the published 0.3.0 assets, any run on a live worker with Substrate 0.16.1 and a <code>command</code> session on a live worker have <strong>not been run</strong>. Device login, authenticated model and tool turns, token refresh and a 0.2.0 run on a live worker are <strong>not verified end to end</strong>. A 0.2.0 worker cannot be used with 0.3.0: see <a href="/mantle/history/#v0-3-0-upgrade">upgrading from 0.2.0</a>. See <a href="/mantle/releases/#what-is-verified">what is verified</a>.</p></div>
 </section>
 
 <section id="requirements" class="section prose"><div class="section-heading"><p class="eyebrow">Requirements</p><h2>What you need.</h2></div>
 <ul>
-<li>A Linux x86-64 laptop with <code>ssh</code>. The 0.2.0 CLI is built against glibc 2.39, as recorded in its release manifest; older glibc, macOS and ARM are not qualified.</li>
+<li>A Linux x86-64 laptop with <code>ssh</code>. The release manifest records the glibc the GNU CLI was built against (2.39 for 0.2.0); older glibc, macOS and ARM are not qualified.</li>
 <li>For an <strong>AWS</strong> worker: the AWS CLI, <code>session-manager-plugin</code>, and an authenticated profile that may create the EC2, IAM and CloudWatch resources worker provisioning uses.</li>
 <li>For a <strong>KubeVirt</strong> worker: <code>kubectl</code> and <code>virtctl</code> with access to the cluster. The local test bed (<code>task k3d-up</code>) also needs Docker, k3d and nested virtualization.</li>
 <li>For <strong>Claude Code</strong>: an OAuth token from <code>claude setup-token</code>. For <strong>Codex</strong>: a ChatGPT account for device login; no API key.</li>
@@ -32,17 +32,17 @@
 </ul>
 </section>
 
-<section id="install" class="section prose"><div class="section-heading"><p class="eyebrow">Install</p><h2>Install a verified release.</h2><p>Download all four 0.2.0 assets into one empty directory, check them against the manifest, then let the bundled verifier install the laptop tools.</p></div>
-<pre><code>mkdir mantle-0.2.0 &amp;&amp; cd mantle-0.2.0
+<section id="install" class="section prose"><div class="section-heading"><p class="eyebrow">Install</p><h2>Install a verified release.</h2><p>Download all four 0.3.0 assets into one empty directory, check them against the manifest, then let the bundled verifier install the laptop tools.</p></div>
+<pre><code>mkdir mantle-0.3.0 &amp;&amp; cd mantle-0.3.0
 for f in manifest.json SHA256SUMS \
-    mantle-0.2.0-x86_64-unknown-linux-gnu.tar \
-    mantle-0.2.0-x86_64-unknown-linux-musl.tar; do
-  curl -fLO "https://github.com/beyond10x/mantle/releases/download/0.2.0/$f"
+    mantle-0.3.0-x86_64-unknown-linux-gnu.tar \
+    mantle-0.3.0-x86_64-unknown-linux-musl.tar; do
+  curl -fLO "https://github.com/beyond10x/mantle/releases/download/0.3.0/$f"
 done
-jq -r .source_commit manifest.json   # 54710558ebe096a8e5faf98bbb430ff7f9eaa17e
+jq -r .source_commit manifest.json   # must be the commit tagged 0.3.0
 jq -r '.artifacts[] | "\(.sha256)  \(.name)"' manifest.json | sha256sum --check
 mkdir bootstrap
-tar --extract --file mantle-0.2.0-x86_64-unknown-linux-gnu.tar \
+tar --extract --file mantle-0.3.0-x86_64-unknown-linux-gnu.tar \
   --directory bootstrap --no-same-owner bin/mantle-release
 ./bootstrap/bin/mantle-release verify --manifest "$PWD/manifest.json"
 ./bootstrap/bin/mantle-release install --manifest "$PWD/manifest.json" \
@@ -50,10 +50,10 @@ tar --extract --file mantle-0.2.0-x86_64-unknown-linux-gnu.tar \
 export PATH="$HOME/.local/mantle/bin:$PATH"</code></pre>
 <p>This installs <code>mantle</code>, <code>mantle-release</code> and <code>mantle-acceptance</code>. The worker helpers stay in the musl archive; extract them for the first <code>worker up</code>:</p>
 <pre><code>mkdir -m 0700 worker-stage
-tar --extract --file mantle-0.2.0-x86_64-unknown-linux-musl.tar \
+tar --extract --file mantle-0.3.0-x86_64-unknown-linux-musl.tar \
   --directory worker-stage --no-same-owner \
   bin/mantle-egress bin/mantle-launch bin/mantle-worker</code></pre>
-<p class="aside">These commands were run against the published 0.2.0 assets on 2026-10-29: checksums OK, <code>verify</code> and <code>install</code> exit 0, <code>mantle --version</code> printed <code>mantle 0.2.0</code>. What each step proves, and the source build, are on <a href="/mantle/releases/">Releases and verification</a>.</p>
+<p class="aside">These commands have not yet been run against the 0.3.0 assets. The same commands, naming 0.2.0, were run against the published 0.2.0 assets on 2026-10-29: checksums OK, <code>verify</code> and <code>install</code> exit 0, <code>mantle --version</code> printed <code>mantle 0.2.0</code>. What each step proves, and the source build, are on <a href="/mantle/releases/">Releases and verification</a>.</p>
 </section>
 
 <section id="first-session" class="section prose"><div class="section-heading"><p class="eyebrow">First session</p><h2>From a manifest to a terminal.</h2></div>
@@ -89,5 +89,5 @@ mantle worker down                # VM stopped; data volume kept</code></pre><p>
 <article><h3><a href="/mantle/operations/">Operations</a></h3><p>Commands, retained workspaces, profiles, doctor, automation, acceptance and offline upgrades.</p></article>
 <article><h3><a href="/mantle/releases/">Releases and verification</a></h3><p>Release bundles, the conformance suite, and the maintainer procedure.</p></article>
 <article><h3><a href="/mantle/security/">Security model</a></h3><p>Network allowlist, credentials, recording, and what the sandbox does not cover.</p></article>
-<article><h3><a href="/mantle/history/">Release history</a></h3><p>0.1.0 to 0.2.0, compatibility changes and recorded evidence.</p></article>
+<article><h3><a href="/mantle/history/">Release history</a></h3><p>0.1.0 to 0.3.0, compatibility changes and recorded evidence.</p></article>
 </div></section>
