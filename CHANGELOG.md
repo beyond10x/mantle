@@ -7,6 +7,15 @@ Evidence and compatibility notes for each release are on the
 
 ## [Unreleased]
 
+### Added
+
+- `agent.kind: command` with `agent.argv`: the session's process is the declared argv, run
+  directly with no shell; the first element must be an absolute path, and the argv may have at
+  most 243 elements, each non-empty, at most 4096 bytes and without NUL. A command session
+  receives no agent credential and refuses `agent.auth`. `mantle list` shows it as agent
+  `command`, auth method `none`; `mantle status` prints its `argv`, and `list --json` and
+  `status --json` carry it as `argv`. Example: `examples/shell.yaml`. Not run on a live worker.
+
 ### Changed
 
 - Public documentation split into a short README and site pages for architecture, configuration,

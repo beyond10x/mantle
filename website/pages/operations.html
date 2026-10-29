@@ -35,7 +35,7 @@ mantle restart my-project
 mantle destroy my-project --yes</code></pre>
 <ul>
 <li><code>stop</code> ends and retires the agent and keeps the workspace, the edited files and the private login home. <code>destroy NAME --yes</code> deletes them.</li>
-<li><code>restart</code> starts a fresh agent execution in the same workspace with the persisted agent, cwd, environment and resource policy. It does not clone the repositories again or overwrite the private home. It does not resume the conversation.</li>
+<li><code>restart</code> starts a fresh agent execution in the same workspace with the persisted agent, cwd, environment and resource policy; a command session runs its stored argv again. It does not clone the repositories again or overwrite the private home. It does not resume the conversation.</li>
 <li><code>attach</code> never starts an agent. A missing workspace is refused, never recreated. A retained name stays reserved until <code>destroy</code>.</li>
 <li><code>exec</code> uses the existing workspace and injects no agent credential.</li>
 </ul>
@@ -77,7 +77,7 @@ mantle --profile personal doctor --json --timeout-secs 5</code></pre>
 <pre><code>mantle --profile personal list --json
 mantle --profile personal status my-project --json --timeout-secs 10
 mantle --profile personal status --session-id SESSION_ID --json</code></pre>
-<p>Use the JSON forms in scripts; human <code>status</code> may print launcher diagnostics and is not a stable format. <code>list --json</code> includes ended records and does not contact the worker. <code>status --json</code> separates the recorded identity and state from bounded Substrate observations, including unavailable or refused ones; a lookup by session id also finds destroyed records. Neither fetches terminal output. The recorded authentication method is metadata, not proof of login.</p>
+<p>Use the JSON forms in scripts; human <code>status</code> may print launcher diagnostics and is not a stable format. <code>list --json</code> includes ended records and does not contact the worker. <code>status --json</code> separates the recorded identity and state from bounded Substrate observations, including unavailable or refused ones; a lookup by session id also finds destroyed records. In both, a command session’s record carries <code>argv</code>, its declared argv; Claude Code and Codex records have no <code>argv</code> key. Neither fetches terminal output. The recorded authentication method is metadata, not proof of login.</p>
 <p>To own what you create, start with <code>mantle start MANIFEST --detached --receipt PATH</code>. The receipt is written only after a successful start and holds the immutable session id and the profile binding. <code>PATH</code> must not exist; put it in a private directory (Mantle does not check the directory). Persist it before acting on the session: a name lookup cannot replace a lost receipt. An interrupted start may have created resources without writing a receipt; treat that as unresolved rather than claiming or destroying the name.</p>
 </section>
 

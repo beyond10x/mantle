@@ -112,6 +112,44 @@ fn a_command_row_and_an_older_row_keep_their_kinds_across_reopen() {
 }
 
 #[test]
+fn status_json_carries_the_argv_of_a_command_session_and_no_argv_for_an_agent_session() {
+    let dir = fixture();
+    assert!(cli(dir.path(), &["list"]).status.success());
+    let db = rusqlite::Connection::open(dir.path().join("state/state.db")).unwrap();
+    db.execute_batch(
+        "INSERT INTO sessions(id,name,worker,state,manifest_digest,workspace,agent_exec,requested_json,created_at,failure,agent_kind,authentication) VALUES ('shell','shell','w','STOPPED','digest','ws','exec','{\"agent_argv\":[\"/bin/bash\",\"-l\"]}','time',NULL,'command','none');
+         INSERT INTO sessions(id,name,worker,state,manifest_digest,workspace,agent_exec,requested_json,created_at,failure,agent_kind,authentication) VALUES ('claude','claude','w','STOPPED','digest','ws2','exec2','{}','time',NULL,'claude-code','claude-oauth');",
+    )
+    .unwrap();
+    let status = |id: &str| {
+        let output = cli(dir.path(), &["status", "--session-id", id, "--json"]);
+        assert!(output.status.success(), "{output:?}");
+        assert!(output.stderr.is_empty(), "{output:?}");
+        let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        value["sessions"][0].clone()
+    };
+    let shell = status("shell");
+    assert_eq!(shell["agent"], "command");
+    assert_eq!(shell["argv"], serde_json::json!(["/bin/bash", "-l"]));
+    let claude = status("claude");
+    assert_eq!(claude["agent"], "claude-code");
+    assert!(
+        claude.as_object().unwrap().get("argv").is_none(),
+        "{claude}"
+    );
+    let output = cli(dir.path(), &["list", "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let listed: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let listed = listed["sessions"].as_array().unwrap();
+    let find = |id: &str| listed.iter().find(|s| s["id"] == id).unwrap().clone();
+    assert_eq!(
+        find("shell")["argv"],
+        serde_json::json!(["/bin/bash", "-l"])
+    );
+    assert!(find("claude").as_object().unwrap().get("argv").is_none());
+}
+
+#[test]
 fn a_command_row_with_a_credential_or_an_agent_row_without_one_is_refused() {
     for (kind, auth) in [
         ("command", "claude-oauth"),

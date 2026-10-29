@@ -121,6 +121,12 @@ commands:
       - {name: argv_present, type: Boolean}
       - {name: argv_empty, type: Boolean}
       - {name: program_absolute, type: Boolean}
+      # Substrate's exec admission refuses these; the launcher's 13 leading elements count
+      # towards its 256-element limit, so a declared argv holds at most 243.
+      - {name: argv_element_empty, type: Boolean}
+      - {name: argv_element_nul, type: Boolean}
+      - {name: argv_element_over_4096_bytes, type: Boolean}
+      - {name: argv_over_243_elements, type: Boolean}
     outcomes:
       - name: command-without-argv
         when: {all: [command_kind == true, argv_present == false]}
@@ -134,6 +140,16 @@ commands:
             - command_kind == true
             - any: [argv_empty == true, program_absolute == false]
         error: mantle.manifest.InvalidArgv
+      - name: argv-out-of-bounds
+        when:
+          all:
+            - command_kind == true
+            - any:
+                - argv_element_empty == true
+                - argv_element_nul == true
+                - argv_element_over_4096_bytes == true
+                - argv_over_243_elements == true
+        error: mantle.manifest.ArgvOutOfBounds
       - name: command
         when: command_kind == true
         accepts: nothing
@@ -163,6 +179,8 @@ errors:
   - name: mantle.manifest.CommandRefusesAuth
     fields: []
   - name: mantle.manifest.InvalidArgv
+    fields: []
+  - name: mantle.manifest.ArgvOutOfBounds
     fields: []
   - name: mantle.manifest.ArgvRequiresCommand
     fields: []

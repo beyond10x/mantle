@@ -94,12 +94,26 @@ pub enum AgentRefusal {
     CommandRequiresArgv,
     CommandRefusesAuth,
     InvalidArgv,
+    ArgvOutOfBounds,
     ArgvRequiresCommand,
 }
 
+/// Substrate's exec admission bounds on an argv at the pinned revision `65304edf` (0.7.10). The
+/// `b10x-substrate-wire` crate does not export them: they are literals in
+/// `crates/substrate-daemon/src/app/operations.rs` (`validate_exec_input`) and
+/// `crates/substrate-host/src/process.rs` (`exec.argv-invalid`). Both also refuse an empty
+/// element and an element containing NUL.
+pub const SUBSTRATE_MAX_ARGV_ELEMENTS: usize = 256;
+pub const SUBSTRATE_MAX_ARGV_ELEMENT_BYTES: usize = 4096;
+/// The elements `command_argv` in `app/session.rs` places before the declared argv.
+pub const COMMAND_LAUNCHER_PREFIX_ELEMENTS: usize = 13;
+/// The most elements a declared `agent.argv` may have so the exec argv stays within Substrate's.
+pub const MAX_COMMAND_ARGV_ELEMENTS: usize =
+    SUBSTRATE_MAX_ARGV_ELEMENTS - COMMAND_LAUNCHER_PREFIX_ELEMENTS;
+
 impl std::fmt::Display for AgentRefusal {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str(match self {
+        let text = match self {
             Self::CommandRequiresArgv => "agent.kind command requires agent.argv",
             Self::CommandRefusesAuth => {
                 "agent.auth is refused with agent.kind command: a command session receives no agent credential"
@@ -107,8 +121,15 @@ impl std::fmt::Display for AgentRefusal {
             Self::InvalidArgv => {
                 "agent.argv must be a non-empty list whose first element is an absolute path"
             }
+            Self::ArgvOutOfBounds => {
+                return write!(
+                    formatter,
+                    "agent.argv must have at most {MAX_COMMAND_ARGV_ELEMENTS} elements, each non-empty, at most {SUBSTRATE_MAX_ARGV_ELEMENT_BYTES} bytes and without NUL"
+                );
+            }
             Self::ArgvRequiresCommand => "agent.argv is served only with agent.kind command",
-        })
+        };
+        formatter.write_str(text)
     }
 }
 
@@ -132,9 +153,19 @@ pub fn validate_agent(
         return Err(AgentRefusal::CommandRefusesAuth);
     }
     match argv.first() {
-        Some(program) if program.starts_with('/') => Ok(()),
-        _ => Err(AgentRefusal::InvalidArgv),
+        Some(program) if program.starts_with('/') => {}
+        _ => return Err(AgentRefusal::InvalidArgv),
     }
+    if argv.len() > MAX_COMMAND_ARGV_ELEMENTS
+        || argv.iter().any(|element| {
+            element.is_empty()
+                || element.contains('\0')
+                || element.len() > SUBSTRATE_MAX_ARGV_ELEMENT_BYTES
+        })
+    {
+        return Err(AgentRefusal::ArgvOutOfBounds);
+    }
+    Ok(())
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -577,6 +608,38 @@ mod tests {
                 "{argv}"
             );
         }
+    }
+
+    #[test]
+    fn command_argv_stays_within_substrate_exec_bounds_at_the_boundary() {
+        let refused = "agent.argv must have at most 243 elements, each non-empty, at most 4096 bytes and without NUL";
+        let declared = |argv: Vec<String>| validate_agent("command", None, Some(&argv));
+        let elements = |n: usize| {
+            std::iter::once("/bin/echo".to_owned())
+                .chain(std::iter::repeat_n("x".to_owned(), n - 1))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(declared(elements(243)), Ok(()));
+        assert_eq!(declared(elements(244)).unwrap_err().to_string(), refused);
+        let element = |bytes: usize| vec!["/bin/echo".to_owned(), "a".repeat(bytes)];
+        assert_eq!(declared(element(4096)), Ok(()));
+        assert_eq!(declared(element(4097)).unwrap_err().to_string(), refused);
+        for argv in [
+            vec!["/bin/bash".to_owned(), "-c".to_owned(), String::new()],
+            vec!["/bin/bash".to_owned(), "a\0b".to_owned()],
+            vec![format!("/{}", "a".repeat(4096))],
+        ] {
+            assert_eq!(
+                declared(argv.clone()),
+                Err(AgentRefusal::ArgvOutOfBounds),
+                "{argv:?}"
+            );
+        }
+        let error = parse(&command(
+            "  kind: command\n  argv: [/bin/bash, \"a\\0b\"]\n",
+        ))
+        .expect_err("NUL refused");
+        assert_eq!(format!("{error:#}"), refused);
     }
 
     #[test]

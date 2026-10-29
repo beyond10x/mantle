@@ -2,8 +2,8 @@
 
 [Documentation](https://beyond10x.github.io/mantle/) · [Releases](https://github.com/beyond10x/mantle/releases) · [Issues](https://github.com/beyond10x/mantle/issues)
 
-Mantle runs a whole development session (Claude Code or Codex, its Git repositories and its
-toolchain) on a remote Linux worker on AWS or KubeVirt. Your laptop renders the terminal; the
+Mantle runs a whole development session (Claude Code, Codex or a command you declare, its Git
+repositories and its toolchain) on a remote Linux worker on AWS or KubeVirt. Your laptop renders the terminal; the
 agent runs in a sandbox confined by [Substrate](https://github.com/beyond10x/substrate), and
 builds use the worker's CPU. Detach, and the agent keeps running.
 
@@ -62,7 +62,10 @@ What each step proves, and building from source:
    `provider = "aws"` or `"kubevirt"` and replace every placeholder. For Claude Code, set
    `claude.token_command` to a command that prints your token.
 2. Save a manifest as `mantle.yaml`. For Codex, use `kind: codex` and `auth: chatgpt-device`
-   ([examples/codex.yaml](examples/codex.yaml)).
+   ([examples/codex.yaml](examples/codex.yaml)). To run a program of your own, such as a login
+   shell, use `kind: command` with an `argv` whose first element is an absolute path, and no
+   `auth` ([examples/shell.yaml](examples/shell.yaml)); it receives no agent credential. The
+   command kind is not in 0.2.0.
 
    ```yaml
    apiVersion: mantle.beyond10x.dev/v1alpha1

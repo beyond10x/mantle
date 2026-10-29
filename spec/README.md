@@ -65,7 +65,7 @@ filesystem durability after worker loss or recovery of a deleted volume.
 
 ## Manifest and confinement
 
-The API is `mantle.beyond10x.dev/v1alpha1`, kind Session, a required agent kind `claude-code` or `codex`, runtime `rust-dev`,
+The API is `mantle.beyond10x.dev/v1alpha1`, kind Session, a required agent kind `claude-code`, `codex` or `command`, runtime `rust-dev`,
 root `/workspace`, and network default deny. Unknown fields are refused. Sources use HTTPS URLs,
 unique simple mounts and safe refs; cwd stays within `/workspace` or a listed mount. Defaults are
 CPU 4 (clamped to at least 1), memory 16 GiB, pids 4096, no storage quota request and retention
@@ -76,7 +76,13 @@ Network capabilities can name `model.anthropic`, `git.github` and `rust.crates`;
 narrow the gateway's fixed allowlist. `placement`, `network.profile` and `lifecycle.idleAfter` are
 accepted values that do not drive per-session scheduling or policy. `detachKeepsRunning: false`
 is refused. Claude agent requests carry the `claude` secret slot on descriptor 3. Codex uses
-`chatgpt-device` authentication and its private workspace home, without that slot. Attach and exec
+`chatgpt-device` authentication and its private workspace home, without that slot. A `command`
+session runs its required `agent.argv` (non-empty, first element an absolute path) directly, with
+no shell; it records authentication `none` and its request carries no secret slot, no Claude or
+Codex variable and no Codex home. `agent.argv` with another kind, a command kind without it and
+`agent.auth` with it are refused by the parser, and so is an argv Substrate's exec admission
+would refuse once the launcher's 13 leading elements are added: more than 243 elements, or an
+element that is empty, contains NUL or exceeds 4096 bytes (`ArgvOutOfBounds`). Attach and exec
 requests inject no agent credential; they share the workspace and use the intended toolchain root
 and their explicit resource bounds.
 
@@ -89,8 +95,8 @@ Shutdown owns and joins its connection tasks, aborting remaining tunnels after t
 
 ## Gate and evidence
 
-The measured complete native inventory executes **499 scenarios: 184 generated and 315 authored**,
-with zero failures, skips, unsupported, outside or refused cases. Its CLI component executes 381,
+The measured complete native inventory executes **508 scenarios: 192 generated and 316 authored**,
+with zero failures, skips, unsupported, outside or refused cases. Its CLI component executes 390,
 egress 69 and launcher 49 scenarios at the same specification digest. `task conformance` executes
 these components and reconciles their complete inventory. The complete inventory requires zero
 failed, skipped, unsupported, outside or refused scenarios. `task check` also runs the
@@ -157,7 +163,8 @@ Fixture assertions about this machinery are not authenticated agent qualificatio
 
 `mantle.operator.AcceptanceResult` carries identity, provenance and evidence origin. The metadata
 path in `app/metadata.rs` uses read-only SQLite snapshots before bounded remote observations;
-it never requests terminal output pages. Recorded and observed states remain separate. Exact-id
+it never requests terminal output pages. `SessionMetadata.argv` is the recorded argv of a
+`command` session and is absent for Claude Code and Codex. Recorded and observed states remain separate. Exact-id
 lookup includes terminal records. Creation receipts bind ownership to successful detached creation;
 discovery by name never authorizes cleanup after a lost receipt.
 

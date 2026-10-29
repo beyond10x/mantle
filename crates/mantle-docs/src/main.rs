@@ -34,7 +34,7 @@ const PAGES: &[Page] = &[
         slug: "",
         nav: "Overview",
         title: "Mantle",
-        description: "Mantle runs a Claude Code or Codex development session on a remote Linux worker, confined by Substrate. The laptop renders the terminal.",
+        description: "Mantle runs a Claude Code, Codex or command development session on a remote Linux worker, confined by Substrate. The laptop renders the terminal.",
         body: include_str!("../../../website/pages/index.html"),
     },
     Page {

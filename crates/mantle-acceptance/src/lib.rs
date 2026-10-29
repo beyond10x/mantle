@@ -27,6 +27,9 @@ pub struct Session {
     pub exec_id: Option<String>,
     pub source_commits: Vec<String>,
     pub observed: Option<Observation>,
+    /// The declared argv of a `command` session; absent for the agent kinds.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub argv: Option<Vec<String>>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
