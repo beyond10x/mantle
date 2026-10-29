@@ -630,8 +630,8 @@ fn record(state: SessionState) -> SessionRecord {
         requested_json: "{}".into(),
         created_at: "2026-10-02T00:00:00Z".into(),
         failure: None,
-        agent_kind: crate::domain::session::AgentKind::V0,
-        authentication: crate::domain::session::AuthenticationMethod::V1,
+        agent_kind: crate::domain::session::AgentKind::ClaudeCode,
+        authentication: crate::domain::session::AuthenticationMethod::ClaudeOauth,
     }
 }
 
@@ -1205,7 +1205,7 @@ pub(super) fn execute(command: &str, input: &Value) -> Result<Reply> {
             "agent" => session::agent_request(&manifest::parse(
                 input["manifest"].as_str().context("manifest")?,
             )?),
-            "attach" => session::attach_request(&crate::domain::session::AgentKind::V0),
+            "attach" => session::attach_request(&crate::domain::session::AgentKind::ClaudeCode),
             _ => {
                 let argv: Vec<String> = serde_json::from_value(input["argv"].clone())?;
                 let (program, args) = argv.split_first().context("argv")?;

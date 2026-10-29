@@ -92,9 +92,9 @@ pub async fn start_with_receipt(
     let machine = connected.client.machine();
     // A command session's program is the manifest's own; Mantle installs no executable for it.
     let probe = match resolved.agent_kind {
-        AgentKind::V0 => Some("test -x /opt/mantle/bin/claude"),
-        AgentKind::V1 => Some("test -x /opt/mantle/bin/codex"),
-        AgentKind::V2 => None,
+        AgentKind::ClaudeCode => Some("test -x /opt/mantle/bin/claude"),
+        AgentKind::Codex => Some("test -x /opt/mantle/bin/codex"),
+        AgentKind::Command => None,
     };
     let executable = match probe {
         Some(probe) => connected
@@ -105,15 +105,15 @@ pub async fn start_with_receipt(
         None => true,
     };
     let missing = match resolved.agent_kind {
-        AgentKind::V0 => sub::selected_claude_missing_facts(&machine, executable),
-        AgentKind::V1 => {
+        AgentKind::ClaudeCode => sub::selected_claude_missing_facts(&machine, executable),
+        AgentKind::Codex => {
             let mut missing = sub::missing_facts(&machine);
             if !executable {
                 missing.push("agent.executable[codex]".into());
             }
             missing
         }
-        AgentKind::V2 => sub::missing_facts(&machine),
+        AgentKind::Command => sub::missing_facts(&machine),
     };
     if !missing.is_empty() {
         bail!("FAILED_CAPABILITY: the worker lacks {}", missing.join(", "));
@@ -331,7 +331,7 @@ pub(crate) async fn start_recorded(
             .await?;
     } else {
         println!("Attach with    mantle attach {}", resolved.name);
-        if resolved.agent_kind == AgentKind::V1 {
+        if resolved.agent_kind == AgentKind::Codex {
             println!(
                 "Authentication complete only after attached Codex login; process readiness does not establish it."
             );
@@ -348,8 +348,8 @@ pub(crate) fn selected_credentials(
 ) -> Result<Option<Vec<u8>>> {
     validate_identity(&resolved.agent_kind, &resolved.authentication)?;
     match resolved.agent_kind {
-        AgentKind::V0 => read_claude().map(Some),
-        AgentKind::V1 | AgentKind::V2 => Ok(None),
+        AgentKind::ClaudeCode => read_claude().map(Some),
+        AgentKind::Codex | AgentKind::Command => Ok(None),
     }
 }
 
@@ -1060,7 +1060,7 @@ pub(crate) fn agent_request(resolved: &Resolved) -> RunRequest {
         processes: resolved.pids,
         lease_secs: Some(resolved.retain_for.as_secs()),
     };
-    if resolved.agent_kind == AgentKind::V2 {
+    if resolved.agent_kind == AgentKind::Command {
         request.argv = command_argv(
             &resolved.agent_cwd,
             resolved.agent_argv.as_deref().unwrap_or_default(),
@@ -1072,7 +1072,7 @@ pub(crate) fn agent_request(resolved: &Resolved) -> RunRequest {
             .remove("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC");
         request.environment.remove("DISABLE_AUTOUPDATER");
     }
-    if resolved.agent_kind == AgentKind::V1 {
+    if resolved.agent_kind == AgentKind::Codex {
         request.argv = codex_argv(&resolved.agent_cwd);
         request.secret_slot = None;
         request.secret_fd = None;
@@ -1292,7 +1292,7 @@ mod codex_transport_tests {
             let resolved =
                 manifest::parse(include_str!("../../../../examples/codex.yaml")).unwrap();
             let start = agent_request(&resolved);
-            let attach = attach_request(&AgentKind::V1);
+            let attach = attach_request(&AgentKind::Codex);
             let start_result = start.command(&workspace);
             let attach_result = attach.pty(&workspace);
             assert!(
@@ -1411,7 +1411,7 @@ mod adversary_activation_wire {
                 result,
                 Err(b10x_substrate_sdk::SdkError::Protocol(_))
             ));
-            let result = attach_request(&AgentKind::V1)
+            let result = attach_request(&AgentKind::Codex)
                 .pty(&workspace)
                 .unwrap()
                 .input_limit_bytes(b10x_substrate_sdk::MAX_SESSION_INPUT_BYTES)
@@ -1558,7 +1558,7 @@ mod command_session_tests {
         assert_eq!(request.lease_secs, Some(resolved.retain_for.as_secs()));
         let attach = attach_request(&resolved.agent_kind);
         assert!(attach.secret_slot.is_none() && attach.secret_fd.is_none());
-        assert_eq!(attach.argv, attach_request(&AgentKind::V0).argv);
+        assert_eq!(attach.argv, attach_request(&AgentKind::ClaudeCode).argv);
     }
 
     #[test]

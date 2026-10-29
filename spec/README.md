@@ -1,9 +1,9 @@
 # Mantle executable contract
 
 Six ESS domains describe Mantle's implemented behavior: sessions, manifest resolution, egress,
-launcher OS behavior, application orchestration and operator workflows. The specification uses ESS 0.50.x, `ess/17`
-and authored `ess-scenario/4` documents. `ess-inputs.yaml` explicitly selects every model and
-scenario input. Design proposals for scheduling, snapshots, peer buses and shared caches remain
+launcher OS behavior, application orchestration and operator workflows. The specification uses ESS 0.76.0, `ess/22`
+and authored `ess-scenario/4` documents. `ess-inputs.yaml` pins `requires: ess 0.76.0` and
+explicitly selects every model and scenario input. Design proposals for scheduling, snapshots, peer buses and shared caches remain
 future scope.
 
 ## Executable boundaries
@@ -44,7 +44,10 @@ ignores. They use the owner's JSON vocabulary instead of declaring a competing l
   original row survives. Source rows require an existing session. Stop deletes neither sources
   nor session records; there is no invented source identifier or ownership cascade.
 - A session name is unique across records in every state except Stopped. Retained and all in-flight
-  lifecycle states still own the name. The worker relation identifies a local record; SQLite does
+  lifecycle states still own the name. `InsertSession` declares this as its `conflict` refusal, a
+  `when_related:` guard over live rows with the same name, so synthesis arranges the colliding row
+  and its Stopped and differently named decoys; it is no longer an `external:` outcome a fixture
+  arranges. The worker relation identifies a local record; SQLite does
   not enforce that relation.
 - Worker records are upserted by name and contain instance, region/location and optional data
   volume. Recorded is a structural ESS state, not provider liveness. Worker down retains storage.
@@ -112,7 +115,7 @@ DNS or dialing. These are local handler observations with controlled upstream IO
 authentication or traffic evidence. Deployment and authenticated Codex acceptance remain separate.
 
 `crates/mantle-conformance` adapts native observations to ESS's own Rust runner, pinned to
-`8700d0808e8f3b19711629d8a17afc5281680f58` (0.50.0). It does not evaluate guards or copy an ESS
+`d5c00e9c73e72d792a390091b8442b22702640b0` (0.76.0). It does not evaluate guards or copy an ESS
 state machine. Integer observations preserve full unsigned widths; OS arguments and tunnel data
 use Bytes. Read-your-writes tokens follow completed operations on the same native boundary.
 
@@ -222,8 +225,9 @@ Codex diagnostic files or the terminal client, and it does not enable confidenti
 CW01–CW09 extend those retained assertions with `codex-start`, `codex-private-runtime` and
 `private-path-initialization`. The first runs actual legacy SQLite migration, identity validation,
 the production preflight and manifest parser; the second observes the complete production request.
-InsertSession's guarded InvalidIdentity refusal precedes accepting/external outcomes in ESS and
-production, preventing the invalid agent/auth cross-product. Every persisted view includes the
+InsertSession's guarded InvalidIdentity refusal precedes its live-name conflict and accepting
+outcome in ESS and production, preventing the invalid agent/auth cross-product. Every persisted
+view includes the
 generated identities. The third runs the launcher over real path/symlink/hardlink/mode fixtures,
 including refusal on ordinary disk, and checks child dispatch/readiness and preserved auth bytes.
 Existing default Claude and launcher snapshots gain only their new explicit fields.

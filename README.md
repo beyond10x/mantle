@@ -116,7 +116,7 @@ to delete it. Existing workers need an
 - Qualification evidence: [docs/evidence/codex-compatibility.md](docs/evidence/codex-compatibility.md).
 - Executable specification and coverage: [spec/README.md](spec/README.md).
 - Contributor and agent instructions: [AGENTS.md](AGENTS.md). The gate is `task check`; it needs
-  Rust 1.97, [go-task](https://taskfile.dev), ESS 0.50.x and AEP 0.68.0.
+  Rust 1.97, [go-task](https://taskfile.dev), ESS 0.76.0 and AEP 0.68.0.
 - The site source is `website/`, built by `crates/mantle-docs` with `task site-build`.
 
 Licensed under [Apache-2.0](LICENSE).

@@ -52,13 +52,13 @@ pub fn installation_decision(
     version: bool,
 ) -> InstallationOutcome {
     if architecture != "x86_64" {
-        InstallationOutcome::V2
+        InstallationOutcome::Refused
     } else if current {
-        InstallationOutcome::V0
+        InstallationOutcome::AlreadyCurrent
     } else if archive && binary && version {
-        InstallationOutcome::V1
+        InstallationOutcome::Installed
     } else {
-        InstallationOutcome::V2
+        InstallationOutcome::Refused
     }
 }
 
@@ -1175,7 +1175,7 @@ mod tests {
             let installed = install_fixture(&replacement, &archive);
             finished.store(true, Ordering::Release);
             observer.join().unwrap();
-            assert_eq!(installed.unwrap(), InstallationOutcome::V1);
+            assert_eq!(installed.unwrap(), InstallationOutcome::Installed);
         });
         assert_eq!(
             original.inspect().unwrap(),
@@ -1612,8 +1612,8 @@ mod tests {
             [first.join().unwrap(), second.join().unwrap()]
         });
         assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 1);
-        assert!(outcomes.contains(&InstallationOutcome::V0));
-        assert!(outcomes.contains(&InstallationOutcome::V1));
+        assert!(outcomes.contains(&InstallationOutcome::AlreadyCurrent));
+        assert!(outcomes.contains(&InstallationOutcome::Installed));
         assert_eq!(
             installer.inspect().unwrap(),
             Some(installer.candidate.clone())
@@ -1713,7 +1713,7 @@ mod tests {
         assert!(installer.inspect().unwrap().is_none());
         assert_eq!(
             install_fixture(&installer, &archive).unwrap(),
-            InstallationOutcome::V1
+            InstallationOutcome::Installed
         );
         assert_eq!(
             installer.inspect().unwrap(),
@@ -1855,7 +1855,7 @@ mod tests {
         assert!(installer.inspect().unwrap().is_none());
         assert_eq!(
             install_fixture(&installer, &archive).unwrap(),
-            InstallationOutcome::V1
+            InstallationOutcome::Installed
         );
         assert_eq!(
             installer.inspect().unwrap(),
@@ -1865,7 +1865,7 @@ mod tests {
             installer
                 .install_with("x86_64", |_, _| panic!("already-current must not fetch"))
                 .unwrap(),
-            InstallationOutcome::V0
+            InstallationOutcome::AlreadyCurrent
         );
     }
     #[test]
