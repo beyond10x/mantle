@@ -44,7 +44,7 @@ This document supersedes the earlier `rbuild` / local-source-sync design.
 > conversation files in `/workspace/.mantle/home/.codex`. Launcher replay is volatile and runtime
 > diagnostics use verified tmpfs, without an end-to-end non-recording guarantee. The gateway
 > includes `auth.openai.com:443` and `chatgpt.com:443`. See the
-> [usage guide](../../README.md#start-codex) and [qualification evidence](../evidence/codex-compatibility.md)
+> [usage guide](https://beyond10x.github.io/mantle/configuration/#agent) and [qualification evidence](../evidence/codex-compatibility.md)
 > for the implemented path and the authenticated checks still outstanding. Later proposal
 > sections remain design intent unless the implementation evidence says otherwise.
 
