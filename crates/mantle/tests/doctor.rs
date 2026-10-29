@@ -261,7 +261,7 @@ fn doctor_observes_real_cli_wire_stages_and_preserves_current_wal_state() {
         } else {
             serde_json::json!({"exec.argv-only":true,"exec.no-egress":true,"operation.ledger-subject-max-rows":1000,"operation.ledger-subject-max-bytes":1048576,"operation.ledger-global-max-rows":10000,"operation.ledger-global-max-bytes":10485760,"exec.cgroup-limits":{"processes":true,"memory":true,"cpu":false},"exec.cgroup-kill":true,"sessions.pty":true,"exec.egress-apertures":[{"name":"egress","destination":"127.0.0.1:3128","max_bytes":null}]})
         };
-        let body=serde_json::json!({"api_version":"v1","request_id":"fixture","result":{"snapshot":format!("sha256:{}","7".repeat(64)),"driver":"host","driver_version":if failure=="live-version" {"0.0.0"} else {"0.7.10"},"config_generation":1,"probed_at":"2026-10-03T00:00:00Z","facts":facts}}).to_string();
+        let body=serde_json::json!({"api_version":"v1","request_id":"fixture","result":{"snapshot":format!("sha256:{}","7".repeat(64)),"driver":"host","driver_version":if failure=="live-version" {"0.0.0"} else {"0.16.1"},"config_generation":1,"probed_at":"2026-10-03T00:00:00Z","facts":facts}}).to_string();
         let contract = if failure == "contract" {
             "incompatible"
         } else {

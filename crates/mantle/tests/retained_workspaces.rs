@@ -14,7 +14,7 @@ fn machine() -> Value {
     json!({"snapshot":format!("sha256:{}","7".repeat(64)),"driver":"host","driver_version":"fixture","config_generation":1,"probed_at":"2026-10-03T00:00:00Z","facts":{"operation.ledger-subject-max-rows":1000,"operation.ledger-subject-max-bytes":1048576,"operation.ledger-global-max-rows":10000,"operation.ledger-global-max-bytes":10485760}})
 }
 fn workspace() -> Value {
-    json!({"id":"ws","kind":"workspace","labels":{},"observed_at":"2026-10-03T00:00:00Z","state":"ready"})
+    json!({"id":"ws","kind":"workspace","labels":{},"observed_at":"2026-10-03T00:00:00Z","state":"ready","origin":"created","root_name":"ws"})
 }
 
 #[test]

@@ -1,7 +1,6 @@
 #cloud-config
-# Substitution: SSH_PUBLIC_KEY, SUBSTRATE_IMAGE_REPOSITORY, SUBSTRATE_DAEMON_LAYER (the hex digest of
-# the release image layer holding the daemon), SUBSTRATE_IMAGE_MANIFEST, SUBSTRATE_VERSION, RUST_CHANNEL
-# and CLAUDE_CODE_VERSION
+# Substitution: SSH_PUBLIC_KEY, SUBSTRATE_VERSION, SUBSTRATE_RELEASE_SUMS,
+# SUBSTRATE_DAEMON_ARCHIVE_SHA256, RUST_CHANNEL and CLAUDE_CODE_VERSION
 # are replaced inline. SUBSTRATE_SERVICE, EGRESS_SERVICE and
 # Codex is installed after this common bootstrap by the same verified mantle-worker
 # transaction for both fresh and existing workers; bootstrap.json never claims that pin installed.
@@ -111,21 +110,20 @@ runcmd:
   - '[ "$claude_version" = "{{CLAUDE_CODE_VERSION}}" ]'
   - chmod -R a+rX /opt/mantle
   - rm -rf /var/tmp/mantle-substrate-daemon && install -d -m 0700 /var/tmp/mantle-substrate-daemon
-  - |-
-    registry_token=$(curl -fsSL 'https://ghcr.io/token?scope=repository:{{SUBSTRATE_IMAGE_REPOSITORY}}:pull' | jq -er .token)
-  - |-
-    curl -fsSL -H "Authorization: Bearer $registry_token" -o /var/tmp/mantle-substrate-daemon/layer.tgz 'https://ghcr.io/v2/{{SUBSTRATE_IMAGE_REPOSITORY}}/blobs/sha256:{{SUBSTRATE_DAEMON_LAYER}}'
-  - echo "{{SUBSTRATE_DAEMON_LAYER}}  /var/tmp/mantle-substrate-daemon/layer.tgz" | sha256sum -c -
-  - tar -xzf /var/tmp/mantle-substrate-daemon/layer.tgz -C /var/tmp/mantle-substrate-daemon usr/local/bin/substrate-daemon
-  - install -o root -g root -m 0755 /var/tmp/mantle-substrate-daemon/usr/local/bin/substrate-daemon /usr/local/bin/substrate-daemon
+  - curl -fsSLo /var/tmp/mantle-substrate-daemon/SHA256SUMS https://github.com/beyond10x/substrate/releases/download/{{SUBSTRATE_VERSION}}/SHA256SUMS
+  - echo "{{SUBSTRATE_RELEASE_SUMS}}  /var/tmp/mantle-substrate-daemon/SHA256SUMS" | sha256sum -c -
+  - grep -qxF '{{SUBSTRATE_DAEMON_ARCHIVE_SHA256}}  substrate-daemon-{{SUBSTRATE_VERSION}}-x86_64-unknown-linux-gnu.tar.gz' /var/tmp/mantle-substrate-daemon/SHA256SUMS
+  - curl -fsSLo /var/tmp/mantle-substrate-daemon/substrate-daemon-{{SUBSTRATE_VERSION}}-x86_64-unknown-linux-gnu.tar.gz https://github.com/beyond10x/substrate/releases/download/{{SUBSTRATE_VERSION}}/substrate-daemon-{{SUBSTRATE_VERSION}}-x86_64-unknown-linux-gnu.tar.gz
+  - echo "{{SUBSTRATE_DAEMON_ARCHIVE_SHA256}}  /var/tmp/mantle-substrate-daemon/substrate-daemon-{{SUBSTRATE_VERSION}}-x86_64-unknown-linux-gnu.tar.gz" | sha256sum -c -
+  - tar -xzf /var/tmp/mantle-substrate-daemon/substrate-daemon-{{SUBSTRATE_VERSION}}-x86_64-unknown-linux-gnu.tar.gz -C /var/tmp/mantle-substrate-daemon substrate-daemon-{{SUBSTRATE_VERSION}}-x86_64-unknown-linux-gnu/substrate-daemon
+  - install -o root -g root -m 0755 /var/tmp/mantle-substrate-daemon/substrate-daemon-{{SUBSTRATE_VERSION}}-x86_64-unknown-linux-gnu/substrate-daemon /usr/local/bin/substrate-daemon
   - rm -rf /var/tmp/mantle-substrate-daemon
-  - substrate_layer="sha256:{{SUBSTRATE_DAEMON_LAYER}}"
   - daemon_version=$(/usr/local/bin/substrate-daemon --version)
   - '[ "$daemon_version" = "substrate-daemon {{SUBSTRATE_VERSION}}" ]'
   - rustc_version=$(PATH=/opt/mantle/cargo/bin:/usr/bin:/bin RUSTUP_HOME=/opt/mantle/rustup /opt/mantle/cargo/bin/rustc --version)
   - systemctl daemon-reload
   - |-
-    jq -n --arg substrate_image "ghcr.io/{{SUBSTRATE_IMAGE_REPOSITORY}}@sha256:{{SUBSTRATE_IMAGE_MANIFEST}}" --arg substrate_layer "$substrate_layer" --arg substrate_daemon "$daemon_version" --arg rustc "$rustc_version" --arg claude_code "$claude_version" --arg kernel "$kernel_target" '{substrate_image: $substrate_image, substrate_layer: $substrate_layer, substrate_daemon: $substrate_daemon, rustc: $rustc, claude_code: $claude_code, kernel: $kernel}' > /var/lib/mantle/bootstrap.json.partial
+    jq -n --arg substrate_release "https://github.com/beyond10x/substrate/releases/tag/{{SUBSTRATE_VERSION}}" --arg substrate_sums "sha256:{{SUBSTRATE_RELEASE_SUMS}}" --arg substrate_archive "sha256:{{SUBSTRATE_DAEMON_ARCHIVE_SHA256}}" --arg substrate_daemon "$daemon_version" --arg rustc "$rustc_version" --arg claude_code "$claude_version" --arg kernel "$kernel_target" '{substrate_release: $substrate_release, substrate_sums: $substrate_sums, substrate_archive: $substrate_archive, substrate_daemon: $substrate_daemon, rustc: $rustc, claude_code: $claude_code, kernel: $kernel}' > /var/lib/mantle/bootstrap.json.partial
   - chmod 0644 /var/lib/mantle/bootstrap.json.partial
   - mv -f /var/lib/mantle/bootstrap.json.partial /var/lib/mantle/bootstrap.json
   - '[ "$(uname -r)" = "$kernel_target" ] || touch /run/mantle-reboot-required'

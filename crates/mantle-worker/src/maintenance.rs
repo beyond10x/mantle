@@ -26,8 +26,8 @@ pub const UNIT_PATHS: [&str; 11] = [
     "/usr/lib/systemd/system",
 ];
 pub const ORIGINALS: &str = "/var/lib/mantle/maintenance/units";
-pub const SUBSTRATE_VERSION: &str = "0.7.10";
-pub const SUBSTRATE_REVISION: &str = "65304edf6ebdf4a95f9c2c6138b0c20ea47d157e";
+pub const SUBSTRATE_VERSION: &str = "0.16.1";
+pub const SUBSTRATE_REVISION: &str = "f2fd606b88a0b778970e8babe9a96eb600cd57b2";
 pub const EGRESS_SERVICE: &str = include_str!("../../../deploy/mantle-egress.service");
 pub fn substrate_service(claude: bool) -> String {
     include_str!("../../../deploy/substrate.service")
