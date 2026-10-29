@@ -1251,7 +1251,7 @@ mod codex_transport_tests {
                     "/v1/workspaces/ws-fixture",
                     json!({
                         "id":"ws-fixture", "kind":"workspace", "labels":{},
-                        "observed_at":"2026-10-02T00:00:00Z", "state":"ready"
+                        "observed_at":"2026-10-02T00:00:00Z", "state":"ready", "origin":"created", "root_name":"ws-fixture"
                     }),
                 ),
             ] {
@@ -1366,7 +1366,7 @@ mod adversary_activation_wire {
                     1 => {
                         assert!(header.starts_with("GET /v1/workspaces/ws-fixture HTTP/1.1"));
                         json!({"id":"ws-fixture", "kind":"workspace", "labels":{},
-                            "observed_at":"2026-10-02T00:00:00Z", "state":"ready"})
+                            "observed_at":"2026-10-02T00:00:00Z", "state":"ready", "origin":"created", "root_name":"ws-fixture"})
                     }
                     _ => {
                         let path = if index == 2 {
@@ -1476,7 +1476,7 @@ mod adversary_activation_wire {
                 ])
             );
             assert_eq!(posts[1]["input"]["mode"], "pty");
-            // Wire 0.17 omits Recorded (the default); selecting Unrecorded emits a field.
+            // The wire omits Recorded (the default); selecting Unrecorded emits a field.
             assert!(posts[1]["input"].get("capture").is_none());
             assert_eq!(
                 b10x_substrate_sdk::CaptureMode::default(),
@@ -1623,7 +1623,7 @@ mod command_session_tests {
                     1 => {
                         assert!(header.starts_with("GET /v1/workspaces/ws-fixture HTTP/1.1"));
                         json!({"id":"ws-fixture", "kind":"workspace", "labels":{},
-                            "observed_at":"2026-10-02T00:00:00Z", "state":"ready"})
+                            "observed_at":"2026-10-02T00:00:00Z", "state":"ready", "origin":"created", "root_name":"ws-fixture"})
                     }
                     _ => {
                         assert!(header.starts_with("POST /v1/execs HTTP/1.1"));

@@ -67,7 +67,7 @@
 
 <section id="resources" class="section prose"><div class="section-heading"><p class="eyebrow">04 / Resources</p><h2>Requested, then reported as applied.</h2></div>
 <div class="table-wrap"><table><caption class="sr-only">Resource fields</caption><thead><tr><th>Field</th><th>Default and bound</th><th>Enforcement</th></tr></thead><tbody>
-<tr><td><code>cpu</code></td><td>4; values below 1 become 1</td><td>Sets <code>CARGO_BUILD_JOBS</code>. Not a CPU bandwidth limit: Substrate 0.7.10 bounds cumulative CPU time only.</td></tr>
+<tr><td><code>cpu</code></td><td>4; values below 1 become 1</td><td>Sets <code>CARGO_BUILD_JOBS</code>. Not a CPU bandwidth limit: Substrate 0.16.1 bounds cumulative CPU time only.</td></tr>
 <tr><td><code>memory</code></td><td>16GiB; at least 512MiB</td><td>cgroup memory limit. A worker that does not report the memory and pids limit facts is refused at <code>start</code> with <code>FAILED_CAPABILITY</code>.</td></tr>
 <tr><td><code>pids</code></td><td>4096; 1–4096</td><td>cgroup pids limit, same requirement.</td></tr>
 <tr><td><code>storage</code></td><td>No request</td><td>A workspace quota, capped at the worker’s maximum, when the worker serves workspace quotas. Otherwise <code>start</code> prints <code>requested, NOT enforced</code>.</td></tr>

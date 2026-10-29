@@ -1,8 +1,8 @@
 # Mantle executable contract
 
 Six ESS domains describe Mantle's implemented behavior: sessions, manifest resolution, egress,
-launcher OS behavior, application orchestration and operator workflows. The specification uses ESS 0.76.0, `ess/22`
-and authored `ess-scenario/4` documents. `ess-inputs.yaml` pins `requires: ess 0.76.0` and
+launcher OS behavior, application orchestration and operator workflows. The specification uses ESS 0.77.0, `ess/22`
+and authored `ess-scenario/4` documents. `ess-inputs.yaml` pins `requires: ess 0.77.0` and
 explicitly selects every model and scenario input. Design proposals for scheduling, snapshots, peer buses and shared caches remain
 future scope.
 
@@ -24,7 +24,7 @@ an unknown outcome must read back absence before recording Stopped. The five-min
 under Tokio's virtual clock. These tests do not provision AWS or KubeVirt, run a Substrate daemon,
 or attest to a live deployment's capabilities. Those upstream systems retain their own contracts.
 
-The SDK is pinned to Substrate `65304edf6ebdf4a95f9c2c6138b0c20ea47d157e` (0.7.10).
+The SDK is pinned to Substrate `f2fd606b88a0b778970e8babe9a96eb600cd57b2` (0.16.1).
 Its producer declarations in `crates/substrate-wire/src/lib.rs` define `CapabilityFacts`,
 `ExecUsage`, `ResourceUsage` and `ErrorDetail`; `crates/substrate-daemon/src/app/responses.rs`
 defines unknown-outcome refusals. Observation fixtures retain metadata and metrics that Mantle
@@ -115,7 +115,7 @@ DNS or dialing. These are local handler observations with controlled upstream IO
 authentication or traffic evidence. Deployment and authenticated Codex acceptance remain separate.
 
 `crates/mantle-conformance` adapts native observations to ESS's own Rust runner, pinned to
-`d5c00e9c73e72d792a390091b8442b22702640b0` (0.76.0). It does not evaluate guards or copy an ESS
+`f692aabbb0fcd321eca0a9eef86e12b25a7601f4` (0.77.0). It does not evaluate guards or copy an ESS
 state machine. Integer observations preserve full unsigned widths; OS arguments and tunnel data
 use Bytes. Read-your-writes tokens follow completed operations on the same native boundary.
 

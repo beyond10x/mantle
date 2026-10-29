@@ -119,7 +119,7 @@ fn actual_cli_preserves_remote_exit_status_and_output() {
         response(
             &case,
             1,
-            json!({"id":"ws","kind":"workspace","labels":{},"observed_at":"2026-10-03T00:00:00Z","state":"ready"}),
+            json!({"id":"ws","kind":"workspace","labels":{},"observed_at":"2026-10-03T00:00:00Z","state":"ready","origin":"created","root_name":"ws"}),
         );
         response(
             &case,

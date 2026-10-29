@@ -103,7 +103,7 @@ impl Fixture {
             fs::write(dir.path().join(&name), &bytes).unwrap();
             artifacts.push(json!({"name":name,"target":target,"sha256":sha(&bytes),"size_bytes":bytes.len(),"payloads":payloads}));
         }
-        let manifest = json!({"format":"mantle-release/1","version":"0.1.4","source_commit":"1111111111111111111111111111111111111111","substrate_revision":"65304edf6ebdf4a95f9c2c6138b0c20ea47d157e","substrate_version":"0.7.10","rustc":"rustc 1.97.1 fixture","gnu_runtime":"glibc 2.42","musl_runtime":"1.2.5","artifacts":artifacts});
+        let manifest = json!({"format":"mantle-release/1","version":"0.1.4","source_commit":"1111111111111111111111111111111111111111","substrate_revision":"f2fd606b88a0b778970e8babe9a96eb600cd57b2","substrate_version":"0.16.1","rustc":"rustc 1.97.1 fixture","gnu_runtime":"glibc 2.42","musl_runtime":"1.2.5","artifacts":artifacts});
         let result = Self { dir, manifest };
         result.save();
         result

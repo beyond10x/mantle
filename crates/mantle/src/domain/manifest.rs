@@ -98,7 +98,7 @@ pub enum AgentRefusal {
     ArgvRequiresCommand,
 }
 
-/// Substrate's exec admission bounds on an argv at the pinned revision `65304edf` (0.7.10). The
+/// Substrate's exec admission bounds on an argv at the pinned revision `f2fd606b` (0.16.1). The
 /// `b10x-substrate-wire` crate does not export them: they are literals in
 /// `crates/substrate-daemon/src/app/operations.rs` (`validate_exec_input`) and
 /// `crates/substrate-host/src/process.rs` (`exec.argv-invalid`). Both also refuse an empty

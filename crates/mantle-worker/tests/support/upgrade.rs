@@ -54,8 +54,9 @@ impl Host for FixtureHost {
         if args[0] == "/usr/local/bin/substrate-daemon" {
             return Ok(format!(
                 "substrate-daemon {}\n",
+                // A worker still on the previously pinned Substrate.
                 if *fault == "incompatible" {
-                    "0.0.0"
+                    "0.7.10"
                 } else {
                     maintenance::SUBSTRATE_VERSION
                 }

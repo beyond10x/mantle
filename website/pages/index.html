@@ -73,7 +73,7 @@ agent:
   kind: claude-code
   cwd: /workspace/mantle</code></pre></div></li>
 <li><div><h3>Bring up the worker and start</h3><pre><code>mantle worker up --binaries "$PWD/worker-stage/bin"
-mantle start mantle.yaml</code></pre><p>The first <code>worker up</code> creates the VM, installs Substrate 0.7.10, the Rust 1.97 toolchain, Claude Code 2.1.287, Codex 0.153.4 and the Mantle helpers, and checks Substrate’s facts. <code>start</code> clones the repositories into the workspace, starts the agent and attaches. Press <kbd>Ctrl</kbd>+<kbd>]</kbd>, then <kbd>d</kbd>, to detach.</p></div></li>
+mantle start mantle.yaml</code></pre><p>The first <code>worker up</code> creates the VM, installs Substrate 0.16.1 (release 0.2.0: 0.7.10), the Rust 1.97 toolchain, Claude Code 2.1.287, Codex 0.153.4 and the Mantle helpers, and checks Substrate’s facts. <code>start</code> clones the repositories into the workspace, starts the agent and attaches. Press <kbd>Ctrl</kbd>+<kbd>]</kbd>, then <kbd>d</kbd>, to detach.</p></div></li>
 <li><div><h3>Come back, stop, clean up</h3><pre><code>mantle attach my-project
 mantle stop my-project            # agent ends; workspace kept
 mantle destroy my-project --yes   # workspace deleted

@@ -20,11 +20,44 @@ Evidence and compatibility notes for each release are on the
 
 - Public documentation split into a short README and site pages for architecture, configuration,
   operations, releases, security and release history.
-- The executable specification is pinned to ESS 0.76.0 (`requires: ess 0.76.0`, format `ess/22`),
-  and CI installs that release after checking its SHA-256. The conformance runner uses ESS's 0.76.0
+- The executable specification is pinned to ESS 0.77.0 (`requires: ess 0.77.0`, format `ess/22`),
+  and CI installs that release after checking its SHA-256. The conformance runner uses ESS's 0.77.0
   Rust crates. The session name's live uniqueness is now a declared `InsertSession` refusal rather
   than an `external:` outcome, so synthesis arranges the colliding row itself. The complete native
   inventory is unchanged at 508 scenarios, all passing.
+- Substrate 0.16.1 (was 0.7.10): `b10x-substrate-sdk` is pinned to revision
+  `f2fd606b88a0b778970e8babe9a96eb600cd57b2`, the worker helpers expect daemon 0.16.1 and release
+  manifests record that version and revision. Tag 0.16.0 was never published; 0.16.1 is the first
+  release of its scope. `mantle worker up` installs the daemon from the release's signed
+  `substrate-daemon-0.16.1-x86_64-unknown-linux-gnu.tar.gz` instead of a layer of the daemon image:
+  cloud-init accepts only the pinned digest of `SHA256SUMS`, the document the release signs, and an
+  archive whose pinned digest that document lists. `bootstrap.json` records `substrate_release`,
+  `substrate_sums` and `substrate_archive` in place of `substrate_image` and `substrate_layer`.
+  Signature verification is the release's; the worker does not run `cosign`. `mantle worker
+  upgrade` and `mantle doctor` refuse a worker still on 0.7.10, as they refuse any other version.
+  Existing workers keep 0.7.10 until they are replaced. Not run on a live worker.
+- Wire behaviour Mantle sees on Substrate 0.16.1:
+  - The daemon and the SDK advertise contract bundle `substrate-wire/0.25.0` (was `0.17.0`);
+    `doctor`'s wire-compatibility check follows the SDK's.
+  - A workspace observation carries `origin` and `root_name`; Mantle ignores both.
+  - A workspace storage limit that is not a multiple of 1024 bytes is refused
+    `request.schema-invalid` (422), where it was `storage.quota-limit` (429). A manifest size given
+    in plain bytes can meet it; one in KiB, MiB, GiB or TiB cannot.
+  - One subject holds at most 16 session attachments; the 17th is refused
+    `session.attachment-capacity` (429).
+  - A `session.not-attachable` refusal names the failed condition in its message; its code is
+    unchanged.
+  - A PTY session whose child exited before the daemon recorded the start reads `exited` with
+    attachment `consumed`, not `ready` and `available`.
+  - A just-started session or exec is no longer expired by the lease sweeper, and two concurrent
+    renewals of one lease no longer refuse the slower one `lease.expired`.
+  - Resource usage may omit `io_read_bytes` and `io_write_bytes`; Mantle does not show them.
+  - Inside the sandbox, `socket(2)` admits only IPv4 and IPv6 TCP or UDP and route netlink, and
+    `socket(AF_UNIX)` stays refused; `socketpair(2)` admits only Unix stream and seqpacket pairs.
+    Anything else fails with `EACCES`.
+  - Substrate states that its state store upgrade is one-way: 0.16.1 stamps the store with a schema
+    version that earlier daemons refuse. Back up `/var/lib/substrate/state` before a worker's daemon
+    moves to 0.16.1 if it may need to go back.
 
 ## [0.2.0] - 2026-10-03
 
