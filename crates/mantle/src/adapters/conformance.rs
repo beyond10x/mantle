@@ -141,9 +141,11 @@ fn execute(store: &Store, command: &str, input: &Value) -> Result<Reply> {
             flag("binary_verified")?,
             flag("version_verified")?,
         ) {
-            mantle_worker::InstallationOutcome::V0 => reply.outcome = "already-current".into(),
-            mantle_worker::InstallationOutcome::V1 => reply.outcome = "installed".into(),
-            mantle_worker::InstallationOutcome::V2 => {
+            mantle_worker::InstallationOutcome::AlreadyCurrent => {
+                reply.outcome = "already-current".into()
+            }
+            mantle_worker::InstallationOutcome::Installed => reply.outcome = "installed".into(),
+            mantle_worker::InstallationOutcome::Refused => {
                 reply.outcome = "refused".into();
                 reply.error = Some("mantle.session.InstallationRefused".into());
             }
@@ -388,27 +390,6 @@ impl Default for CliBoundary {
     }
 }
 impl Boundary for CliBoundary {
-    fn external(&mut self, outcome: &str) -> Result<()> {
-        ensure!(
-            outcome == "mantle.session.InsertSession/conflict",
-            "unsupported arrangement {outcome}"
-        );
-        self.0.insert_session(&SessionRecord {
-            generation: 0,
-            id: "pre-existing-session".into(),
-            name: "conformance-session".into(),
-            worker: "w".into(),
-            state: SessionState::Materializing,
-            manifest_digest: "existing".into(),
-            workspace: None,
-            agent_exec: None,
-            requested_json: "{}".into(),
-            created_at: "2026-10-02T00:00:00Z".into(),
-            failure: None,
-            agent_kind: AgentKind::V0,
-            authentication: AuthenticationMethod::V1,
-        })
-    }
     fn execute(&mut self, command: &str, input: &Value) -> Result<Reply> {
         execute(&self.0, command, input)
     }
@@ -455,8 +436,8 @@ fn identity_migration() -> Result<Value> {
     let before = store.session_by_id("live")?.context("migrated row")?;
     let old = store.session_by_id("stopped")?.context("stopped row")?;
     let legacy_preserved = original == legacy_payload(&store.connection)?
-        && before.agent_kind == AgentKind::V0
-        && before.authentication == AuthenticationMethod::V1
+        && before.agent_kind == AgentKind::ClaudeCode
+        && before.authentication == AuthenticationMethod::ClaudeOauth
         && before.state == SessionState::Running
         && before.workspace.as_deref() == Some("ws")
         && before.agent_exec.as_deref() == Some("exec")
@@ -467,13 +448,13 @@ fn identity_migration() -> Result<Value> {
     let mut codex = before.clone();
     codex.id = "codex".into();
     codex.name = "codex".into();
-    codex.agent_kind = AgentKind::V1;
-    codex.authentication = AuthenticationMethod::V0;
+    codex.agent_kind = AgentKind::Codex;
+    codex.authentication = AuthenticationMethod::ChatgptDevice;
     store.insert_session(&codex)?;
     let mut invalid = codex.clone();
     invalid.id = "invalid".into();
     invalid.name = "invalid".into();
-    invalid.authentication = AuthenticationMethod::V1;
+    invalid.authentication = AuthenticationMethod::ClaudeOauth;
     let bad_pair_refused = store.insert_session(&invalid).is_err();
     drop(store);
     let store = Store::open(&path)?;

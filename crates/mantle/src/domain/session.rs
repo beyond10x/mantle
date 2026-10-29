@@ -15,16 +15,16 @@ pub const COMMAND: &str = "command";
 
 pub fn agent_name(agent: &AgentKind) -> &'static str {
     match agent {
-        AgentKind::V0 => "claude-code",
-        AgentKind::V1 => "codex",
-        AgentKind::V2 => COMMAND,
+        AgentKind::ClaudeCode => "claude-code",
+        AgentKind::Codex => "codex",
+        AgentKind::Command => COMMAND,
     }
 }
 pub fn auth_name(auth: &AuthenticationMethod) -> &'static str {
     match auth {
-        AuthenticationMethod::V1 => "claude-oauth",
-        AuthenticationMethod::V0 => "chatgpt-device",
-        AuthenticationMethod::V2 => "none",
+        AuthenticationMethod::ClaudeOauth => "claude-oauth",
+        AuthenticationMethod::ChatgptDevice => "chatgpt-device",
+        AuthenticationMethod::NoCredential => "none",
     }
 }
 pub fn resolve_identity(
@@ -32,9 +32,9 @@ pub fn resolve_identity(
     auth: Option<&str>,
 ) -> Result<(AgentKind, AuthenticationMethod)> {
     let (agent, authentication) = match kind {
-        "claude-code" => (AgentKind::V0, AuthenticationMethod::V1),
-        "codex" => (AgentKind::V1, AuthenticationMethod::V0),
-        COMMAND => (AgentKind::V2, AuthenticationMethod::V2),
+        "claude-code" => (AgentKind::ClaudeCode, AuthenticationMethod::ClaudeOauth),
+        "codex" => (AgentKind::Codex, AuthenticationMethod::ChatgptDevice),
+        COMMAND => (AgentKind::Command, AuthenticationMethod::NoCredential),
         _ => bail!("unsupported agent kind"),
     };
     if auth.is_some_and(|value| value != auth_name(&authentication)) {

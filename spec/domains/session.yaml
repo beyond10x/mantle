@@ -279,9 +279,6 @@ commands:
         emits: [mantle.session.SessionRecorded]
         payload:
           mantle.session.SessionRecorded: {session_id: input.session_id}
-      - name: conflict
-        external: SQLite rejects an existing id or an existing name whose state is not Stopped.
-        error: mantle.session.RecordConflict
       - name: invalid-identity
         when:
           any:
@@ -292,6 +289,13 @@ commands:
             - {all: [agent_kind == Command, authentication == ClaudeOauth]}
             - {all: [agent_kind == Command, authentication == ChatgptDevice]}
         error: mantle.session.InvalidIdentity
+      # The SQLite partial unique index on name, which excludes Stopped rows.
+      - name: conflict
+        when_related:
+          entity: mantle.session.Session
+          where: {all: [name == input.name, state != Stopped]}
+          exists: true
+        error: mantle.session.RecordConflict
     # Authored live-name scenarios exercise the partial index in all seven states,
     # including reuse after Stopped and refusal while each other record remains live.
     # Input id is minted by app/session.rs:85; Store receives it, so it is not generated here.
