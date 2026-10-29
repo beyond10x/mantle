@@ -271,16 +271,75 @@ fn manifest(command: &str, input: &Value) -> Result<Reply> {
     use crate::domain::manifest as m;
     if command == "mantle.manifest.Parse" {
         return Ok(Reply::returned(match m::parse(text(&input["text"])?) {
-            Ok(r) => json!({"diagnostic": null, "resolved": {
-                "name": r.name, "repositories": r.repositories.iter().map(|r| json!({
-                    "name": r.name, "repository": r.repository, "reference": r.reference, "mount": r.mount
-                })).collect::<Vec<_>>(), "agent_cwd": r.agent_cwd, "cpu": r.cpu,
-                "memory_bytes": r.memory_bytes, "pids": r.pids, "storage_bytes": r.storage_bytes,
-                "retain_for_secs": r.retain_for.as_secs(), "digest": r.digest,
-                "agent_kind": r.agent_kind, "authentication": r.authentication
-            }}),
+            Ok(r) => {
+                let mut resolved = json!({
+                    "name": r.name, "repositories": r.repositories.iter().map(|r| json!({
+                        "name": r.name, "repository": r.repository, "reference": r.reference, "mount": r.mount
+                    })).collect::<Vec<_>>(), "agent_cwd": r.agent_cwd, "cpu": r.cpu,
+                    "memory_bytes": r.memory_bytes, "pids": r.pids, "storage_bytes": r.storage_bytes,
+                    "retain_for_secs": r.retain_for.as_secs(), "digest": r.digest,
+                    "agent_kind": r.agent_kind, "authentication": r.authentication
+                });
+                // Optional: absent, not null, for the kinds that take no argv.
+                if let Some(argv) = r.agent_argv {
+                    resolved["agent_argv"] = json!(argv);
+                }
+                json!({"diagnostic": null, "resolved": resolved})
+            }
             Err(e) => json!({"resolved": null, "diagnostic": format!("{e:#}")}),
         }));
+    }
+    if command == "mantle.manifest.ValidateAgent" {
+        let flag = |name: &str| input[name].as_bool().context("boolean fact");
+        // The facts select a concrete mapping; the production validator decides it.
+        let kind = if flag("command_kind")? {
+            crate::domain::session::COMMAND
+        } else {
+            "claude-code"
+        };
+        let auth = flag("auth_present")?.then_some("claude-oauth");
+        let program = if flag("program_absolute")? {
+            "/bin/bash"
+        } else {
+            "bash"
+        };
+        let argv: Option<Vec<String>> = flag("argv_present")?.then(|| {
+            if flag("argv_empty").unwrap_or(false) {
+                vec![]
+            } else {
+                vec![program.to_owned(), "-l".to_owned()]
+            }
+        });
+        return Ok(match m::validate_agent(kind, auth, argv.as_deref()) {
+            Ok(()) => Reply {
+                outcome: if kind == crate::domain::session::COMMAND {
+                    "command"
+                } else {
+                    "agent"
+                }
+                .into(),
+                ..Reply::default()
+            },
+            Err(refusal) => {
+                let (outcome, error) = match refusal {
+                    m::AgentRefusal::CommandRequiresArgv => {
+                        ("command-without-argv", "CommandRequiresArgv")
+                    }
+                    m::AgentRefusal::CommandRefusesAuth => {
+                        ("command-with-auth", "CommandRefusesAuth")
+                    }
+                    m::AgentRefusal::InvalidArgv => ("invalid-argv", "InvalidArgv"),
+                    m::AgentRefusal::ArgvRequiresCommand => {
+                        ("argv-without-command", "ArgvRequiresCommand")
+                    }
+                };
+                Reply {
+                    outcome: outcome.into(),
+                    error: Some(format!("mantle.manifest.{error}")),
+                    ..Reply::default()
+                }
+            }
+        });
     }
     let answer = match command {
         "mantle.manifest.ValidateMemory" => integer(&input["bytes"])
