@@ -20,8 +20,8 @@ Evidence and compatibility notes for each release are on the
 
 - Public documentation split into a short README and site pages for architecture, configuration,
   operations, releases, security and release history.
-- The executable specification is pinned to ESS 0.76.0 (`requires: ess 0.76.0`, format `ess/22`),
-  and CI installs that release after checking its SHA-256. The conformance runner uses ESS's 0.76.0
+- The executable specification is pinned to ESS 0.77.0 (`requires: ess 0.77.0`, format `ess/22`),
+  and CI installs that release after checking its SHA-256. The conformance runner uses ESS's 0.77.0
   Rust crates. The session name's live uniqueness is now a declared `InsertSession` refusal rather
   than an `external:` outcome, so synthesis arranges the colliding row itself. The complete native
   inventory is unchanged at 508 scenarios, all passing.
