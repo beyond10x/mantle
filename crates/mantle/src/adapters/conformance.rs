@@ -303,11 +303,24 @@ fn manifest(command: &str, input: &Value) -> Result<Reply> {
         } else {
             "bash"
         };
+        let mut declared = vec![program.to_owned(), "-l".to_owned()];
+        if flag("argv_element_empty")? {
+            declared.push(String::new());
+        }
+        if flag("argv_element_nul")? {
+            declared.push("a\0b".into());
+        }
+        if flag("argv_element_over_4096_bytes")? {
+            declared.push("a".repeat(m::SUBSTRATE_MAX_ARGV_ELEMENT_BYTES + 1));
+        }
+        if flag("argv_over_243_elements")? {
+            declared.resize(m::MAX_COMMAND_ARGV_ELEMENTS + 1, "x".into());
+        }
         let argv: Option<Vec<String>> = flag("argv_present")?.then(|| {
             if flag("argv_empty").unwrap_or(false) {
                 vec![]
             } else {
-                vec![program.to_owned(), "-l".to_owned()]
+                declared
             }
         });
         return Ok(match m::validate_agent(kind, auth, argv.as_deref()) {
@@ -329,6 +342,7 @@ fn manifest(command: &str, input: &Value) -> Result<Reply> {
                         ("command-with-auth", "CommandRefusesAuth")
                     }
                     m::AgentRefusal::InvalidArgv => ("invalid-argv", "InvalidArgv"),
+                    m::AgentRefusal::ArgvOutOfBounds => ("argv-out-of-bounds", "ArgvOutOfBounds"),
                     m::AgentRefusal::ArgvRequiresCommand => {
                         ("argv-without-command", "ArgvRequiresCommand")
                     }

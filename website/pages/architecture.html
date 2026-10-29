@@ -26,10 +26,10 @@
         <div class="diagram-node"><h4>Substrate daemon</h4><p>Admits execution, applies confinement, reports observed state.</p></div>
         <div class="diagram-node secret-node"><h4>Claude credential source</h4><p>Worker token file → <code>claude</code> secret slot</p></div>
       </div>
-      <div class="credential-path"><span class="path-name"><span class="path-marker">B</span> Credential delivery</span><p>Claude: secret slot → inherited descriptor → launcher → agent environment. Codex: device login in the terminal → private workspace auth file.</p></div>
+      <div class="credential-path"><span class="path-name"><span class="path-marker">B</span> Credential delivery</span><p>Claude: secret slot → inherited descriptor → launcher → agent environment. Codex: device login in the terminal → private workspace auth file. Command: none.</p></div>
       <div class="sandbox-zone">
         <div class="zone-heading"><span class="node-kicker">03 / Confined session</span><span class="zone-tag">Substrate enforcement</span></div>
-        <div class="agent-node"><h4><code>mantle-launch</code> → Claude Code or Codex + tools</h4><p>The launcher holds the agent’s PTY. Attachments relay through workspace FIFOs.</p></div>
+        <div class="agent-node"><h4><code>mantle-launch</code> → Claude Code, Codex or a declared command + tools</h4><p>The launcher holds the agent’s PTY. Attachments relay through workspace FIFOs.</p></div>
         <div class="mounts"><div><span class="mount-mode">Read / write</span><code>/workspace</code><p>Repositories &amp; session state</p></div><div><span class="mount-mode">Read only</span><code>/opt/mantle</code><p>Agent, launcher &amp; toolchain</p></div></div>
         <p class="sandbox-rule"><span aria-hidden="true">↳</span> Direct network egress denied; the named aperture is the way out.</p>
       </div>

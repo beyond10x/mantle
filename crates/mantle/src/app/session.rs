@@ -1562,6 +1562,15 @@ mod command_session_tests {
     }
 
     #[test]
+    fn command_launcher_prefix_has_the_length_the_manifest_bound_assumes() {
+        let declared = vec!["/bin/echo".to_owned()];
+        assert_eq!(
+            command_argv("/workspace/r", &declared).len() - declared.len(),
+            manifest::COMMAND_LAUNCHER_PREFIX_ELEMENTS
+        );
+    }
+
+    #[test]
     fn command_records_its_kind_and_argv_in_the_requested_record() {
         let resolved = manifest::parse(SHELL).expect("shell example resolves");
         let requested = requested_json(&resolved);

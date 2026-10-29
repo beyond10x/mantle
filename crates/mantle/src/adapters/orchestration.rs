@@ -1471,6 +1471,7 @@ fn acceptance(input: &Value) -> Result<Reply> {
         exec_id: Some("exec".into()),
         source_commits: vec![],
         observed: None,
+        argv: None,
     };
     let mut run = Checkpoint {
         format: "mantle-acceptance/v1".into(),

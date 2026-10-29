@@ -38,13 +38,14 @@
 <dl class="facts">
 <dt>Claude Code</dt><dd>On the laptop, <code>claude.token_command</code> or <code>claude.token_file</code> supplies the token; error messages name the source, never the value. <code>worker up</code> and <code>start</code> write it to <code>/var/lib/mantle/secrets/claude</code> on the worker. Substrate passes it to the agent execution through the <code>claude</code> secret slot on an inherited descriptor; the launcher puts it in the agent’s environment. Tools the agent starts can inherit it. The worker token file remains after <code>stop</code>.</dd>
 <dt>Codex</dt><dd>Device login in the agent terminal. The auth file and conversation files live in <code>/workspace/.mantle/home/.codex</code>, readable by the agent’s tools. <code>stop</code> keeps them; <code>destroy</code> deletes them.</dd>
+<dt>Command sessions</dt><dd>No agent credential: no <code>claude</code> secret slot, no <code>CLAUDE_CODE_OAUTH_TOKEN</code>, no Codex home and no Claude or Codex variables. A manifest with <code>agent.auth</code> and <code>kind: command</code> is refused.</dd>
 <dt><code>mantle exec</code></dt><dd>Gets no agent credential, but shares the workspace, including the Codex home.</dd>
 <dt>Git</dt><dd>No Git credential broker. Repositories are cloned over HTTPS without credentials.</dd>
 </dl>
 </section>
 
 <section id="recording" class="section prose"><div class="section-heading"><p class="eyebrow">05 / Recording</p><h2>Terminal output may be recorded.</h2></div>
-<p>Claude Code and Codex use the same Substrate terminal transport, which may record terminal output. There is no end-to-end non-recording mode. Mantle’s own launcher keeps its replay buffer in memory, and Codex’s SQLite and text diagnostics are written to a tmpfs the launcher verifies. <code>mantle status --json</code> and the acceptance runner never fetch terminal output.</p>
+<p>Claude Code, Codex and command sessions use the same Substrate terminal transport, which may record terminal output. There is no end-to-end non-recording mode. Mantle’s own launcher keeps its replay buffer in memory, and Codex’s SQLite and text diagnostics are written to a tmpfs the launcher verifies. <code>mantle status --json</code> and the acceptance runner never fetch terminal output.</p>
 </section>
 
 <section id="laptop" class="section prose"><div class="section-heading"><p class="eyebrow">06 / Laptop state</p><h2>Private by default.</h2></div>
