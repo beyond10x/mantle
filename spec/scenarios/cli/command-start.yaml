@@ -1,0 +1,146 @@
+type: ess-scenario/4
+domain: mantle.orchestration
+scenario: command-start
+summary: A command session runs its declared argv through the launcher and terminal transport, with no agent credential, and each argv and auth rule is refused by name.
+timeline:
+  - at: '2026-10-29T00:00:00Z'
+    command: mantle.orchestration.CommandPreflight
+    input: {}
+    outcome: returned
+    response:
+      started: true
+      credential_reads: 0
+      calls:
+        - create
+        - "isolated:/usr/bin/mkdir -p /workspace/.mantle/home /workspace/.mantle/cargo"
+        - "network:/usr/bin/git -c http.proxy=http://127.0.0.1:3128 clone --no-tags --branch main -- https://github.com/beyond10x/substrate.git /workspace/substrate"
+        - "isolated:/usr/bin/git -C /workspace/substrate rev-parse HEAD"
+        - agent
+        - attach
+      state: RUNNING
+      agent_exec: exec-1
+      attach_argv: [/opt/mantle/bin/mantle-launch, attach, --wait-ready, --dir, /workspace/.mantle/agent]
+      attach_has_secret: false
+      request_has_secret: false
+      request_credential_variables: []
+      persisted_argv:
+        - /opt/mantle/bin/mantle-launch
+        - serve
+        - --dir
+        - /workspace/.mantle/agent
+        - --cwd
+        - /workspace/substrate
+        - --mkdir
+        - /workspace/.mantle/home
+        - --mkdir
+        - /workspace/.mantle/cargo
+        - --proxy
+        - http://127.0.0.1:3128
+        - --
+        - /bin/bash
+        - -l
+  - at: '2026-10-29T00:00:01Z'
+    command: mantle.manifest.Parse
+    input:
+      text: |
+        apiVersion: mantle.beyond10x.dev/v1alpha1
+        kind: Session
+        metadata: {name: s1}
+        workspace:
+          repositories:
+            - {name: r, repository: https://example.com/r.git, ref: main, mount: r}
+        agent: {kind: command, argv: [/bin/bash, -l], cwd: /workspace/r}
+    outcome: returned
+    response:
+      resolved:
+        name: s1
+        repositories: [{name: r, repository: 'https://example.com/r.git', reference: main, mount: r}]
+        agent_cwd: /workspace/r
+        cpu: 4
+        memory_bytes: 17179869184
+        pids: 4096
+        storage_bytes: null
+        retain_for_secs: 28800
+        digest: sha256:c6f86dd2e408e8f0ed4561ddc5759d0e51032a4db61ebb02d40d6f8a7d00fe45
+        agent_kind: Command
+        authentication: NoCredential
+        agent_argv: [/bin/bash, -l]
+      diagnostic: null
+  - at: '2026-10-29T00:00:02Z'
+    command: mantle.manifest.Parse
+    input:
+      text: |
+        apiVersion: mantle.beyond10x.dev/v1alpha1
+        kind: Session
+        metadata: {name: s1}
+        workspace:
+          repositories:
+            - {name: r, repository: https://example.com/r.git, ref: main, mount: r}
+        agent: {kind: command, cwd: /workspace/r}
+    outcome: returned
+    response: {resolved: null, diagnostic: 'agent.kind command requires agent.argv'}
+  - at: '2026-10-29T00:00:03Z'
+    command: mantle.manifest.Parse
+    input:
+      text: |
+        apiVersion: mantle.beyond10x.dev/v1alpha1
+        kind: Session
+        metadata: {name: s1}
+        workspace:
+          repositories:
+            - {name: r, repository: https://example.com/r.git, ref: main, mount: r}
+        agent: {kind: command, argv: [/bin/bash], auth: claude-oauth, cwd: /workspace/r}
+    outcome: returned
+    response: {resolved: null, diagnostic: 'agent.auth is refused with agent.kind command: a command session receives no agent credential'}
+  - at: '2026-10-29T00:00:04Z'
+    command: mantle.manifest.Parse
+    input:
+      text: |
+        apiVersion: mantle.beyond10x.dev/v1alpha1
+        kind: Session
+        metadata: {name: s1}
+        workspace:
+          repositories:
+            - {name: r, repository: https://example.com/r.git, ref: main, mount: r}
+        agent: {kind: command, argv: [], cwd: /workspace/r}
+    outcome: returned
+    response: {resolved: null, diagnostic: 'agent.argv must be a non-empty list whose first element is an absolute path'}
+  - at: '2026-10-29T00:00:05Z'
+    command: mantle.manifest.Parse
+    input:
+      text: |
+        apiVersion: mantle.beyond10x.dev/v1alpha1
+        kind: Session
+        metadata: {name: s1}
+        workspace:
+          repositories:
+            - {name: r, repository: https://example.com/r.git, ref: main, mount: r}
+        agent: {kind: command, argv: [bash, -l], cwd: /workspace/r}
+    outcome: returned
+    response: {resolved: null, diagnostic: 'agent.argv must be a non-empty list whose first element is an absolute path'}
+  - at: '2026-10-29T00:00:06Z'
+    command: mantle.manifest.Parse
+    input:
+      text: |
+        apiVersion: mantle.beyond10x.dev/v1alpha1
+        kind: Session
+        metadata: {name: s1}
+        workspace:
+          repositories:
+            - {name: r, repository: https://example.com/r.git, ref: main, mount: r}
+        agent: {kind: codex, argv: [/bin/bash], cwd: /workspace/r}
+    outcome: returned
+    response: {resolved: null, diagnostic: 'agent.argv is served only with agent.kind command'}
+  - at: '2026-10-29T00:00:07Z'
+    command: mantle.manifest.Parse
+    input:
+      text: |
+        apiVersion: mantle.beyond10x.dev/v1alpha1
+        kind: Session
+        metadata: {name: s1}
+        workspace:
+          repositories:
+            - {name: r, repository: https://example.com/r.git, ref: main, mount: r}
+        agent: {kind: claude-code, argv: [/bin/bash], cwd: /workspace/r}
+    outcome: returned
+    response: {resolved: null, diagnostic: 'agent.argv is served only with agent.kind command'}

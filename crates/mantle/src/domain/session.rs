@@ -10,16 +10,21 @@ use anyhow::{Result, bail};
 
 pub use mantle_worker::{AgentKind, AuthenticationMethod};
 
+/// The kind whose process is the manifest's declared `agent.argv`. It never receives a credential.
+pub const COMMAND: &str = "command";
+
 pub fn agent_name(agent: &AgentKind) -> &'static str {
     match agent {
         AgentKind::V0 => "claude-code",
         AgentKind::V1 => "codex",
+        AgentKind::V2 => COMMAND,
     }
 }
 pub fn auth_name(auth: &AuthenticationMethod) -> &'static str {
     match auth {
         AuthenticationMethod::V1 => "claude-oauth",
         AuthenticationMethod::V0 => "chatgpt-device",
+        AuthenticationMethod::V2 => "none",
     }
 }
 pub fn resolve_identity(
@@ -29,6 +34,7 @@ pub fn resolve_identity(
     let (agent, authentication) = match kind {
         "claude-code" => (AgentKind::V0, AuthenticationMethod::V1),
         "codex" => (AgentKind::V1, AuthenticationMethod::V0),
+        COMMAND => (AgentKind::V2, AuthenticationMethod::V2),
         _ => bail!("unsupported agent kind"),
     };
     if auth.is_some_and(|value| value != auth_name(&authentication)) {

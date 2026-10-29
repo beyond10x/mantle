@@ -1172,6 +1172,9 @@ pub(super) fn execute(command: &str, input: &Value) -> Result<Reply> {
     if command == "mantle.orchestration.CodexPreflight" {
         return codex_preflight();
     }
+    if command == "mantle.orchestration.CommandPreflight" {
+        return command_preflight();
+    }
     if command == "mantle.orchestration.Observe" {
         let facts: Value = serde_json::from_str(input["facts_json"].as_str().context("facts")?)?;
         let machine: b10x_substrate_sdk::Machine = serde_json::from_value(json!({
@@ -1270,7 +1273,43 @@ pub(super) fn execute(command: &str, input: &Value) -> Result<Reply> {
 }
 
 fn codex_preflight() -> Result<Reply> {
-    let resolved = manifest::parse(include_str!("../../../../examples/codex.yaml"))?;
+    preflight(include_str!("../../../../examples/codex.yaml")).map(|(reply, _, _)| reply)
+}
+
+/// The command kind through the same production start: no credential read, no secret, and the
+/// launch context that restart reruns holds the declared argv.
+fn command_preflight() -> Result<Reply> {
+    let (mut reply, store, id) = preflight(include_str!("../../../../examples/shell.yaml"))?;
+    let resolved = manifest::parse(include_str!("../../../../examples/shell.yaml"))?;
+    let request = serde_json::to_value(session::agent_request(&resolved))?;
+    let argv = request["argv"].as_array().context("request argv")?;
+    let mut credential_variables: Vec<String> = request["environment"]
+        .as_object()
+        .context("request environment")?
+        .keys()
+        .filter(|name| name.starts_with("CLAUDE") || name.starts_with("CODEX"))
+        .cloned()
+        .collect();
+    credential_variables.extend(
+        argv.windows(2)
+            .filter(|pair| pair[0] == "--secret-env")
+            .filter_map(|pair| pair[1].as_str().map(str::to_owned)),
+    );
+    let context: Value = serde_json::from_str(
+        store
+            .attempt(&id)?
+            .and_then(|attempt| attempt.launch_context)
+            .as_deref()
+            .context("persisted launch context")?,
+    )?;
+    let response = reply.response.as_mut().context("preflight response")?;
+    response["request_credential_variables"] = json!(credential_variables);
+    response["persisted_argv"] = context["request"]["argv"].clone();
+    Ok(reply)
+}
+
+fn preflight(text: &str) -> Result<(Reply, Store, String)> {
+    let resolved = manifest::parse(text)?;
     let store = Store::in_memory()?;
     let reads = std::cell::Cell::new(0);
     let credentials = session::selected_credentials(&resolved, || {
@@ -1297,14 +1336,15 @@ fn codex_preflight() -> Result<Reply> {
         .context("stored selection")?;
     let attach = serde_json::to_value(session::attach_request(&stored.agent_kind))?;
     let request = serde_json::to_value(session::agent_request(&resolved))?;
-    Ok(Reply::returned(json!({
+    let reply = Reply::returned(json!({
         "started": credentials.is_ok_and(|value| value.is_none()) && started.is_ok(),
         "credential_reads":reads.get(), "calls":plane.calls.borrow().clone(),
         "state":stored.state.to_string(), "agent_exec":stored.agent_exec,
         "attach_argv":attach["argv"],
         "attach_has_secret":!attach["secret_slot"].is_null() || !attach["secret_fd"].is_null(),
         "request_has_secret":!request["secret_slot"].is_null() || !request["secret_fd"].is_null()
-    })))
+    }));
+    Ok((reply, store, persisted.id))
 }
 
 /// Native release scenarios run the production verifier and installer over real ELF fixtures.

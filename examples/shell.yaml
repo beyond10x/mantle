@@ -1,0 +1,14 @@
+apiVersion: mantle.beyond10x.dev/v1alpha1
+kind: Session
+metadata:
+  name: shell-example
+workspace:
+  repositories:
+    - name: substrate
+      repository: https://github.com/beyond10x/substrate.git
+      ref: main
+      mount: substrate
+agent:
+  kind: command
+  argv: ["/bin/bash", "-l"]
+  cwd: /workspace/substrate
