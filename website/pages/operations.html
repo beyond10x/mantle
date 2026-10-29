@@ -104,7 +104,7 @@ mantle-acceptance cleanup --real --checkpoint "$HOME/.cache/mantle-acceptance-ru
 </ul>
 </section>
 
-<section id="offline-upgrades" class="section prose"><div class="section-heading"><p class="eyebrow">09 / Offline upgrades</p><h2>Replace worker helpers during maintenance.</h2><p>For administrators. Use a matching 0.2.0 CLI and a <a href="/mantle/releases/#verify">verified 0.2.0 bundle</a>. The worker must already run the pinned Substrate 0.7.10; this command does not migrate Substrate.</p></div>
+<section id="offline-upgrades" class="section prose"><div class="section-heading"><p class="eyebrow">09 / Offline upgrades</p><h2>Replace worker helpers during maintenance.</h2><p>For administrators. Use a matching 0.2.0 CLI and a <a href="/mantle/releases/#verify">verified 0.2.0 bundle</a>. The worker must already run the Substrate the CLI pins (0.7.10 for release 0.2.0, 0.16.1 after it); this command does not migrate Substrate.</p></div>
 <p><code>mantle worker upgrade</code> replaces the three Mantle helpers and keeps worker data, configuration, Claude, Codex’s generation link and the Substrate daemon. A different Substrate version or revision is refused. It does not drain sessions and never stops, masks, unmasks, restarts or signals a service. <code>--check</code> also works against an older installed helper: it uses bounded read-only SSH observations and uploads nothing.</p>
 <h3 id="upgrade-prepare">1. Prepare the worker</h3>
 <p>Take an exclusive maintenance window. Save wanted work and retire every execution. Keep other administrators and older Mantle clients away for the whole window: they do not take the new installation lock. Through <code>mantle worker ssh</code>:</p>

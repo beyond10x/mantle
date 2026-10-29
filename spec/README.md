@@ -24,7 +24,7 @@ an unknown outcome must read back absence before recording Stopped. The five-min
 under Tokio's virtual clock. These tests do not provision AWS or KubeVirt, run a Substrate daemon,
 or attest to a live deployment's capabilities. Those upstream systems retain their own contracts.
 
-The SDK is pinned to Substrate `65304edf6ebdf4a95f9c2c6138b0c20ea47d157e` (0.7.10).
+The SDK is pinned to Substrate `f2fd606b88a0b778970e8babe9a96eb600cd57b2` (0.16.1).
 Its producer declarations in `crates/substrate-wire/src/lib.rs` define `CapabilityFacts`,
 `ExecUsage`, `ResourceUsage` and `ErrorDetail`; `crates/substrate-daemon/src/app/responses.rs`
 defines unknown-outcome refusals. Observation fixtures retain metadata and metrics that Mantle

@@ -13,7 +13,7 @@
 <li><code>sessions.pty</code>, and the egress aperture named <code>egress</code>.</li>
 <li>For Claude Code, also the <code>claude</code> secret slot and the installed <code>claude</code> executable; for Codex, the installed <code>codex</code> executable.</li>
 </ul>
-<p>Inside, <code>/workspace</code> is writable; <code>/opt/mantle</code> and the host’s <code>/usr</code>, <code>/bin</code>, <code>/lib</code> and <code>/lib64</code> are read-only. The sandbox refuses Unix-domain sockets. CPU is not bandwidth-limited: Substrate 0.7.10 bounds cumulative CPU time only, and <code>resources.cpu</code> only sets <code>CARGO_BUILD_JOBS</code>. A storage quota applies only when the worker serves workspace quotas. Substrate’s full isolation floor is documented in the <a href="https://beyond10x.github.io/substrate/">Substrate documentation</a>.</p>
+<p>Inside, <code>/workspace</code> is writable; <code>/opt/mantle</code> and the host’s <code>/usr</code>, <code>/bin</code>, <code>/lib</code> and <code>/lib64</code> are read-only. The sandbox refuses Unix-domain sockets. CPU is not bandwidth-limited: Substrate 0.16.1 bounds cumulative CPU time only, and <code>resources.cpu</code> only sets <code>CARGO_BUILD_JOBS</code>. A storage quota applies only when the worker serves workspace quotas. Substrate’s full isolation floor is documented in the <a href="https://beyond10x.github.io/substrate/">Substrate documentation</a>.</p>
 </section>
 
 <section id="network" class="section prose"><div class="section-heading"><p class="eyebrow">03 / Network</p><h2>Ten destinations, all port 443.</h2></div>
