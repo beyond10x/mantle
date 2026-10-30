@@ -6,7 +6,7 @@ status: cleared
 title: 'Release 0.3.0 upload refused: Gates reads /home/ strings in the archives as personal paths'
 relations:
 - blocks: task:release-0-3-0
-revision: 5
+revision: 6
 transitions:
 - {from: "open", to: "cleared", at: "2026-10-30T00:53:03Z", actor: "human:timo", revision: 5}
 ---
@@ -39,3 +39,7 @@ Tag `0.3.0` stays as it is: not deleted, not moved, with no GitHub release.
 Correction to the cause above. Mantle's in-sandbox paths are `/workspace/.mantle/home` and `/workspace/.mantle/cargo` (`crates/mantle/src/adapters/substrate.rs`, `crates/mantle-launch/src/cli.rs`, `crates/mantle/src/app/session.rs`). The source has no `home/workspace` literal. The `home/workspace` strings in the 0.3.0 binaries are adjacent read-only strings: `/workspace/.mantle/home` followed directly by `/workspace/.mantle/cargo`. No runtime path changes for 0.3.1.
 
 Done for 0.3.1: `mantle-release build` passes `--remap-path-prefix` for `CARGO_HOME` (to `/cargo`), the source export (to `/mantle`) and the build target (to `/target`). A local candidate built from `12fe423` passes `b10x-gates scan-text` (exit 0 on both archives, the manifest and `SHA256SUMS`); its only `/home/` strings are inside `/workspace/.mantle/home…`, which the rule does not match. The tag's CI candidate is scanned the same way before publishing.
+
+## Premise corrected (D249)
+
+The premise of this blocker and of D244 was wrong: Gates refused the absolute staging path of the first release file, which was under the operator's home, and did not refuse the runner-home (`home/runner`) strings inside the binaries. See `approval-record:d249-publish-staging` (D249) for the evidence and the fix, `story:publish-stages-inside-checkout`.
