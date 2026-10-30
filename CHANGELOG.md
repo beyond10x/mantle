@@ -7,7 +7,21 @@ Evidence and compatibility notes for each release are on the
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-30
+
+The first published 0.3 release: the behaviour of 0.3.0, below, with a release build that no
+longer names the build host's directories. The 0.3.0 upgrade notes apply unchanged.
+
+### Fixed
+
+- The release build passes `--remap-path-prefix` for the cargo home, the private source export
+  and the build target (to `/cargo`, `/mantle` and `/target`). The 0.3.0 binaries embedded the CI
+  runner's home directory in dependency source paths, and the organization's release checks
+  refused to upload them, so tag `0.3.0` has no GitHub release or published assets.
+
 ## [0.3.0] - 2026-10-29
+
+Tagged, not published; see 0.3.1.
 
 ### Upgrading from 0.2.0
 
@@ -123,8 +137,9 @@ Evidence and compatibility notes for each release are on the
 
 - Codex 0.153.4 sessions with ChatGPT device login beside Claude Code.
 
-[Unreleased]: https://github.com/beyond10x/mantle/compare/0.3.0...HEAD
-[0.3.0]: https://github.com/beyond10x/mantle/releases/tag/0.3.0
+[Unreleased]: https://github.com/beyond10x/mantle/compare/0.3.1...HEAD
+[0.3.1]: https://github.com/beyond10x/mantle/releases/tag/0.3.1
+[0.3.0]: https://github.com/beyond10x/mantle/tree/0.3.0
 [0.2.0]: https://github.com/beyond10x/mantle/releases/tag/0.2.0
 [0.1.4]: https://github.com/beyond10x/mantle/releases/tag/0.1.4
 [0.1.3]: https://github.com/beyond10x/mantle/releases/tag/0.1.3
