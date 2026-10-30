@@ -2,7 +2,7 @@
 <nav class="toc" aria-label="On this page"><a href="#layers">Layers</a><a href="#diagram">Diagram</a><a href="#ownership">Who owns what</a><a href="#paths">Paths across boundaries</a><a href="#not-built">Designed, not built</a></nav></section>
 
 <section id="layers" class="section prose"><div class="section-heading"><p class="eyebrow">01 / Layers</p><h2>Four layers, two machines.</h2></div>
-<div class="table-wrap"><table><caption class="sr-only">The four layers of a Mantle session</caption><thead><tr><th>Layer</th><th>Runs on</th><th>Owns in 0.3.0</th></tr></thead><tbody>
+<div class="table-wrap"><table><caption class="sr-only">The four layers of a Mantle session</caption><thead><tr><th>Layer</th><th>Runs on</th><th>Owns in 0.3.1</th></tr></thead><tbody>
 <tr><td><strong>Laptop</strong>: the <code>mantle</code> CLI</td><td>Your Linux laptop</td><td>Manifest parsing and validation; worker provisioning through the AWS SDK or <code>kubectl</code>; local session and worker records in SQLite (<code>state.db</code>); the SSH key and pinned host key; the SSH tunnel to the Substrate socket; terminal rendering; lifecycle, profile and doctor commands.</td></tr>
 <tr><td><strong>Mantle on the worker</strong>: three static helpers</td><td>Worker host and sandbox</td><td><code>mantle-egress</code>: the CONNECT gateway on <code>127.0.0.1:3128</code> with a fixed allowlist, on the host outside every sandbox. <code>mantle-launch</code>: inside the sandbox, holds the agent on a pseudo-terminal and relays attachments through FIFOs. <code>mantle-worker</code>: installs pinned Codex and checks or applies offline helper upgrades under a host lock.</td></tr>
 <tr><td><strong>Substrate</strong>: <code>substrate-daemon</code> 0.16.1 (release 0.2.0: 0.7.10)</td><td>Worker host</td><td>Confined workspaces, guarded file operations, process execution with timeouts and leases, PTY sessions, secret slots, the named egress aperture, cgroup and quota facts, durable operation identity and observed state.</td></tr>
@@ -13,7 +13,7 @@
 
 <section id="diagram" class="section"><div class="section-heading"><p class="eyebrow">02 / Diagram</p><h2>Where the boundaries are.</h2><p><a href="https://beyond10x.github.io/substrate/">Substrate</a> turns a Linux host into a service for confined workspaces and processes. Mantle uses that service to place the session, start the agent and connect your terminal.</p></div>
 <figure class="architecture" aria-labelledby="architecture-title" aria-describedby="architecture-caption">
-  <div class="architecture-heading"><div><span class="flow-label">Inside a Mantle session</span><h3 id="architecture-title">Laptop, worker host, sandbox, external services.</h3></div><span class="diagram-badge">Release 0.3.0</span></div>
+  <div class="architecture-heading"><div><span class="flow-label">Inside a Mantle session</span><h3 id="architecture-title">Laptop, worker host, sandbox, external services.</h3></div><span class="diagram-badge">Release 0.3.1</span></div>
   <div class="architecture-map">
     <div class="operator-zone">
       <div class="diagram-node laptop-node"><span class="node-kicker">01 / Developer laptop</span><h4>Mantle CLI</h4><p>Session intent &amp; placement<br>Local records &amp; terminal</p></div>
@@ -42,7 +42,7 @@
 </figure>
 </section>
 
-<section id="ownership" class="section prose"><div class="section-heading"><p class="eyebrow">03 / Who owns what</p><h2>Policy in Mantle, mechanism in Substrate.</h2><p>From the <a href="https://github.com/beyond10x/mantle/blob/main/docs/design/00-mantle-on-substrate.md">design</a>, §4, §7 and §8, reduced to what 0.3.0 implements.</p></div>
+<section id="ownership" class="section prose"><div class="section-heading"><p class="eyebrow">03 / Who owns what</p><h2>Policy in Mantle, mechanism in Substrate.</h2><p>From the <a href="https://github.com/beyond10x/mantle/blob/main/docs/design/00-mantle-on-substrate.md">design</a>, §4, §7 and §8, reduced to what 0.3.1 implements.</p></div>
 <div class="boundary-grid">
 <article><h3>Mantle owns</h3><ul>
 <li><strong>Session intent</strong>: the manifest, the agent, the runtime profile, the repositories, requested resources.</li>
@@ -71,10 +71,10 @@
 </dl>
 </section>
 
-<section id="not-built" class="section prose"><div class="section-heading"><p class="eyebrow">05 / Designed, not built</p><h2>What the design describes and 0.3.0 does not do.</h2></div>
+<section id="not-built" class="section prose"><div class="section-heading"><p class="eyebrow">05 / Designed, not built</p><h2>What the design describes and 0.3.1 does not do.</h2></div>
 <p>The design document is a proposal; its correction block lists where the first slice differs. These parts are <strong>not implemented</strong>:</p>
 <ul>
-<li>A coordinator service, worker fleets, scheduling, Spot capacity and scale-out. Mantle 0.3.0 manages one worker named <code>default</code>; <code>placement</code> in a manifest is accepted and ignored.</li>
+<li>A coordinator service, worker fleets, scheduling, Spot capacity and scale-out. Mantle 0.3.1 manages one worker named <code>default</code>; <code>placement</code> in a manifest is accepted and ignored.</li>
 <li>Remote TLS with an identity provider. The CLI reaches Substrate over SSH, not HTTPS.</li>
 <li>A Git credential broker, publishing back from Mantle, and starting from a dirty local checkout.</li>
 <li>Session-to-session communication, shared build caches, workspace snapshots and recovery of a lost worker or volume.</li>

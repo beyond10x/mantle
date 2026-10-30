@@ -1,7 +1,14 @@
 <section class="section page-head prose"><p class="eyebrow">Release history</p><h1>What changed in each release.</h1><p class="lede">Newest first. Each release’s notes and assets are on <a href="https://github.com/beyond10x/mantle/releases">GitHub releases</a>; a short list is in <a href="https://github.com/beyond10x/mantle/blob/main/CHANGELOG.md">CHANGELOG.md</a>.</p>
-<nav class="toc" aria-label="On this page"><a href="#v0-3-0">0.3.0</a><a href="#v0-2-0">0.2.0</a><a href="#v0-1-4">0.1.4</a><a href="#v0-1-3">0.1.3</a><a href="#v0-1-2">0.1.2</a><a href="#v0-1-1">0.1.1</a><a href="#v0-1-0">0.1.0</a></nav></section>
+<nav class="toc" aria-label="On this page"><a href="#v0-3-1">0.3.1</a><a href="#v0-3-0">0.3.0</a><a href="#v0-2-0">0.2.0</a><a href="#v0-1-4">0.1.4</a><a href="#v0-1-3">0.1.3</a><a href="#v0-1-2">0.1.2</a><a href="#v0-1-1">0.1.1</a><a href="#v0-1-0">0.1.0</a></nav></section>
 
-<section id="v0-3-0" class="section prose"><div class="section-heading"><p class="eyebrow">current</p><h2>0.3.0: Substrate 0.16.1, command sessions.</h2></div>
+<section id="v0-3-1" class="section prose"><div class="section-heading"><p class="eyebrow">current</p><h2>0.3.1: the first published 0.3 release.</h2></div>
+<ul>
+<li>The behaviour of 0.3.0, described below, published. The upgrade notes for 0.3.0 apply unchanged.</li>
+<li>The release build remaps the cargo home, the source export and the build target to <code>/cargo</code>, <code>/mantle</code> and <code>/target</code>, so the binaries name no directory of the build host. The 0.3.0 binaries named the CI runner’s home, and the organization’s release checks refused to upload them.</li>
+</ul>
+<p><strong>Not yet verified for 0.3.1:</strong> installation from the published assets and any run on a live worker with Substrate 0.16.1.</p>
+</section>
+<section id="v0-3-0" class="section prose"><div class="section-heading"><p class="eyebrow">tagged 2026-10-29, not published</p><h2>0.3.0: Substrate 0.16.1, command sessions.</h2></div>
 <ul>
 <li><strong>Compatibility change:</strong> Substrate 0.16.1 (was 0.7.10), SDK revision <code>f2fd606b88a0b778970e8babe9a96eb600cd57b2</code>, wire bundle <code>substrate-wire/0.25.0</code>. A new worker installs the daemon from Substrate’s signed release archive, checked against pinned digests. A 0.2.0 worker cannot be used; see below.</li>
 <li><code>agent.kind: command</code>: the session’s process is a declared argv, run without a shell and without an agent credential. See <a href="/mantle/configuration/#agent-command">configuration</a>.</li>
@@ -12,7 +19,8 @@
 <h3 id="v0-3-0-upgrade">Upgrading from 0.2.0</h3>
 <p>A 0.2.0 worker runs Substrate 0.7.10, and the 0.3.0 CLI and helpers cannot use it. The 0.3.0 Substrate SDK refuses a daemon that does not advertise <code>substrate-wire/0.25.0</code>; 0.7.10 advertises <code>substrate-wire/0.17.0</code>. <code>mantle doctor</code> fails its live Substrate version check, and <code>mantle worker upgrade --check</code> reports <code>incompatible</code>; <code>--apply</code> reports the same and changes nothing.</p>
 <p>No Mantle command moves an existing worker to Substrate 0.16.1. Cloud-init installs the daemon when <code>mantle worker up</code> creates the VM; on an existing VM, <code>worker up</code> starts it and does not replace the running daemon. Sessions on 0.3.0 need a new worker created by the 0.3.0 <code>mantle worker up</code>. Keep the 0.2.0 CLI for sessions on a 0.2.0 worker, and save wanted work from its workspaces before you retire it. Substrate’s state store upgrade is one-way: earlier daemons refuse a store that 0.16.1 has stamped.</p>
-<p><strong>Not yet verified for 0.3.0:</strong> tagged-source CI and publication, installation from the published assets, any run on a live worker with Substrate 0.16.1 (doctor, Claude Code, Codex or <code>command</code> sessions), and the upgrade path above, which is read from the code. The integration source records 508 native scenarios passing in the <a href="https://github.com/beyond10x/mantle/blob/main/spec/README.md">coverage ledger</a>.</p>
+<p>Tag <code>0.3.0</code> exists and its tagged-source CI passed, but it has no GitHub release and no published assets: the upload was refused because the binaries named the CI runner’s home directory. Install 0.3.1 instead.</p>
+<p><strong>Not yet verified for 0.3.0:</strong> any run on a live worker with Substrate 0.16.1 (doctor, Claude Code, Codex or <code>command</code> sessions), and the upgrade path above, which is read from the code. The integration source records 508 native scenarios passing in the <a href="https://github.com/beyond10x/mantle/blob/main/spec/README.md">coverage ledger</a>.</p>
 </section>
 
 <section id="v0-2-0" class="section prose"><div class="section-heading"><p class="eyebrow">2026-10-03</p><h2>0.2.0: retained workspaces, verified bundles.</h2></div>

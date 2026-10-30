@@ -270,6 +270,34 @@ pub fn export_source(source: &Path, revision: &str, export: &Path) -> Result<()>
     );
     Ok(())
 }
+/// The builder's home directory must not reach the binaries: dependency sources under
+/// `CARGO_HOME` and the private export and target paths are remapped to fixed prefixes.
+fn cargo_home() -> Result<PathBuf> {
+    match std::env::var_os("CARGO_HOME") {
+        Some(home) if !home.is_empty() => Ok(PathBuf::from(home)),
+        _ => Ok(
+            PathBuf::from(std::env::var_os("HOME").context("HOME or CARGO_HOME must be set")?)
+                .join(".cargo"),
+        ),
+    }
+}
+
+fn remap_rustflags(cargo_home: &Path, export: &Path, target: &Path) -> String {
+    let mut pairs = vec![(cargo_home.to_path_buf(), "/cargo")];
+    if let Ok(real) = cargo_home.canonicalize()
+        && real != cargo_home
+    {
+        pairs.push((real, "/cargo"));
+    }
+    pairs.push((export.to_path_buf(), "/mantle"));
+    pairs.push((target.to_path_buf(), "/target"));
+    pairs
+        .iter()
+        .map(|(from, to)| format!("--remap-path-prefix={}={to}", from.display()))
+        .collect::<Vec<_>>()
+        .join("\x1f")
+}
+
 pub fn build(source: &Path, revision: &str, output: &Path, work: &Path) -> Result<()> {
     let source = source.canonicalize()?;
     let source_commit = source_identity(&source, revision)?;
@@ -323,6 +351,7 @@ pub fn build(source: &Path, revision: &str, output: &Path, work: &Path) -> Resul
         8 * 1024 * 1024,
     )?;
     fs::write(work.join("fetch.log"), fetched)?;
+    let rustflags = remap_rustflags(&cargo_home()?, &export, &target);
     // A private exact export and fresh target exclude caller-supplied stale same-version binaries.
     for (triple, packages) in [
         (GNU, &["mantle", "mantle-release", "mantle-acceptance"][..]),
@@ -340,6 +369,8 @@ pub fn build(source: &Path, revision: &str, output: &Path, work: &Path) -> Resul
         }
         cargo
             .env("CARGO_TARGET_DIR", &target)
+            .env("CARGO_ENCODED_RUSTFLAGS", &rustflags)
+            .env_remove("RUSTFLAGS")
             .env("SOURCE_DATE_EPOCH", "0");
         let result = mantle_worker::run_bounded(
             &mut cargo,
@@ -412,4 +443,28 @@ pub fn build(source: &Path, revision: &str, output: &Path, work: &Path) -> Resul
         work.display()
     );
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::remap_rustflags;
+    use std::path::Path;
+
+    #[test]
+    fn release_rustflags_remap_cargo_home_export_and_target() {
+        let flags = remap_rustflags(
+            Path::new("/nonexistent/runner/.cargo"),
+            Path::new("/nonexistent/runner/work/source"),
+            Path::new("/nonexistent/runner/work/target"),
+        );
+        let flags: Vec<&str> = flags.split('\x1f').collect();
+        assert_eq!(
+            flags,
+            [
+                "--remap-path-prefix=/nonexistent/runner/.cargo=/cargo",
+                "--remap-path-prefix=/nonexistent/runner/work/source=/mantle",
+                "--remap-path-prefix=/nonexistent/runner/work/target=/target",
+            ]
+        );
+    }
 }

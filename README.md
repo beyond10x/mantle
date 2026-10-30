@@ -14,8 +14,8 @@ mantle attach my-project
 mantle stop my-project          # agent ends, workspace kept
 ```
 
-Current release: **0.3.0**, an early release, on Substrate 0.16.1. Its 508 conformance scenarios
-run with controlled external IO. Not yet verified for 0.3.0: installation from the published
+Current release: **0.3.1**, an early release, on Substrate 0.16.1. Its 508 conformance scenarios
+run with controlled external IO. Not yet verified for 0.3.1: installation from the published
 assets, any run on a live worker with Substrate 0.16.1, and a `command` session on a live worker.
 Device login, authenticated model and tool turns and token refresh are **not verified end to
 end**: [what is verified](https://beyond10x.github.io/mantle/releases/#what-is-verified).
@@ -33,23 +33,23 @@ end**: [what is verified](https://beyond10x.github.io/mantle/releases/#what-is-v
 ## Install a verified release
 
 ```sh
-mkdir mantle-0.3.0 && cd mantle-0.3.0
+mkdir mantle-0.3.1 && cd mantle-0.3.1
 for f in manifest.json SHA256SUMS \
-    mantle-0.3.0-x86_64-unknown-linux-gnu.tar \
-    mantle-0.3.0-x86_64-unknown-linux-musl.tar; do
-  curl -fLO "https://github.com/beyond10x/mantle/releases/download/0.3.0/$f"
+    mantle-0.3.1-x86_64-unknown-linux-gnu.tar \
+    mantle-0.3.1-x86_64-unknown-linux-musl.tar; do
+  curl -fLO "https://github.com/beyond10x/mantle/releases/download/0.3.1/$f"
 done
-jq -r .source_commit manifest.json   # must be the commit tagged 0.3.0
+jq -r .source_commit manifest.json   # must be the commit tagged 0.3.1
 jq -r '.artifacts[] | "\(.sha256)  \(.name)"' manifest.json | sha256sum --check
 mkdir bootstrap
-tar --extract --file mantle-0.3.0-x86_64-unknown-linux-gnu.tar \
+tar --extract --file mantle-0.3.1-x86_64-unknown-linux-gnu.tar \
   --directory bootstrap --no-same-owner bin/mantle-release
 ./bootstrap/bin/mantle-release verify --manifest "$PWD/manifest.json"
 ./bootstrap/bin/mantle-release install --manifest "$PWD/manifest.json" \
   --prefix "$HOME/.local/mantle"
 export PATH="$HOME/.local/mantle/bin:$PATH"
 mkdir -m 0700 worker-stage
-tar --extract --file mantle-0.3.0-x86_64-unknown-linux-musl.tar \
+tar --extract --file mantle-0.3.1-x86_64-unknown-linux-musl.tar \
   --directory worker-stage --no-same-owner \
   bin/mantle-egress bin/mantle-launch bin/mantle-worker
 ```
@@ -104,11 +104,11 @@ What each step proves, and building from source:
 | [Operations](https://beyond10x.github.io/mantle/operations/) | Commands, retained workspaces, profiles, doctor, automation, acceptance runs, offline worker upgrades |
 | [Releases and verification](https://beyond10x.github.io/mantle/releases/) | Bundles, verification, source builds, the conformance suite, the maintainer release procedure |
 | [Security model](https://beyond10x.github.io/mantle/security/) | Network allowlist, credentials, recording, what the sandbox does not cover |
-| [Release history](https://beyond10x.github.io/mantle/history/) | 0.1.0 to 0.3.0, compatibility changes and recorded evidence; summary in [CHANGELOG.md](CHANGELOG.md) |
+| [Release history](https://beyond10x.github.io/mantle/history/) | 0.1.0 to 0.3.1, compatibility changes and recorded evidence; summary in [CHANGELOG.md](CHANGELOG.md) |
 
-**Upgrading from 0.2.0:** a 0.2.0 worker runs Substrate 0.7.10, which the 0.3.0 CLI and helpers
+**Upgrading from 0.2.0:** a 0.2.0 worker runs Substrate 0.7.10, which the 0.3.1 CLI and helpers
 cannot use, and no Mantle command, offline upgrades included, moves a worker to Substrate 0.16.1.
-Sessions on 0.3.0 need a new worker created by the 0.3.0 `mantle worker up`; keep the 0.2.0 CLI
+Sessions on 0.3.1 need a new worker created by the 0.3.1 `mantle worker up`; keep the 0.2.0 CLI
 for sessions on a 0.2.0 worker. Details:
 [upgrading from 0.2.0](https://beyond10x.github.io/mantle/history/#v0-3-0-upgrade). From 0.1.4,
 also note that `mantle stop` keeps the workspace since 0.2.0; `mantle destroy NAME --yes` deletes it.
