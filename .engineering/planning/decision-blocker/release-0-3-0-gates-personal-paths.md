@@ -2,11 +2,13 @@
 format: aep.planning-md/3
 id: decision-blocker:release-0-3-0-gates-personal-paths
 kind: decision-blocker
-status: open
+status: cleared
 title: 'Release 0.3.0 upload refused: Gates reads /home/ strings in the archives as personal paths'
 relations:
 - blocks: task:release-0-3-0
-revision: 3
+revision: 5
+transitions:
+- {from: "open", to: "cleared", at: "2026-10-30T00:53:03Z", actor: "human:timo", revision: 5}
 ---
 # Release 0.3.0 cannot be uploaded: Gates refuses the release archives as personal paths
 
@@ -25,3 +27,15 @@ Cause, observed by grepping the candidate. Gates scans the content of each uploa
 Recommendation: A. The strings are not personal data, and B changes runtime paths only to satisfy a scanner.
 
 Decider: operator
+
+## Decision (D244)
+
+Decided by b10x-chef-orchestrator under the operator's grant, 2026-10-30, D244: option B. Rebuild without the two strings and release 0.3.1.
+
+Reason, as given: `gates/src/scan.rs:314-317` says allowances never reach `personal-paths`, on purpose, so A would change a Gates design rule just to publish one release. C stays refused.
+
+Tag `0.3.0` stays as it is: not deleted, not moved, with no GitHub release.
+
+Correction to the cause above. Mantle's in-sandbox paths are `/workspace/.mantle/home` and `/workspace/.mantle/cargo` (`crates/mantle/src/adapters/substrate.rs`, `crates/mantle-launch/src/cli.rs`, `crates/mantle/src/app/session.rs`). The source has no `home/workspace` literal. The `home/workspace` strings in the 0.3.0 binaries are adjacent read-only strings: `/workspace/.mantle/home` followed directly by `/workspace/.mantle/cargo`. No runtime path changes for 0.3.1.
+
+Done for 0.3.1: `mantle-release build` passes `--remap-path-prefix` for `CARGO_HOME` (to `/cargo`), the source export (to `/mantle`) and the build target (to `/target`). A local candidate built from `12fe423` passes `b10x-gates scan-text` (exit 0 on both archives, the manifest and `SHA256SUMS`); its only `/home/` strings are inside `/workspace/.mantle/home…`, which the rule does not match. The tag's CI candidate is scanned the same way before publishing.
