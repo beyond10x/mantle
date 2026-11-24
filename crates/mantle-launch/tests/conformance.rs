@@ -550,6 +550,7 @@ impl ReplayFixture {
         let mut server = Process(command.spawn()?);
         let errors = LimitedOutput::new(server.0.stderr.take().context("stderr")?);
         ready(dir.path(), &mut server)?;
+        agent_started(dir.path(), &mut server)?;
         Ok(Self {
             dir,
             server,
@@ -584,6 +585,25 @@ impl ReplayFixture {
     }
     fn pid(&self) -> Result<u32> {
         Ok(fs::read_to_string(self.dir.path().join("dispatched"))?.parse()?)
+    }
+}
+/// The server creates `session/ctl` before it spawns the agent, and the agent writes its pid
+/// file only once it runs (create, then write). Wait for a complete pid, bounded like `ready`.
+fn agent_started(path: &Path, server: &mut Process) -> Result<()> {
+    let until = Instant::now() + Duration::from_secs(10);
+    loop {
+        match fs::read_to_string(path.join("dispatched")) {
+            Ok(pid) if pid.parse::<u32>().is_ok() => return Ok(()),
+            Ok(_) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
+        ensure!(
+            server.0.try_wait()?.is_none(),
+            "server exited before its agent started"
+        );
+        ensure!(Instant::now() < until, "agent start watchdog");
+        std::thread::sleep(Duration::from_millis(10));
     }
 }
 fn replay_command(path: &Path, volatile: bool) -> Command {
