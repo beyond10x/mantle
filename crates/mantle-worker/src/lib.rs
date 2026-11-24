@@ -265,10 +265,13 @@ impl Installer {
             .env("HOME", staging.path())
             .env("PATH", "/usr/bin:/bin");
         let version = run_bounded(&mut command, None, Duration::from_secs(5), 4096)?;
+        let stdout = String::from_utf8_lossy(&version.stdout);
         ensure!(
-            version.status.success()
-                && String::from_utf8_lossy(&version.stdout).trim() == self.version_output,
-            "Codex version check failed; previous installation preserved"
+            version.status.success() && stdout.trim() == self.version_output,
+            "Codex version check failed ({}, stdout {:?}, stderr {:?}); previous installation preserved",
+            version.status,
+            stdout.trim(),
+            String::from_utf8_lossy(&version.stderr).trim()
         );
         ensure!(
             Instant::now() < deadline,
@@ -1134,14 +1137,12 @@ mod tests {
         }
         let (_dir, original, archive) = fixture();
         install_fixture(&original, &archive).unwrap();
-        let binary = fs::read("/usr/bin/printf").unwrap();
+        // A distinct executable whose --version does not depend on its file name: bytes after
+        // the ELF image change the digest, not the behaviour. A copy of a multi-call binary
+        // (uutils coreutils on Ubuntu 26.04) refuses to run under the name `codex`.
+        let mut binary = fs::read("/usr/bin/true").unwrap();
+        binary.extend_from_slice(b"\0mantle replacement generation\0");
         let archive = zstd::stream::encode_all(&binary[..], 1).unwrap();
-        let version = Command::new("/usr/bin/printf")
-            .arg("--version")
-            .env_clear()
-            .output()
-            .unwrap();
-        assert!(version.status.success());
         let replacement = Installer {
             root: original.root.clone(),
             candidate: InstallationFacts {
@@ -1150,7 +1151,7 @@ mod tests {
                 compressed_sha256: format!("{:x}", Sha256::digest(&archive)),
                 binary_sha256: format!("{:x}", Sha256::digest(&binary)),
             },
-            version_output: String::from_utf8(version.stdout).unwrap().trim().to_owned(),
+            version_output: original.version_output.clone(),
         };
         assert_ne!(
             original.candidate.binary_sha256,
@@ -1946,7 +1947,13 @@ mod tests {
         }
         let (_dir, mut installer, archive) = fixture();
         installer.version_output = "wrong version".into();
-        assert!(install_fixture(&installer, &archive).is_err());
+        let error = install_fixture(&installer, &archive)
+            .unwrap_err()
+            .to_string();
+        assert!(
+            error.starts_with("Codex version check failed (exit status: 0, stdout \""),
+            "the refusal names what the executable answered: {error}"
+        );
         assert!(installer.inspect().unwrap().is_none());
     }
     #[test]

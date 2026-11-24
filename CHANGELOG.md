@@ -7,6 +7,14 @@ Evidence and compatibility notes for each release are on the
 
 ## [Unreleased]
 
+### Fixed
+
+- The worker's Codex version-check refusal names the executable's exit status, stdout and stderr.
+- A worker installer test used a copy of `/usr/bin/printf` as its replacement executable. On the
+  ubuntu-26.04 runner image that file is the uutils coreutils multi-call binary, which refuses to
+  run under the name `codex`, so the Gate job failed on every pull request. The test now uses
+  `/usr/bin/true` with bytes appended, which keeps its output under any name.
+
 ## [0.3.1] - 2026-10-30
 
 The first published 0.3 release: the behaviour of 0.3.0, below, with a release build that no
