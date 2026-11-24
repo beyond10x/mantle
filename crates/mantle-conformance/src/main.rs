@@ -18,11 +18,16 @@ fn read(path: impl AsRef<std::path::Path>) -> Result<Value> {
     Ok(serde_json::from_slice(&std::fs::read(path)?)?)
 }
 fn main() -> Result<()> {
-    let root = Args::parse().root;
+    let root = Args::parse()
+        .root
+        .canonicalize()
+        .context("conformance root")?;
     reject_unmapped(&root.join("spec"))?;
     let drafts = root.join(".engineering/drafts");
     let full_path = drafts.join("mantle-suite.json");
+    // `ess` follows `requires:` only from an ess-inputs.yaml at or above its working directory.
     let output = Command::new("ess")
+        .current_dir(root.join("spec"))
         .args(["verify", "conform", "synthesize", "--path"])
         .arg(root.join("spec"))
         .arg("--scenarios")
