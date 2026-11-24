@@ -2023,13 +2023,14 @@ mod tests {
     fn generated_model_has_no_drift() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let temporary = tempfile::tempdir().unwrap();
+        // `ess` follows `requires:` only from an ess-inputs.yaml at or above its working directory.
         let output = Command::new("ess")
-            .current_dir(&root)
+            .current_dir(root.join("spec"))
             .args([
                 "generate",
                 "types",
                 "--path",
-                "spec",
+                ".",
                 "--root",
                 "mantle.session.AgentInstallationFacts",
                 "--root",

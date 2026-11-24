@@ -35,7 +35,7 @@ This repository advances these objectives from `atlas/ROADMAP.md`:
 | gate | `task check` |
 | laptop CLI | `task build` |
 | worker binaries (static musl) | `task build-worker` |
-| specification | `ess specify validate --path spec` |
+| specification | `task spec` (runs `ess` in `spec/`, where its `requires:` pin applies) |
 | plan | `aep plan artifact list`, `aep plan artifact validate` |
 | public documentation | `task site-build` |
 

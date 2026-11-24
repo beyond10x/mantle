@@ -233,17 +233,18 @@ pub fn run<B: Boundary>(component: &str, minimum: usize) -> Result<()> {
     let drafts = root.join(".engineering/drafts");
     std::fs::create_dir_all(&drafts)?;
     let suite_path = drafts.join(format!("{component}-suite.json"));
+    // `ess` follows `requires:` only from an ess-inputs.yaml at or above its working directory.
     let output = Command::new("ess")
-        .current_dir(&root)
+        .current_dir(root.join("spec"))
         .args([
             "verify",
             "conform",
             "synthesize",
             "--path",
-            "spec",
+            ".",
             "--scenarios",
             &format!(
-                "spec/scenarios/{}",
+                "scenarios/{}",
                 component.strip_prefix("mantle-").expect("component prefix")
             ),
             "--suite-format",
